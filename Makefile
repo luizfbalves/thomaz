@@ -54,6 +54,11 @@ LIBDIRS	:= $(PORTLIBS) $(LIBNX)
 
 include $(TOPDIR)/$(BOREALIS_PATH)/library/borealis.mk
 
+# Newer devkitA64 GCC/libstdc++ no longer pull some standard headers in
+# transitively. Third-party headers (Borealis / nanovg-deko3d) assume they
+# are available, so force-include them for every C++ translation unit.
+CXXFLAGS += -include cstdint -include optional
+
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
 # rules for different file extensions
