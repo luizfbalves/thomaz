@@ -21,7 +21,7 @@ include(${BOREALIS_LIBRARY}/cmake/toolchain.cmake)
 # Project info
 project(thomaz)
 set(VERSION_MAJOR "0")
-set(VERSION_MINOR "1")
+set(VERSION_MINOR "2")
 set(VERSION_ALTER "0")
 set(VERSION_BUILD "0")
 set(PACKAGE_NAME "tech.orul.thomaz")
