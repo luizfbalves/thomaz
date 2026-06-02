@@ -33,6 +33,14 @@
                 fontSize="16"
                 marginBottom="14" />
 
+            <!-- Spinner shown while the download is in flight -->
+            <brls:ProgressSpinner
+                id="spinner"
+                width="44"
+                height="44"
+                marginTop="8"
+                marginBottom="8" />
+
             <!-- Cheat toggles inserted by CheatDetailActivity -->
             <brls:Box
                 id="cheatListBox"

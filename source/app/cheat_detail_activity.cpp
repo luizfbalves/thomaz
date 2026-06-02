@@ -6,6 +6,7 @@
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
+#include <borealis/core/thread.hpp>
 #include <set>
 #include <string>
 
@@ -21,25 +22,48 @@ CheatDetailActivity::CheatDetailActivity(InstalledTitle title, IHttpClient* http
 {
 }
 
+CheatDetailActivity::~CheatDetailActivity()
+{
+    *this->alive = false; // tell any in-flight fetch callback to bail
+}
+
 void CheatDetailActivity::onContentAvailable()
 {
-    auto* gameTitle   = (brls::Label*)this->getView("gameTitle");
+    if (auto* gameTitle = (brls::Label*)this->getView("gameTitle"))
+        gameTitle->setText(this->title.name);
+
+    // Kick the (blocking) download onto a worker thread; the spinner + "loading"
+    // status from the XML stay visible until the result comes back.
+    InstalledTitle titleCopy = this->title;     // copy: worker must not touch `this`
+    IHttpClient* client      = this->http;       // owned by main(), app-lifetime
+    auto alive               = this->alive;      // shared liveness flag
+
+    brls::async([this, titleCopy, client, alive]() {
+        core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
+            HttpResponse r = client->get(url);
+            if (!r.ok())
+                return std::nullopt;
+            return r.body;
+        };
+        core::FetchResult result =
+            core::fetch_cheat_set(titleCopy.title_id, titleCopy.version, fetch);
+
+        // Back to the UI thread to mutate views.
+        brls::sync([this, alive, result]() {
+            if (!alive->load())
+                return; // activity was popped while we were downloading
+            this->populate(result);
+        });
+    });
+}
+
+void CheatDetailActivity::populate(const core::FetchResult& result)
+{
     auto* statusLabel = (brls::Label*)this->getView("statusLabel");
     auto* listBox     = (brls::Box*)this->getView("cheatListBox");
 
-    if (gameTitle)
-        gameTitle->setText(this->title.name);
-
-    // Fetch over HTTP via the injected client (libcurl under the hood).
-    IHttpClient* client = this->http;
-    core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
-        HttpResponse r = client->get(url);
-        if (!r.ok())
-            return std::nullopt;
-        return r.body;
-    };
-
-    core::FetchResult result = core::fetch_cheat_set(this->title.title_id, this->title.version, fetch);
+    if (auto* spinner = this->getView("spinner"))
+        spinner->setVisibility(brls::Visibility::GONE); // download finished
 
     if (result.status == core::FetchStatus::NetworkError)
     {
