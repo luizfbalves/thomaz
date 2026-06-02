@@ -10,6 +10,9 @@
 #include <borealis.hpp>
 
 #include "home_activity.hpp"
+#ifdef __SWITCH__
+#include "platform/title_service_switch.hpp"
+#endif
 
 using namespace brls::literals; // for ""_i18n
 
@@ -25,6 +28,24 @@ int main(int argc, char* argv[])
         brls::Logger::error("Unable to init Borealis application");
         return EXIT_FAILURE;
     }
+
+#ifdef __SWITCH__
+    // Phase 3 sanity signal (replaced by the bento/list UI in Phase 4):
+    // list installed games and log how many were found.
+    {
+        thomaz::NsTitleService titleService;
+        if (titleService.init())
+        {
+            auto titles = titleService.listInstalled();
+            brls::Logger::info("thomaz: found {} installed titles", titles.size());
+            titleService.exit();
+        }
+        else
+        {
+            brls::Logger::error("thomaz: failed to initialize ns title service");
+        }
+    }
+#endif
 
     brls::Application::createWindow("thomaz/title"_i18n);
 
