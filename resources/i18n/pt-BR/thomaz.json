@@ -19,6 +19,27 @@
         "saved": "Idioma salvo — reinicie o app para aplicar.",
         "restart_hint": "A mudança de idioma é aplicada ao reiniciar o app."
     },
+    "update": {
+        "check": "Buscar atualizações",
+        "current_version": "Versão atual: v",
+        "checking": "Verificando atualizações…",
+        "up_to_date": "Você já está na versão mais recente.",
+        "none": "Nenhuma release encontrada.",
+        "error": "Falha ao verificar — verifique a conexão.",
+        "confirm_pre": "Nova versão ",
+        "confirm_post": " disponível. Atualizar agora?",
+        "confirm_yes": "Atualizar",
+        "confirm_no": "Agora não",
+        "downloading": "Baixando atualização…",
+        "done": "Atualizado! Reinicie o app para usar a nova versão.",
+        "failed": "Falha ao atualizar."
+    },
+    "db": {
+        "refresh": "Atualizar base de cheats",
+        "refreshing": "Atualizando base…",
+        "refresh_done": "Base de cheats atualizada.",
+        "refresh_failed": "Falha ao atualizar a base — verifique a conexão."
+    },
     "common": {
         "coming_soon": "Em breve"
     },

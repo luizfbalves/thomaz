@@ -17,11 +17,15 @@
 #include "app/home_activity.hpp"
 #include "platform/app_settings.hpp"
 #include "platform/http_client_curl.hpp"
+#include "platform/self_update.hpp"
 
 using namespace brls::literals; // for ""_i18n
 
 int main(int argc, char* argv[])
 {
+    // Remember our launch path so the updater can replace the right .nro.
+    thomaz::set_self_path(argc > 0 ? argv[0] : nullptr);
+
     brls::Logger::setLogLevel(brls::LogLevel::LOG_INFO);
 
     // UI language: use the user's saved choice, or follow the console language.

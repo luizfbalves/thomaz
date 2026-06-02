@@ -30,8 +30,8 @@ void HomeActivity::onContentAvailable()
     // Settings card.
     if (brls::View* settings = this->getView("settingsCard"))
     {
-        settings->registerClickAction([](brls::View*) {
-            brls::Application::pushActivity(new SettingsActivity());
+        settings->registerClickAction([this](brls::View*) {
+            brls::Application::pushActivity(new SettingsActivity(this->http));
             return true;
         });
         settings->addGestureRecognizer(new brls::TapGestureRecognizer(settings));

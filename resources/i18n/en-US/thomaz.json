@@ -19,6 +19,27 @@
         "saved": "Language saved — restart the app to apply.",
         "restart_hint": "Language changes apply when you restart the app."
     },
+    "update": {
+        "check": "Check for updates",
+        "current_version": "Current version: v",
+        "checking": "Checking for updates…",
+        "up_to_date": "You're on the latest version.",
+        "none": "No release found.",
+        "error": "Check failed — verify your connection.",
+        "confirm_pre": "New version ",
+        "confirm_post": " available. Update now?",
+        "confirm_yes": "Update",
+        "confirm_no": "Not now",
+        "downloading": "Downloading update…",
+        "done": "Updated! Restart the app to use the new version.",
+        "failed": "Update failed."
+    },
+    "db": {
+        "refresh": "Update cheats database",
+        "refreshing": "Updating database…",
+        "refresh_done": "Cheats database updated.",
+        "refresh_failed": "Database update failed — check your connection."
+    },
     "common": {
         "coming_soon": "Coming soon"
     },
