@@ -7,7 +7,17 @@
         "cheats": {
             "title": "Trapaças",
             "subtitle": "Gerencie os cheats dos seus jogos"
+        },
+        "settings": {
+            "title": "Configurações"
         }
+    },
+    "settings": {
+        "title": "Configurações",
+        "language": "Idioma",
+        "lang_auto": "Automático (sistema)",
+        "saved": "Idioma salvo — reinicie o app para aplicar.",
+        "restart_hint": "A mudança de idioma é aplicada ao reiniciar o app."
     },
     "common": {
         "coming_soon": "Em breve"

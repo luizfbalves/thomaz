@@ -7,7 +7,17 @@
         "cheats": {
             "title": "Cheats",
             "subtitle": "Manage your games' cheats"
+        },
+        "settings": {
+            "title": "Settings"
         }
+    },
+    "settings": {
+        "title": "Settings",
+        "language": "Language",
+        "lang_auto": "Automatic (system)",
+        "saved": "Language saved — restart the app to apply.",
+        "restart_hint": "Language changes apply when you restart the app."
     },
     "common": {
         "coming_soon": "Coming soon"

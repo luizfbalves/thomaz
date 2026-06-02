@@ -54,8 +54,9 @@
 
             </brls:Box>
 
-            <!-- Em breve card 1 -->
+            <!-- Settings card (focusable, opens settings) -->
             <brls:Box
+                id="settingsCard"
                 width="180"
                 height="180"
                 axis="column"
@@ -63,12 +64,13 @@
                 alignItems="center"
                 backgroundColor="#1E2027"
                 cornerRadius="12"
+                focusable="true"
                 marginRight="16">
 
                 <brls:Label
                     width="auto"
                     height="auto"
-                    text="@i18n/thomaz/common/coming_soon"
+                    text="@i18n/thomaz/module/settings/title"
                     fontSize="16" />
 
             </brls:Box>

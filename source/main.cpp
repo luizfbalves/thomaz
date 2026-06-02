@@ -12,8 +12,10 @@
 #endif
 
 #include <borealis.hpp>
+#include <string>
 #include "app/theme.hpp"
 #include "app/home_activity.hpp"
+#include "platform/app_settings.hpp"
 #include "platform/http_client_curl.hpp"
 
 using namespace brls::literals; // for ""_i18n
@@ -22,8 +24,10 @@ int main(int argc, char* argv[])
 {
     brls::Logger::setLogLevel(brls::LogLevel::LOG_INFO);
 
-    // Pick the UI language from the console's system language (pt-BR / en-US).
-    brls::Platform::APP_LOCALE_DEFAULT = brls::LOCALE_AUTO;
+    // UI language: use the user's saved choice, or follow the console language.
+    std::string savedLocale = thomaz::load_locale();
+    brls::Platform::APP_LOCALE_DEFAULT =
+        (savedLocale == "auto") ? brls::LOCALE_AUTO : savedLocale;
 
     if (!brls::Application::init())
     {

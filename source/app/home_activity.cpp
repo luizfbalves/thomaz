@@ -4,6 +4,7 @@
 
 #include "app/home_activity.hpp"
 #include "app/game_list_activity.hpp"
+#include "app/settings_activity.hpp"
 
 #include <borealis.hpp>
 
@@ -25,6 +26,16 @@ void HomeActivity::onContentAvailable()
     });
     // Make the card respond to touch (Switch) and mouse (desktop), not just A.
     card->addGestureRecognizer(new brls::TapGestureRecognizer(card));
+
+    // Settings card.
+    if (brls::View* settings = this->getView("settingsCard"))
+    {
+        settings->registerClickAction([](brls::View*) {
+            brls::Application::pushActivity(new SettingsActivity());
+            return true;
+        });
+        settings->addGestureRecognizer(new brls::TapGestureRecognizer(settings));
+    }
 }
 
 } // namespace thomaz
