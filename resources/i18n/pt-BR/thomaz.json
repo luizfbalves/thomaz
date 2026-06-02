@@ -15,7 +15,9 @@
     "games": {
         "title": "Meus Jogos",
         "empty": "Nenhum jogo encontrado — rode no Switch para ver seus jogos.",
-        "coming_soon": "Cheats: em breve"
+        "coming_soon": "Cheats: em breve",
+        "badge_has_cheats": "Tem cheat",
+        "badge_active": "Ativado"
     },
     "cheats": {
         "title": "Trapaças",

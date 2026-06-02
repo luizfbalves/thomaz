@@ -30,6 +30,23 @@ std::vector<Cheat> parse_db_cheats(const std::string& cheats_json, const std::st
     return cheats;
 }
 
+std::set<std::uint64_t> parse_db_index(const std::string& index_json) {
+    std::set<std::uint64_t> ids;
+    json j = json::parse(index_json, nullptr, /*allow_exceptions=*/false);
+    if (!j.is_object()) return ids;
+    for (auto it = j.begin(); it != j.end(); ++it) {
+        const std::string& key = it.key();
+        // Top-level keys are 16-char hex title ids.
+        if (key.size() != 16) continue;
+        try {
+            ids.insert(std::stoull(key, nullptr, 16));
+        } catch (...) {
+            // not a hex title id — ignore defensively
+        }
+    }
+    return ids;
+}
+
 VersionMap parse_versions(const std::string& versions_json) {
     VersionMap vm;
     json j = json::parse(versions_json, nullptr, false);

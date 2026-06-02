@@ -12,8 +12,14 @@ std::string title_id_hex(std::uint64_t title_id, bool upper);
 std::string cheats_url(std::uint64_t title_id);    // .../cheats/<UPPER>.json
 std::string versions_url(std::uint64_t title_id);  // .../versions/<UPPER>.json
 
+// Root index listing every covered title id (.../versions.json, ~3.4MB).
+std::string db_index_url();
+
 // On-SD Atmosphère cheat file path for a resolved build id.
 // build_id is used verbatim (already uppercase hex from the db).
 std::string sd_cheat_path(std::uint64_t title_id, const std::string& build_id);
+
+// On-SD Atmosphère cheats directory for a title (no trailing slash).
+std::string sd_cheats_dir(std::uint64_t title_id);
 
 } // namespace thomaz::core

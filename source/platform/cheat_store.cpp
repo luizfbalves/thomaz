@@ -1,6 +1,7 @@
 #include "platform/cheat_store.hpp"
 
 #include <cstdio>
+#include <dirent.h>
 #include <sys/stat.h>
 
 namespace thomaz {
@@ -47,6 +48,37 @@ bool write_text_file(const std::string& path, const std::string& body) {
     bool ok = (written == body.size());
     ok = (std::fclose(f) == 0) && ok;
     return ok;
+}
+
+std::string index_cache_path() {
+#ifdef __SWITCH__
+    return "/switch/thomaz/cache/versions.json";
+#else
+    return "thomaz-cache/versions.json";
+#endif
+}
+
+bool dir_has_nonempty_txt(const std::string& dir) {
+    DIR* d = ::opendir(dir.c_str());
+    if (!d)
+        return false;
+
+    bool found = false;
+    while (struct dirent* entry = ::readdir(d)) {
+        std::string name = entry->d_name;
+        if (name.size() < 4 || name.compare(name.size() - 4, 4, ".txt") != 0)
+            continue;
+
+        std::string full = dir + "/" + name;
+        struct stat st;
+        if (::stat(full.c_str(), &st) == 0 && S_ISREG(st.st_mode) && st.st_size > 0) {
+            found = true;
+            break;
+        }
+    }
+
+    ::closedir(d);
+    return found;
 }
 
 } // namespace thomaz

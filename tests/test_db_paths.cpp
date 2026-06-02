@@ -25,3 +25,13 @@ TEST_CASE("sd_cheat_path uses lowercase title id and verbatim build id") {
     CHECK(sd_cheat_path(0x0100000000010000ULL, "B424BE150A8E7D78") ==
         "/atmosphere/contents/0100000000010000/cheats/B424BE150A8E7D78.txt");
 }
+
+TEST_CASE("sd_cheats_dir is the lowercase per-title cheats directory") {
+    CHECK(sd_cheats_dir(0x0100000000010000ULL) ==
+        "/atmosphere/contents/0100000000010000/cheats");
+}
+
+TEST_CASE("db_index_url points at the root versions.json") {
+    CHECK(db_index_url() ==
+        "https://raw.githubusercontent.com/HamletDuFromage/switch-cheats-db/master/versions.json");
+}

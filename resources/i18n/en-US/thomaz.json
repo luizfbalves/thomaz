@@ -15,7 +15,9 @@
     "games": {
         "title": "My Games",
         "empty": "No games found — run on a Switch to see your games.",
-        "coming_soon": "Cheats: coming soon"
+        "coming_soon": "Cheats: coming soon",
+        "badge_has_cheats": "Has cheats",
+        "badge_active": "Active"
     },
     "cheats": {
         "title": "Cheats",

@@ -12,4 +12,12 @@ std::optional<std::string> read_text_file(const std::string& path);
 // (e.g. /atmosphere/contents/<tid>/cheats/). Returns false on failure.
 bool write_text_file(const std::string& path, const std::string& body);
 
+// Where the cached switch-cheats-db index (versions.json) lives. Platform-
+// specific: SD on Switch, a working-dir folder on desktop.
+std::string index_cache_path();
+
+// True if `dir` exists and contains at least one non-empty .txt file. Used for
+// the "cheats active" badge (Atmosphère applies any cheat .txt present).
+bool dir_has_nonempty_txt(const std::string& dir);
+
 } // namespace thomaz

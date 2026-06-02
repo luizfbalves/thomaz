@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -23,5 +24,10 @@ std::vector<Cheat> parse_db_cheats(const std::string& cheats_json, const std::st
 
 // Parse versions/<TITLE_ID>.json (keys "latest"/"title" are metadata, not versions).
 VersionMap parse_versions(const std::string& versions_json);
+
+// Parse the root versions.json (a map of <TITLE_ID hex> -> version info) into the
+// set of title_ids the db covers. Used for the "has cheats" badge. Non-hex keys
+// are ignored defensively.
+std::set<std::uint64_t> parse_db_index(const std::string& index_json);
 
 } // namespace thomaz::core

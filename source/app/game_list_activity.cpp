@@ -7,14 +7,49 @@
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
+#include <borealis/core/thread.hpp>
+#include <optional>
+#include <set>
+#include <string>
+
+#include "core/cheat_db.hpp"
+#include "core/db_paths.hpp"
+#include "platform/cheat_store.hpp"
 
 using namespace brls::literals;
 
 namespace thomaz {
 
+namespace {
+
+// A small pill badge (a padded, rounded, colored Box wrapping a Label).
+brls::Box* makeBadge(const std::string& text, NVGcolor bg, NVGcolor fg)
+{
+    auto* box = new brls::Box(brls::Axis::ROW);
+    box->setBackgroundColor(bg);
+    box->setCornerRadius(6.0f);
+    box->setPadding(3.0f, 9.0f, 3.0f, 9.0f);
+    box->setMarginLeft(8.0f);
+    box->setAlignItems(brls::AlignItems::CENTER);
+
+    auto* label = new brls::Label();
+    label->setText(text);
+    label->setFontSize(13.0f);
+    label->setTextColor(fg);
+    box->addView(label);
+    return box;
+}
+
+} // namespace
+
 GameListActivity::GameListActivity(ITitleService* titleService, IHttpClient* http)
     : titleService(titleService), http(http)
 {
+}
+
+GameListActivity::~GameListActivity()
+{
+    *this->alive = false; // stop a still-running index load from touching us
 }
 
 void GameListActivity::onContentAvailable()
@@ -86,6 +121,20 @@ void GameListActivity::onContentAvailable()
         nameLabel->setFontSize(18.0f);
         row->addView(nameLabel);
 
+        // "Has cheats" badge — hidden until the db index loads (see below).
+        brls::Box* hasCheatBadge = makeBadge("thomaz/games/badge_has_cheats"_i18n,
+                                             nvgRGB(0x7C, 0x5C, 0xFF), nvgRGB(0xFF, 0xFF, 0xFF));
+        hasCheatBadge->setVisibility(brls::Visibility::GONE);
+        row->addView(hasCheatBadge);
+        this->hasCheatBadges.emplace_back(title.title_id, hasCheatBadge);
+
+        // "Active" badge — a cheat file is already present on the SD for this game.
+        if (dir_has_nonempty_txt(core::sd_cheats_dir(title.title_id)))
+        {
+            row->addView(makeBadge("thomaz/games/badge_active"_i18n,
+                                   nvgRGB(0x2E, 0x7D, 0x46), nvgRGB(0xFF, 0xFF, 0xFF)));
+        }
+
         // Version (formatted as decimal).
         brls::Label* versionLabel = new brls::Label();
         versionLabel->setWidth(brls::View::AUTO);
@@ -93,6 +142,7 @@ void GameListActivity::onContentAvailable()
         std::string versionStr = "v" + std::to_string(title.version);
         versionLabel->setText(versionStr);
         versionLabel->setFontSize(14.0f);
+        versionLabel->setMarginLeft(12.0f);
         row->addView(versionLabel);
 
         // Tapping opens the cheat detail screen for this game.
@@ -107,6 +157,46 @@ void GameListActivity::onContentAvailable()
 
         listBox->addView(row);
     }
+
+    // Reveal "has cheats" badges once the db index is available.
+    this->loadCheatIndexAsync();
+}
+
+void GameListActivity::loadCheatIndexAsync()
+{
+    if (this->hasCheatBadges.empty())
+        return;
+
+    IHttpClient* client = this->http;
+    auto alive          = this->alive;
+
+    brls::async([this, client, alive]() {
+        // Use the cached index if we have one; otherwise download + cache it.
+        std::string cachePath          = index_cache_path();
+        std::optional<std::string> doc = read_text_file(cachePath);
+        if (!doc)
+        {
+            HttpResponse r = client->get(core::db_index_url());
+            if (r.ok())
+            {
+                write_text_file(cachePath, r.body);
+                doc = r.body;
+            }
+        }
+
+        std::set<std::uint64_t> covered;
+        if (doc)
+            covered = core::parse_db_index(*doc);
+
+        // Back on the UI thread: reveal badges for covered titles.
+        brls::sync([this, alive, covered]() {
+            if (!alive->load())
+                return;
+            for (auto& [titleId, badge] : this->hasCheatBadges)
+                if (badge && covered.count(titleId))
+                    badge->setVisibility(brls::Visibility::VISIBLE);
+        });
+    });
 }
 
 } // namespace thomaz

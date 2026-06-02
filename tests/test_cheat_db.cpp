@@ -47,6 +47,23 @@ TEST_CASE("parse_db_cheats on unknown build id is empty") {
     CHECK(parse_db_cheats(CHEATS_JSON, "DOESNOTEXIST0000").empty());
 }
 
+TEST_CASE("parse_db_index collects title ids from the root versions.json keys") {
+    const char* index = R"({
+      "0100000000010000": { "latest": 393216, "title": "Super Mario Odyssey" },
+      "010000000E5EE000": { "latest": 0, "title": "8-BIT" },
+      "not_a_title_id": { "x": 1 }
+    })";
+    auto ids = parse_db_index(index);
+    CHECK(ids.size() == 2);
+    CHECK(ids.count(0x0100000000010000ULL) == 1);
+    CHECK(ids.count(0x010000000E5EE000ULL) == 1);
+}
+
+TEST_CASE("parse_db_index on garbage is empty") {
+    CHECK(parse_db_index("not json").empty());
+    CHECK(parse_db_index("[]").empty());
+}
+
 TEST_CASE("parse_versions reads version->build_id and metadata") {
     const char* versions = R"({
       "0": "3CA12DFAAF9C82DA",

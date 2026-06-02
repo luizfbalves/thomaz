@@ -26,9 +26,17 @@ std::string versions_url(std::uint64_t title_id) {
     return DB_BASE + "/versions/" + title_id_hex(title_id, true) + ".json";
 }
 
+std::string db_index_url() {
+    return DB_BASE + "/versions.json";
+}
+
 std::string sd_cheat_path(std::uint64_t title_id, const std::string& build_id) {
     return "/atmosphere/contents/" + title_id_hex(title_id, false) +
            "/cheats/" + build_id + ".txt";
+}
+
+std::string sd_cheats_dir(std::uint64_t title_id) {
+    return "/atmosphere/contents/" + title_id_hex(title_id, false) + "/cheats";
 }
 
 } // namespace thomaz::core
