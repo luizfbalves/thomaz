@@ -56,8 +56,19 @@ std::vector<Cheat> parse_txt(const std::string& content) {
     return cheats;
 }
 
-std::string serialize_txt(const std::vector<Cheat>&, const std::set<std::string>&) {
-    return ""; // implemented in Task 3
+std::string serialize_txt(const std::vector<Cheat>& cheats, const std::set<std::string>& enabled) {
+    std::string out;
+    for (const Cheat& c : cheats) {
+        const bool include = c.is_master || enabled.count(c.name) > 0;
+        if (!include) continue;
+        out += c.is_master ? ("{" + c.name + "}\n") : ("[" + c.name + "]\n");
+        for (const std::string& line : c.opcode_lines) {
+            out += line;
+            out += "\n";
+        }
+        out += "\n"; // blank separator after each cheat
+    }
+    return out;
 }
 
 } // namespace thomaz::core

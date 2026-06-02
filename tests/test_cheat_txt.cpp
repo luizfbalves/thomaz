@@ -49,3 +49,49 @@ TEST_CASE("parse_txt on empty input returns no cheats") {
     CHECK(parse_txt("").empty());
     CHECK(parse_txt("\n\n  \n").empty());
 }
+
+#include "core/cheat_txt.hpp"  // already included above; harmless
+
+using thomaz::core::serialize_txt;
+
+TEST_CASE("serialize_txt always includes master and only enabled regulars") {
+    std::vector<Cheat> cheats = {
+        {"Master", true,  {"580F0000 0149D940"}},
+        {"Infinite Health", false, {"01100000 5C3BE7DC 00000006", "20000000"}},
+        {"9999 Coins", false, {"02100000 5C27B318 0000270f"}},
+    };
+    // Only "9999 Coins" enabled; master comes through regardless; "Infinite Health" excluded.
+    std::string out = serialize_txt(cheats, {"9999 Coins"});
+
+    const std::string expected =
+        "{Master}\n"
+        "580F0000 0149D940\n"
+        "\n"
+        "[9999 Coins]\n"
+        "02100000 5C27B318 0000270f\n"
+        "\n";
+    CHECK(out == expected);
+}
+
+TEST_CASE("serialize_txt round-trips through parse_txt") {
+    std::vector<Cheat> cheats = {
+        {"M", true, {"AAAA"}},
+        {"A", false, {"1111", "2222"}},
+    };
+    std::string out = serialize_txt(cheats, {"A"});
+    auto reparsed = parse_txt(out);
+    REQUIRE(reparsed.size() == 2);
+    CHECK(reparsed[0].is_master == true);
+    CHECK(reparsed[0].name == "M");
+    CHECK(reparsed[1].name == "A");
+    CHECK(reparsed[1].opcode_lines == std::vector<std::string>{"1111", "2222"});
+}
+
+TEST_CASE("serialize_txt with nothing enabled still emits the master") {
+    std::vector<Cheat> cheats = {
+        {"Master", true, {"AAAA"}},
+        {"X", false, {"1111"}},
+    };
+    std::string out = serialize_txt(cheats, {});
+    CHECK(out == "{Master}\nAAAA\n\n");
+}
