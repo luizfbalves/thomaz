@@ -80,7 +80,12 @@ void CheatDetailActivity::onContentAvailable()
                 continue; // master codes are always applied; not user-toggleable
 
             auto* cell = new brls::BooleanCell();
-            cell->init(cheat.name, alreadyEnabled.count(cheat.name) > 0, [](bool) {});
+            // Auto-save whenever a toggle flips (no separate save step needed
+            // for touch/mouse users). The X action below stays for controllers.
+            cell->init(cheat.name, alreadyEnabled.count(cheat.name) > 0,
+                       [this](bool) { this->save(); });
+            // Respond to touch (Switch) and mouse (desktop), not just the A button.
+            cell->addGestureRecognizer(new brls::TapGestureRecognizer(cell));
             listBox->addView(cell);
             this->toggles.emplace_back(cheat.name, cell);
         }

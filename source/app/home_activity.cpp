@@ -17,11 +17,14 @@ HomeActivity::HomeActivity(ITitleService* titleService, IHttpClient* http)
 void HomeActivity::onContentAvailable()
 {
     // Register click on the Trapaças card to navigate to the game list.
-    this->getView("trapacasCard")->setFocusable(true);
-    this->getView("trapacasCard")->registerClickAction([this](brls::View* view) {
+    brls::View* card = this->getView("trapacasCard");
+    card->setFocusable(true);
+    card->registerClickAction([this](brls::View* view) {
         brls::Application::pushActivity(new GameListActivity(this->titleService, this->http));
         return true;
     });
+    // Make the card respond to touch (Switch) and mouse (desktop), not just A.
+    card->addGestureRecognizer(new brls::TapGestureRecognizer(card));
 }
 
 } // namespace thomaz

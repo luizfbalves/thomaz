@@ -78,6 +78,8 @@ void GameListActivity::onContentAvailable()
             brls::Application::pushActivity(new CheatDetailActivity(rowTitle, client));
             return true;
         });
+        // Respond to touch (Switch) and mouse (desktop), not just the A button.
+        row->addGestureRecognizer(new brls::TapGestureRecognizer(row));
 
         listBox->addView(row);
     }
