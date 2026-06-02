@@ -40,6 +40,20 @@ add_subdirectory(${BOREALIS_LIBRARY} borealis)
 find_package(Threads REQUIRED)
 list(APPEND APP_PLATFORM_LIB ${CMAKE_THREAD_LIBS_INIT})
 
+# HTTP (libcurl) for downloading cheats from switch-cheats-db.
+if (PLATFORM_SWITCH)
+    # switch-curl + switch-mbedtls + switch-zlib ship in the devkitpro/devkita64
+    # image's switch-portlibs meta-package (no dkp-pacman step needed). Headers
+    # and libs live under $DEVKITPRO/portlibs/switch. Link order matters for
+    # the static GNU linker: curl -> mbedtls -> z.
+    list(APPEND APP_PLATFORM_INCLUDE $ENV{DEVKITPRO}/portlibs/switch/include)
+    link_directories($ENV{DEVKITPRO}/portlibs/switch/lib)
+    list(APPEND APP_PLATFORM_LIB curl mbedtls mbedx509 mbedcrypto z)
+elseif (PLATFORM_DESKTOP)
+    find_package(CURL REQUIRED)
+    list(APPEND APP_PLATFORM_LIB CURL::libcurl)
+endif ()
+
 # Our sources: app entry + pure-logic core. core/*.hpp resolved via -Isource,
 # nlohmann/json via -Ilib/json.
 list(APPEND APP_PLATFORM_INCLUDE

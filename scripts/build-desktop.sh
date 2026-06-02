@@ -3,7 +3,7 @@
 # Build thomaz for desktop (PC) — fast UI iteration without devkitPro or hardware.
 #
 # One-time dependencies (Debian/Ubuntu/WSL):
-#   sudo apt install -y cmake build-essential libgl1-mesa-dev xorg-dev
+#   sudo apt install -y cmake build-essential libgl1-mesa-dev xorg-dev libcurl4-openssl-dev
 #
 # Then just run this script from anywhere:
 #   ./scripts/build-desktop.sh
