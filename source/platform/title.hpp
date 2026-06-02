@@ -11,6 +11,7 @@ struct InstalledTitle {
     std::string name;     // localized display name (from NACP)
     std::string author;   // publisher (from NACP)
     std::uint32_t version = 0; // installed application version (maps to build_id via the db)
+    std::vector<std::uint8_t> icon; // raw JPEG icon bytes from control data (empty if none)
 };
 
 // Lists installed titles. Implemented on Switch by NsTitleService; the

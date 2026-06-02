@@ -72,6 +72,10 @@ std::vector<InstalledTitle> NsTitleService::listInstalled() {
                     t.name   = entry->name;
                     t.author = entry->author;
                 }
+                // The icon (JPEG) follows the nacp in the control data buffer.
+                size_t iconSize = (size_t)controlSize - sizeof(control->nacp);
+                if (iconSize > 0)
+                    t.icon.assign(control->icon, control->icon + iconSize);
             }
             if (t.name.empty())
                 t.name = "Unknown"; // still list the title even without control data

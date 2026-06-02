@@ -52,6 +52,30 @@ void GameListActivity::onContentAvailable()
         row->setPadding(12.0f, 20.0f, 12.0f, 20.0f);
         row->setBackgroundColor(nvgRGB(0x1E, 0x20, 0x27));
         row->setCornerRadius(8.0f);
+        row->setAlignItems(brls::AlignItems::CENTER);
+
+        // Game icon (JPEG from control data) or a placeholder square.
+        if (!title.icon.empty())
+        {
+            brls::Image* icon = new brls::Image();
+            icon->setWidth(48.0f);
+            icon->setHeight(48.0f);
+            icon->setCornerRadius(8.0f);
+            icon->setScalingType(brls::ImageScalingType::FILL);
+            icon->setMarginRight(16.0f);
+            icon->setImageFromMem(title.icon.data(), (int)title.icon.size());
+            row->addView(icon);
+        }
+        else
+        {
+            brls::Box* placeholder = new brls::Box();
+            placeholder->setWidth(48.0f);
+            placeholder->setHeight(48.0f);
+            placeholder->setCornerRadius(8.0f);
+            placeholder->setMarginRight(16.0f);
+            placeholder->setBackgroundColor(nvgRGB(0x2A, 0x2D, 0x36));
+            row->addView(placeholder);
+        }
 
         // Game name (grows).
         brls::Label* nameLabel = new brls::Label();
