@@ -1,7 +1,10 @@
-# Build artifacts (devkitPro)
+# Build artifacts (devkitPro / CMake)
 build/
 build.nx/
+build_switch/
+build_desktop/
 *.nro
+*.nacp
 *.map
 *.nso
 *.nacp
