@@ -1,6 +1,6 @@
 CXX      ?= g++
-CXXFLAGS := -std=c++17 -Wall -Wextra -I../lib/doctest
-SRCS     := test_main.cpp test_smoke.cpp
+CXXFLAGS := -std=c++17 -Wall -Wextra -I../lib/doctest -I../lib/json -I../source
+SRCS     := $(wildcard *.cpp) $(wildcard ../source/core/*.cpp)
 BIN      := run
 
 $(BIN): $(SRCS)
