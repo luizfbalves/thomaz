@@ -1,8 +1,9 @@
 name: build
 
 # Builds thomaz.nro in the cloud (the maintainer's network is Cloudflare-blocked
-# from the devkitPro servers; GitHub runners reach them fine). Built on the
-# xfangfang/borealis fork via CMake. Download the .nro artifact and copy it to
+# from the devkitPro servers; GitHub runners use the prebuilt devkitpro/devkita64
+# image which already bundles libnx + deko3d + cmake, so NO dkp-pacman is needed).
+# Mirrors xfangfang/borealis's own CI. Download the .nro artifact and copy it to
 # the SD card at /switch/thomaz.nro.
 
 on:
@@ -14,26 +15,21 @@ jobs:
   switch:
     name: Nintendo Switch (.nro)
     runs-on: ubuntu-latest
-    container: devkitpro/devkita64:latest
+    container:
+      image: devkitpro/devkita64
     steps:
       - name: Checkout (with submodules)
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install build + Borealis dependencies
-        run: |
-          (command -v cmake >/dev/null 2>&1) || (apt-get update && apt-get install -y cmake)
-          dkp-pacman -Sy --noconfirm
-          dkp-pacman -S --noconfirm switch-glfw switch-mesa switch-glm
-
       - name: Merge Borealis runtime resources into romfs
-        # Fills in Borealis's fonts/material/i18n (brls.json) without clobbering
-        # our own xml/i18n (cp -n = no-clobber).
+        # Fills in Borealis's fonts/material/i18n/shaders without clobbering our
+        # own xml/i18n (cp -n = no-clobber). No network access required.
         run: cp -rn lib/borealis/resources/* resources/
 
-      - name: Configure (Switch)
-        run: cmake -B build_switch -DPLATFORM_SWITCH=ON
+      - name: Configure (Switch, deko3d)
+        run: cmake -B build_switch -DCMAKE_BUILD_TYPE=Release -DPLATFORM_SWITCH=ON -DUSE_DEKO3D=ON
 
       - name: Build thomaz.nro
         run: make -C build_switch thomaz.nro -j$(nproc)
