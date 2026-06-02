@@ -11,5 +11,10 @@
     },
     "common": {
         "coming_soon": "Coming soon"
+    },
+    "games": {
+        "title": "My Games",
+        "empty": "No games found — run on a Switch to see your games.",
+        "coming_soon": "Cheats: coming soon"
     }
 }

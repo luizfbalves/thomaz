@@ -6,14 +6,111 @@
         height="auto"
         grow="1.0"
         axis="column"
-        justifyContent="center"
-        alignItems="center">
+        paddingTop="40"
+        paddingLeft="60"
+        paddingRight="60"
+        paddingBottom="40">
 
+        <!-- Greeting -->
         <brls:Label
             width="auto"
             height="auto"
             text="@i18n/thomaz/home/greeting"
-            fontSize="30" />
+            fontSize="24"
+            marginBottom="32" />
+
+        <!-- Bento grid row -->
+        <brls:Box
+            width="auto"
+            height="auto"
+            axis="row"
+            marginBottom="16">
+
+            <!-- Trapaças card (accent, focusable, navigates to game list) -->
+            <brls:Box
+                id="trapacasCard"
+                width="360"
+                height="180"
+                axis="column"
+                justifyContent="center"
+                alignItems="center"
+                backgroundColor="#7C5CFF"
+                cornerRadius="12"
+                focusable="true"
+                marginRight="16">
+
+                <brls:Label
+                    width="auto"
+                    height="auto"
+                    text="@i18n/thomaz/module/cheats/title"
+                    fontSize="22"
+                    marginBottom="8" />
+
+                <brls:Label
+                    width="auto"
+                    height="auto"
+                    text="@i18n/thomaz/module/cheats/subtitle"
+                    fontSize="14" />
+
+            </brls:Box>
+
+            <!-- Em breve card 1 -->
+            <brls:Box
+                width="180"
+                height="180"
+                axis="column"
+                justifyContent="center"
+                alignItems="center"
+                backgroundColor="#1E2027"
+                cornerRadius="12"
+                marginRight="16">
+
+                <brls:Label
+                    width="auto"
+                    height="auto"
+                    text="@i18n/thomaz/common/coming_soon"
+                    fontSize="16" />
+
+            </brls:Box>
+
+            <!-- Em breve card 2 -->
+            <brls:Box
+                width="180"
+                height="180"
+                axis="column"
+                justifyContent="center"
+                alignItems="center"
+                backgroundColor="#1E2027"
+                cornerRadius="12"
+                marginRight="16">
+
+                <brls:Label
+                    width="auto"
+                    height="auto"
+                    text="@i18n/thomaz/common/coming_soon"
+                    fontSize="16" />
+
+            </brls:Box>
+
+            <!-- Em breve card 3 -->
+            <brls:Box
+                width="180"
+                height="180"
+                axis="column"
+                justifyContent="center"
+                alignItems="center"
+                backgroundColor="#1E2027"
+                cornerRadius="12">
+
+                <brls:Label
+                    width="auto"
+                    height="auto"
+                    text="@i18n/thomaz/common/coming_soon"
+                    fontSize="16" />
+
+            </brls:Box>
+
+        </brls:Box>
 
     </brls:Box>
 

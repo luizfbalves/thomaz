@@ -1,18 +1,19 @@
 /*
     thomaz — Nintendo Switch homebrew cheat manager hub.
-    Entry point: initializes Borealis and pushes the home activity.
+    Entry point: initializes Borealis, registers the theme, selects the
+    title service for the platform, and pushes the home activity.
 */
 
 #ifdef __SWITCH__
 #include <switch.h>
+#include "platform/title_service_switch.hpp"
+#else
+#include "platform/title_service_fake.hpp"
 #endif
 
 #include <borealis.hpp>
-
-#include "home_activity.hpp"
-#ifdef __SWITCH__
-#include "platform/title_service_switch.hpp"
-#endif
+#include "app/theme.hpp"
+#include "app/home_activity.hpp"
 
 using namespace brls::literals; // for ""_i18n
 
@@ -29,33 +30,34 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-#ifdef __SWITCH__
-    // Phase 3 sanity signal (replaced by the bento/list UI in Phase 4):
-    // list installed games and log how many were found.
-    {
-        thomaz::NsTitleService titleService;
-        if (titleService.init())
-        {
-            auto titles = titleService.listInstalled();
-            brls::Logger::info("thomaz: found {} installed titles", titles.size());
-            titleService.exit();
-        }
-        else
-        {
-            brls::Logger::error("thomaz: failed to initialize ns title service");
-        }
-    }
-#endif
+    // Register theme colors and force dark mode.
+    thomaz::registerThomazTheme();
 
     brls::Application::createWindow("thomaz/title"_i18n);
+
+    // Select the title service for the current platform.
+#ifdef __SWITCH__
+    auto titleService = std::make_unique<thomaz::NsTitleService>();
+    if (!titleService->init())
+    {
+        brls::Logger::error("thomaz: failed to initialize ns title service");
+        return EXIT_FAILURE;
+    }
+#else
+    auto titleService = std::make_unique<thomaz::FakeTitleService>();
+#endif
 
     // Quit the app with the + (START) button from any activity.
     brls::Application::setGlobalQuit(true);
 
-    brls::Application::pushActivity(new HomeActivity());
+    brls::Application::pushActivity(new thomaz::HomeActivity(titleService.get()));
 
     while (brls::Application::mainLoop())
         ;
+
+#ifdef __SWITCH__
+    titleService->exit();
+#endif
 
     return EXIT_SUCCESS;
 }
