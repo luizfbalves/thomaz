@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-02
 **Status:** Complete
-**Verdict:** NO-GO on version→build_id via the `ns` version integer alone — the db *does* expose the mapping, but the mapping table is keyed by the raw `u32` version value returned by `nsListApplicationContentMetaStatus`, not by a human-readable version string. This is actually **good news**: the mapping is reliable and machine-usable directly. Details below.
+**Verdict:** **NUANCED GO.** The db exposes the mapping directly: `versions/<TITLE_ID>.json` is keyed by the raw `u32` version value returned by `nsListApplicationContentMetaStatus` (no conversion needed) and maps to a `build_id`. Reliable for titles with cheat coverage. Two fallbacks are required: (a) when the version key is absent, read the build_id from the local NSO; (b) when the mapped build_id has **no cheats yet** (db coverage lags new game versions), degrade gracefully to the most recent build_id that *does* have cheats. See §3.4. Details below.
 
 ---
 
@@ -245,8 +245,8 @@ The `versions/<TITLE_ID>.json` files use the **stringified `u32` version integer
   ```
   https://raw.githubusercontent.com/HamletDuFromage/switch-cheats-db/master/cheats/01006A800016E000.json
   ```
-  That JSON contains key `3EAE0063B12FD81E` with the actual cheat entries.
-- On SD card: `/atmosphere/contents/01006a800016e000/cheats/3EAE0063B12FD81E.txt`
+  ⚠️ **Verified caveat (coverage lag).** This title's *latest* build_id `3EAE0063B12FD81E` is **not** present in the cheats file — `cheats/01006A800016E000.json` contains only older build_ids (most recent with cheats observed: `B9B166DF1DB90BAF` = version `1769472`). So the version→build_id lookup *succeeds*, but **no cheats exist for that exact build_id**. This is the real edge case Phase 2 must handle gracefully (see §3.4 fallback b). The Super Mario Odyssey trace below is fully end-to-end — cheats exist for its latest build_id.
+- On SD card: `/atmosphere/contents/01006a800016e000/cheats/<build_id>.txt`
 
 **Second trace — Super Mario Odyssey:**
 - Title ID: `0100000000010000`
@@ -270,11 +270,12 @@ The version mapping is populated by `process_versions.py`, which pulls from Nint
 
 The strategy of using `ns` version data + the switch-cheats-db `versions/` index is **viable and reliable** for the common case. The mapping is a direct `u32 → build_id_string` lookup with no transformation required. For titles where the version file exists, the approach works without touching the NSO binary at all.
 
-However, the following fallback must be implemented in Phase 2:
+However, the following fallbacks must be implemented in Phase 2:
 
-- If `versions/<TITLE_ID>.json` does not exist OR does not contain the specific version key, read the build_id locally from the installed NSO via the `ro` service (or by reading the NSO header from the installed content path). This "Plan B" is only triggered when the db mapping is absent, not as the primary path.
+- **(a) Version key absent.** If `versions/<TITLE_ID>.json` does not exist OR does not contain the specific version key, read the build_id locally from the installed NSO via the `ro` service (or by reading the NSO header from the installed content path). Triggered only when the db mapping is absent.
+- **(b) build_id mapped but no cheats (coverage lag).** The version map may resolve to a build_id (often the `latest`) for which the cheats file has **no entries yet** — verified live for Super Smash Bros. Ultimate (§3.2). In this case, degrade gracefully: pick the most recent build_id present in `cheats/<TITLE_ID>.json` and surface it to the user clearly (e.g. "cheats available for an older version"). Showing older cheats beats showing nothing; never write a cheat file for a build_id that has no cheats.
 
-The risk originally identified ("go/no-go") is resolved: **GO** on the version-index strategy as primary, with a well-defined Plan B fallback.
+The risk originally identified ("go/no-go") is resolved: **GO** on the version-index strategy as primary, with two well-defined fallbacks.
 
 ---
 
@@ -323,10 +324,15 @@ https://raw.githubusercontent.com/HamletDuFromage/switch-cheats-db/master/cheats
 ### Version→Build ID Lookup Algorithm
 ```python
 # Pseudocode
+cheats = fetch_json(f"{BASE_URL}/cheats/{title_id.upper()}.json")   # keys = build_ids with cheats
 version_data = fetch_json(f"{BASE_URL}/versions/{title_id.upper()}.json")
 build_id = version_data.get(str(version_u32))   # version_u32 is NsApplicationContentMetaStatus.version
 if build_id is None:
-    build_id = read_build_id_from_local_nso(title_id)  # Plan B fallback
+    build_id = read_build_id_from_local_nso(title_id)        # fallback (a): version key absent
+if build_id not in cheats:
+    build_id = most_recent_build_id_with_cheats(cheats)      # fallback (b): coverage lag, degrade gracefully
+    # surface to user: "cheats available for an older version"
+# never write a cheat file for a build_id that has no cheats
 ```
 
 ### Cheat JSON Structure (for the parser)
