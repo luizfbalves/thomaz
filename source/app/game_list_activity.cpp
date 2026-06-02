@@ -4,6 +4,7 @@
 
 #include "app/game_list_activity.hpp"
 #include "app/cheat_detail_activity.hpp"
+#include "app/clear_cheats_activity.hpp"
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
@@ -75,6 +76,32 @@ void GameListActivity::onContentAvailable()
 
     if (!listBox)
         return;
+
+    // Entry to the "clear cheats" screen.
+    {
+        ITitleService* svc = this->titleService;
+        brls::Box* clearEntry = new brls::Box(brls::Axis::ROW);
+        clearEntry->setHeight(48.0f);
+        clearEntry->setFocusable(true);
+        clearEntry->setMarginBottom(12.0f);
+        clearEntry->setPadding(8.0f, 16.0f, 8.0f, 16.0f);
+        clearEntry->setCornerRadius(8.0f);
+        clearEntry->setAlignItems(brls::AlignItems::CENTER);
+        clearEntry->setBackgroundColor(nvgRGB(0x2A, 0x2D, 0x36));
+
+        brls::Label* clearLabel = new brls::Label();
+        clearLabel->setText("thomaz/clear/entry"_i18n);
+        clearLabel->setFontSize(16.0f);
+        clearLabel->setGrow(1.0f);
+        clearEntry->addView(clearLabel);
+
+        clearEntry->registerClickAction([svc](brls::View*) {
+            brls::Application::pushActivity(new ClearCheatsActivity(svc));
+            return true;
+        });
+        clearEntry->addGestureRecognizer(new brls::TapGestureRecognizer(clearEntry));
+        listBox->addView(clearEntry);
+    }
 
     for (const auto& title : titles)
     {

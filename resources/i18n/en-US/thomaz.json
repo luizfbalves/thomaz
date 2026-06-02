@@ -19,6 +19,19 @@
         "badge_has_cheats": "Has cheats",
         "badge_active": "Active"
     },
+    "clear": {
+        "entry": "🧹 Clear cheats",
+        "title": "Clear cheats",
+        "empty": "No game has active cheats to clear.",
+        "select_all": "Select / deselect all",
+        "clear_selected": "Clear selected",
+        "none_selected": "Select at least one game.",
+        "confirm_pre": "Clear cheats from ",
+        "confirm_post": " game(s)? The cheat files will be removed from the SD.",
+        "confirm_button": "Clear",
+        "cancel": "Cancel",
+        "done": "Cheats removed."
+    },
     "cheats": {
         "title": "Cheats",
         "loading": "Fetching cheats…",

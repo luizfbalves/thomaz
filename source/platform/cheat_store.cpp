@@ -81,4 +81,24 @@ bool dir_has_nonempty_txt(const std::string& dir) {
     return found;
 }
 
+int clear_cheat_files(const std::string& dir) {
+    DIR* d = ::opendir(dir.c_str());
+    if (!d)
+        return 0;
+
+    int removed = 0;
+    while (struct dirent* entry = ::readdir(d)) {
+        std::string name = entry->d_name;
+        if (name.size() < 4 || name.compare(name.size() - 4, 4, ".txt") != 0)
+            continue; // only ever delete cheat .txt files
+
+        std::string full = dir + "/" + name;
+        if (::remove(full.c_str()) == 0)
+            ++removed;
+    }
+
+    ::closedir(d);
+    return removed;
+}
+
 } // namespace thomaz

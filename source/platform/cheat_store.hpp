@@ -20,4 +20,8 @@ std::string index_cache_path();
 // the "cheats active" badge (Atmosphère applies any cheat .txt present).
 bool dir_has_nonempty_txt(const std::string& dir);
 
+// Delete every .txt file directly in `dir` (the title's cheats folder), leaving
+// the folder itself. Returns the number of files removed. Only touches *.txt.
+int clear_cheat_files(const std::string& dir);
+
 } // namespace thomaz

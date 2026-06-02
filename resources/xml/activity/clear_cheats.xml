@@ -1,0 +1,39 @@
+<brls:AppletFrame id="clearFrame"
+    title="@i18n/thomaz/clear/title"
+    iconInterpolation="linear">
+
+    <brls:ScrollingFrame
+        width="auto"
+        height="auto"
+        grow="1.0">
+
+        <brls:Box
+            width="auto"
+            height="auto"
+            axis="column"
+            paddingTop="20"
+            paddingLeft="60"
+            paddingRight="60"
+            paddingBottom="20">
+
+            <!-- Empty state: no game has active cheats to clear -->
+            <brls:Label
+                id="emptyLabel"
+                width="auto"
+                height="auto"
+                text="@i18n/thomaz/clear/empty"
+                fontSize="18"
+                horizontalAlign="center" />
+
+            <!-- Select-all + per-game checkboxes + clear action (built in code) -->
+            <brls:Box
+                id="clearListBox"
+                width="auto"
+                height="auto"
+                axis="column" />
+
+        </brls:Box>
+
+    </brls:ScrollingFrame>
+
+</brls:AppletFrame>
