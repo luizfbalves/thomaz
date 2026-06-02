@@ -33,3 +33,4 @@ tests/run
 !/resources/xml/activity/
 !/resources/xml/activity/home.xml
 !/resources/xml/activity/game_list.xml
+!/resources/xml/activity/cheat_detail.xml

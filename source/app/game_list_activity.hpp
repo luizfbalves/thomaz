@@ -7,6 +7,7 @@
 #pragma once
 
 #include <borealis.hpp>
+#include "platform/http_client.hpp"
 #include "platform/title.hpp"
 
 namespace thomaz {
@@ -14,7 +15,7 @@ namespace thomaz {
 class GameListActivity : public brls::Activity
 {
   public:
-    explicit GameListActivity(ITitleService* titleService);
+    GameListActivity(ITitleService* titleService, IHttpClient* http);
 
     CONTENT_FROM_XML_RES("activity/game_list.xml");
 
@@ -22,6 +23,7 @@ class GameListActivity : public brls::Activity
 
   private:
     ITitleService* titleService;
+    IHttpClient* http;
 };
 
 } // namespace thomaz

@@ -14,6 +14,7 @@
 #include <borealis.hpp>
 #include "app/theme.hpp"
 #include "app/home_activity.hpp"
+#include "platform/http_client_curl.hpp"
 
 using namespace brls::literals; // for ""_i18n
 
@@ -47,10 +48,13 @@ int main(int argc, char* argv[])
     auto titleService = std::make_unique<thomaz::FakeTitleService>();
 #endif
 
+    // HTTP client for downloading cheats (libcurl; libnx sockets on Switch).
+    auto httpClient = std::make_unique<thomaz::CurlHttpClient>();
+
     // Quit the app with the + (START) button from any activity.
     brls::Application::setGlobalQuit(true);
 
-    brls::Application::pushActivity(new thomaz::HomeActivity(titleService.get()));
+    brls::Application::pushActivity(new thomaz::HomeActivity(titleService.get(), httpClient.get()));
 
     while (brls::Application::mainLoop())
         ;

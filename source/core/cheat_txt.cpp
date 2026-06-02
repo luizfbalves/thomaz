@@ -71,4 +71,13 @@ std::string serialize_txt(const std::vector<Cheat>& cheats, const std::set<std::
     return out;
 }
 
+std::set<std::string> enabled_cheat_names(const std::string& content) {
+    std::set<std::string> names;
+    for (const Cheat& c : parse_txt(content)) {
+        if (!c.is_master)
+            names.insert(c.name);
+    }
+    return names;
+}
+
 } // namespace thomaz::core

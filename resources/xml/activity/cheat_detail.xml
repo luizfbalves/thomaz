@@ -1,0 +1,47 @@
+<brls:AppletFrame id="cheatFrame"
+    title="@i18n/thomaz/cheats/title"
+    iconInterpolation="linear">
+
+    <brls:ScrollingFrame
+        width="auto"
+        height="auto"
+        grow="1.0">
+
+        <brls:Box
+            width="auto"
+            height="auto"
+            axis="column"
+            paddingTop="20"
+            paddingLeft="60"
+            paddingRight="60"
+            paddingBottom="20">
+
+            <!-- Game name (set programmatically) -->
+            <brls:Label
+                id="gameTitle"
+                width="auto"
+                height="auto"
+                fontSize="24"
+                marginBottom="6" />
+
+            <!-- Loading / fallback / empty / error status (set programmatically) -->
+            <brls:Label
+                id="statusLabel"
+                width="auto"
+                height="auto"
+                text="@i18n/thomaz/cheats/loading"
+                fontSize="16"
+                marginBottom="14" />
+
+            <!-- Cheat toggles inserted by CheatDetailActivity -->
+            <brls:Box
+                id="cheatListBox"
+                width="auto"
+                height="auto"
+                axis="column" />
+
+        </brls:Box>
+
+    </brls:ScrollingFrame>
+
+</brls:AppletFrame>

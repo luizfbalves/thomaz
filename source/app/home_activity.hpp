@@ -6,6 +6,7 @@
 #pragma once
 
 #include <borealis.hpp>
+#include "platform/http_client.hpp"
 #include "platform/title.hpp"
 
 namespace thomaz {
@@ -13,7 +14,7 @@ namespace thomaz {
 class HomeActivity : public brls::Activity
 {
   public:
-    HomeActivity(ITitleService* titleService);
+    HomeActivity(ITitleService* titleService, IHttpClient* http);
 
     CONTENT_FROM_XML_RES("activity/home.xml");
 
@@ -21,6 +22,7 @@ class HomeActivity : public brls::Activity
 
   private:
     ITitleService* titleService;
+    IHttpClient* http;
 };
 
 } // namespace thomaz

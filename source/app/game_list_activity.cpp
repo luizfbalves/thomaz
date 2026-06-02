@@ -3,6 +3,7 @@
 */
 
 #include "app/game_list_activity.hpp"
+#include "app/cheat_detail_activity.hpp"
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
@@ -11,8 +12,8 @@ using namespace brls::literals;
 
 namespace thomaz {
 
-GameListActivity::GameListActivity(ITitleService* titleService)
-    : titleService(titleService)
+GameListActivity::GameListActivity(ITitleService* titleService, IHttpClient* http)
+    : titleService(titleService), http(http)
 {
 }
 
@@ -70,9 +71,11 @@ void GameListActivity::onContentAvailable()
         versionLabel->setFontSize(14.0f);
         row->addView(versionLabel);
 
-        // Tapping shows a "coming soon" toast.
-        row->registerClickAction([](brls::View* view) {
-            brls::Application::notify("thomaz/games/coming_soon"_i18n);
+        // Tapping opens the cheat detail screen for this game.
+        InstalledTitle rowTitle = title;
+        IHttpClient* client      = this->http;
+        row->registerClickAction([rowTitle, client](brls::View* view) {
+            brls::Application::pushActivity(new CheatDetailActivity(rowTitle, client));
             return true;
         });
 

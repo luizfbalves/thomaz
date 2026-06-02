@@ -17,4 +17,9 @@ std::vector<Cheat> parse_txt(const std::string& content);
 // Each cheat is written as: header line, then its opcode lines, then one blank separator line.
 std::string serialize_txt(const std::vector<Cheat>& cheats, const std::set<std::string>& enabled);
 
+// Names of the regular (non-master) cheats present in an existing cheat .txt body.
+// Used to pre-check toggles from a previously-saved file. Master cheats are
+// always applied, so they are excluded from this "user-enabled" set.
+std::set<std::string> enabled_cheat_names(const std::string& content);
+
 } // namespace thomaz::core

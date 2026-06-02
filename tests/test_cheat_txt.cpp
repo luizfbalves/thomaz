@@ -3,6 +3,7 @@
 
 using thomaz::core::parse_txt;
 using thomaz::core::Cheat;
+using thomaz::core::enabled_cheat_names;
 
 TEST_CASE("parse_txt splits regular and master cheats") {
     // Real shape from Super Mario Odyssey (spike example).
@@ -94,4 +95,18 @@ TEST_CASE("serialize_txt with nothing enabled still emits the master") {
     };
     std::string out = serialize_txt(cheats, {});
     CHECK(out == "{Master}\nAAAA\n\n");
+}
+
+TEST_CASE("enabled_cheat_names reads back regular cheats, excluding masters") {
+    // A previously-saved file: a master + two enabled regular cheats.
+    std::string saved = "{Master}\nAAAA\n\n[Infinite Health]\n1111\n\n[Max Coins]\n2222\n\n";
+    auto names = enabled_cheat_names(saved);
+    CHECK(names.size() == 2);
+    CHECK(names.count("Infinite Health") == 1);
+    CHECK(names.count("Max Coins") == 1);
+    CHECK(names.count("Master") == 0); // masters are always-applied, not user toggles
+}
+
+TEST_CASE("enabled_cheat_names of an empty/absent file is empty") {
+    CHECK(enabled_cheat_names("").empty());
 }

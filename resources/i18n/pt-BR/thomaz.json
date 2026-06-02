@@ -16,5 +16,15 @@
         "title": "Meus Jogos",
         "empty": "Nenhum jogo encontrado — rode no Switch para ver seus jogos.",
         "coming_soon": "Cheats: em breve"
+    },
+    "cheats": {
+        "title": "Trapaças",
+        "loading": "Buscando trapaças…",
+        "none": "Nenhuma trapaça disponível para este jogo.",
+        "error_network": "Falha ao baixar — verifique a conexão e tente de novo.",
+        "fallback": "Sem trapaças para esta versão; usando as da versão anterior.",
+        "save": "Salvar e aplicar",
+        "saved": "Trapaças salvas — aplicam no próximo boot do jogo.",
+        "save_failed": "Não foi possível salvar na SD."
     }
 }

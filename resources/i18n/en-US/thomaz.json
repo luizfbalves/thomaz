@@ -16,5 +16,15 @@
         "title": "My Games",
         "empty": "No games found — run on a Switch to see your games.",
         "coming_soon": "Cheats: coming soon"
+    },
+    "cheats": {
+        "title": "Cheats",
+        "loading": "Fetching cheats…",
+        "none": "No cheats available for this game.",
+        "error_network": "Download failed — check your connection and try again.",
+        "fallback": "No cheats for this version; using the previous version's.",
+        "save": "Save and apply",
+        "saved": "Cheats saved — applied on the game's next boot.",
+        "save_failed": "Couldn't write to the SD card."
     }
 }
