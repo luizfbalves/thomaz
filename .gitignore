@@ -1,0 +1,13 @@
+# Build artifacts (devkitPro)
+build/
+*.nro
+*.nso
+*.nacp
+*.elf
+*.nro.json
+
+# Local editor / tooling
+.claude/settings.local.json
+
+# OS
+.DS_Store
