@@ -15,7 +15,10 @@ using namespace brls::literals; // for ""_i18n
 
 int main(int argc, char* argv[])
 {
-    brls::Logger::setLogLevel(brls::LogLevel::INFO);
+    brls::Logger::setLogLevel(brls::LogLevel::LOG_INFO);
+
+    // Pick the UI language from the console's system language (pt-BR / en-US).
+    brls::Platform::APP_LOCALE_DEFAULT = brls::LOCALE_AUTO;
 
     if (!brls::Application::init())
     {
