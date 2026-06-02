@@ -1,0 +1,15 @@
+{
+    "title": "thomaz",
+    "home": {
+        "greeting": "What are we doing today?"
+    },
+    "module": {
+        "cheats": {
+            "title": "Cheats",
+            "subtitle": "Manage your games' cheats"
+        }
+    },
+    "common": {
+        "coming_soon": "Coming soon"
+    }
+}

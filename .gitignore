@@ -1,6 +1,8 @@
 # Build artifacts (devkitPro)
 build/
+build.nx/
 *.nro
+*.map
 *.nso
 *.nacp
 *.elf

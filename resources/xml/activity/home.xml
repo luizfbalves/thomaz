@@ -1,0 +1,20 @@
+<brls:AppletFrame title="@i18n/thomaz/title"
+    iconInterpolation="linear">
+
+    <brls:Box
+        width="auto"
+        height="auto"
+        grow="1.0"
+        axis="column"
+        justifyContent="center"
+        alignItems="center">
+
+        <brls:Label
+            width="auto"
+            height="auto"
+            text="@i18n/thomaz/home/greeting"
+            fontSize="30" />
+
+    </brls:Box>
+
+</brls:AppletFrame>
