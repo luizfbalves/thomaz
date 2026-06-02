@@ -20,9 +20,10 @@
         "badge_active": "Active"
     },
     "clear": {
-        "entry": "🧹 Clear cheats",
+        "entry": "Clear cheats",
         "title": "Clear cheats",
-        "empty": "No game has active cheats to clear.",
+        "empty": "No games found.",
+        "active_suffix": "  • active",
         "select_all": "Select / deselect all",
         "clear_selected": "Clear selected",
         "none_selected": "Select at least one game.",

@@ -20,9 +20,10 @@
         "badge_active": "Ativado"
     },
     "clear": {
-        "entry": "🧹 Limpar trapaças",
+        "entry": "Limpar trapaças",
         "title": "Limpar trapaças",
-        "empty": "Nenhum jogo com trapaças ativas para limpar.",
+        "empty": "Nenhum jogo encontrado.",
+        "active_suffix": "  • ativo",
         "select_all": "Marcar / desmarcar todos",
         "clear_selected": "Limpar selecionados",
         "none_selected": "Selecione ao menos um jogo.",

@@ -25,13 +25,11 @@ void ClearCheatsActivity::onContentAvailable()
     auto* listBox    = (brls::Box*)this->getView("clearListBox");
     auto* emptyLabel = (brls::Label*)this->getView("emptyLabel");
 
-    // Only games that actually have cheat files on the SD are clearable.
-    std::vector<InstalledTitle> clearable;
-    for (auto& t : this->titleService->listInstalled())
-        if (dir_has_nonempty_txt(core::sd_cheats_dir(t.title_id)))
-            clearable.push_back(std::move(t));
+    // List every installed game so the user can pick which to clear. Games that
+    // currently have cheat files get an "active" marker.
+    std::vector<InstalledTitle> titles = this->titleService->listInstalled();
 
-    if (clearable.empty())
+    if (titles.empty())
     {
         if (emptyLabel)
             emptyLabel->setVisibility(brls::Visibility::VISIBLE);
@@ -53,11 +51,16 @@ void ClearCheatsActivity::onContentAvailable()
     selectAll->addGestureRecognizer(new brls::TapGestureRecognizer(selectAll));
     listBox->addView(selectAll);
 
-    // One checkbox per clearable game.
-    for (const auto& title : clearable)
+    // One checkbox per game; mark the ones that currently have cheat files.
+    for (const auto& title : titles)
     {
+        bool active = dir_has_nonempty_txt(core::sd_cheats_dir(title.title_id));
+        std::string label = title.name;
+        if (active)
+            label += "thomaz/clear/active_suffix"_i18n;
+
         auto* cell = new brls::BooleanCell();
-        cell->init(title.name, false, [](bool) {});
+        cell->init(label, false, [](bool) {});
         cell->addGestureRecognizer(new brls::TapGestureRecognizer(cell));
         listBox->addView(cell);
         this->selections.emplace_back(title.title_id, cell);
