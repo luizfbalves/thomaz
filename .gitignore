@@ -17,3 +17,19 @@ build_desktop/
 # OS
 .DS_Store
 tests/run
+
+# Resources: Borealis's runtime resources (fonts, material, shaders, demo
+# strings/xml) are merged in from lib/borealis/resources at build time
+# (CI + scripts/build-desktop.sh). Track ONLY our authored files.
+/resources/**
+!/resources/i18n/
+!/resources/i18n/en-US/
+!/resources/i18n/pt-BR/
+!/resources/i18n/en-US/thomaz.json
+!/resources/i18n/pt-BR/thomaz.json
+!/resources/img/
+!/resources/img/icon.jpg
+!/resources/xml/
+!/resources/xml/activity/
+!/resources/xml/activity/home.xml
+!/resources/xml/activity/game_list.xml

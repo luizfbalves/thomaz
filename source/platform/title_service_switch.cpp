@@ -1,5 +1,9 @@
 #include "platform/title_service_switch.hpp"
 
+// Switch-only implementation. CMake globs every source file, so on desktop
+// builds this translation unit must compile to nothing (no libnx there).
+#ifdef __SWITCH__
+
 #include <switch.h>
 #include <cstring>
 
@@ -85,3 +89,5 @@ std::vector<InstalledTitle> NsTitleService::listInstalled() {
 }
 
 } // namespace thomaz
+
+#endif // __SWITCH__
