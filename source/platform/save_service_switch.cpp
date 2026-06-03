@@ -115,7 +115,9 @@ bool read_tree(const std::string& src, const std::string& prefix,
             size_t n;
             while ((n = std::fread(buf, 1, sizeof(buf), in)) > 0)
                 bytes.insert(bytes.end(), buf, buf + n);
+            bool readErr = std::ferror(in) != 0;
             std::fclose(in);
+            if (readErr) { ok = false; break; }
             pkg.files.push_back({ rel, std::move(bytes) });
         }
     }
@@ -275,7 +277,8 @@ std::vector<std::uint8_t> NsSaveService::packageActiveSave(std::uint64_t title_i
                                                            std::string* outError) {
     accountInitialize(AccountServiceType_System);
     core::SavePackage pkg;
-    bool any = false;
+    bool any        = false;
+    bool readFailed = false;
     for (auto& p : all_profiles()) {
         AccountUid uid;
         std::sscanf(p.uid_hex.c_str(), "%016lx%016lx",
@@ -283,11 +286,19 @@ std::vector<std::uint8_t> NsSaveService::packageActiveSave(std::uint64_t title_i
         if (R_FAILED(fsdevMountSaveData(kMount, title_id, uid)))
             continue; // no save for this profile
         std::string mountRoot = std::string(kMount) + ":/";
-        if (read_tree(mountRoot, p.uid_hex, pkg))
-            any = true;
+        core::SavePackage tmp;
+        bool ok = read_tree(mountRoot, p.uid_hex, tmp);
         fsdevUnmountDevice(kMount);
+        if (!ok) { readFailed = true; break; } // never upload a partially-read save
+        for (auto& f : tmp.files)
+            pkg.files.push_back(std::move(f));
+        any = true;
     }
     accountExit();
+    if (readFailed) {
+        if (outError) *outError = "failed to read save";
+        return {};
+    }
     if (!any) {
         if (outError) *outError = "no save data";
         return {};
