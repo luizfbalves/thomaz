@@ -32,7 +32,7 @@ class SaveDetailActivity : public brls::Activity
     void doBackup();
     void doRestore(const core::BackupEntry& entry);
 
-    void doUpload();        // implemented in Task 12 (stub for now)
+    void doUpload();        // cloud upload flow (see pushAtRevision)
     void pushAtRevision(int revision);
     void doDownload();      // implemented in Task 13 (stub for now)
     void refreshCloudStatus();

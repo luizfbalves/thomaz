@@ -203,15 +203,14 @@ void SaveDetailActivity::doUpload() {
             core::PushPlan plan = core::plan_push(sit, s.revision);
             if (plan.isConflict) {
                 this->cloudBusy = false; // wait on the user's choice
-                auto alive2 = this->alive;
                 int rev = plan.revision;
                 brls::Dialog* dlg = new brls::Dialog("thomaz/saves/cloud_conflict_body"_i18n);
-                dlg->addButton("thomaz/saves/cloud_send_mine"_i18n, [this, alive2, rev]() {
-                    if (!alive2->load()) return;
+                dlg->addButton("thomaz/saves/cloud_send_mine"_i18n, [this, alive, rev]() {
+                    if (!alive->load()) return;
                     this->pushAtRevision(rev);
                 });
-                dlg->addButton("thomaz/saves/cloud_keep_cloud"_i18n, [this, alive2]() {
-                    if (!alive2->load()) return;
+                dlg->addButton("thomaz/saves/cloud_keep_cloud"_i18n, [this, alive]() {
+                    if (!alive->load()) return;
                     this->doDownload();
                 });
                 dlg->open();
@@ -258,12 +257,13 @@ void SaveDetailActivity::pushAtRevision(int revision) {
                 return;
             }
             if (r.conflict) {
-                this->doUpload(); // lost a race — re-run the decision (will re-prompt)
+                this->doUpload(); // lost a race — re-fetches status; may re-prompt if still behind
                 return;
             }
+            auto errText = this->cloudErrorText(r.error);
             if (r.error == kCloudAuthExpired) this->showCloudLoggedOut();
-            this->setCloudStatusText(this->cloudErrorText(r.error));
-            brls::Application::notify(this->cloudErrorText(r.error));
+            this->setCloudStatusText(errText);
+            brls::Application::notify(errText);
         });
     });
 }
