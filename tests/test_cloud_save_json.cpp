@@ -42,6 +42,11 @@ TEST_CASE("parse_slot_data: meta plus decoded blob") {
     CHECK(blob == "hi");
 }
 
+TEST_CASE("parse_slot_data: invalid base64 in data is rejected") {
+    const char* body = R"({"slot":{"titleId":"01","label":"x","revision":1,"updatedAt":1,"data":"!!!!"}})";
+    CHECK_FALSE(parse_slot_data(body, 200).has_value());
+}
+
 TEST_CASE("parse_push_revision reads the new revision") {
     auto r = parse_push_revision(R"({"ok":true,"slot":{"revision":7}})");
     REQUIRE(r.has_value());
