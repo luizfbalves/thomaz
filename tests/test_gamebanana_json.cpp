@@ -78,3 +78,37 @@ TEST_CASE("parse_mod_files on malformed json fails cleanly") {
     CHECK_FALSE(r.ok);
     CHECK(r.files.empty());
 }
+
+TEST_CASE("parse_search_page skips a record with a wrong-typed field, keeps good ones") {
+    const char* MIXED = R"({
+      "_aMetadata": { "_nRecordCount": 2, "_nPerpage": 15, "_bIsComplete": true },
+      "_aRecords": [
+        { "_idRow": 1, "_sName": "Good", "_bHasFiles": true },
+        { "_idRow": "not-a-number", "_sName": "Bad", "_nLikeCount": "lots" }
+      ]
+    })";
+    SearchPage p = parse_search_page(MIXED);
+    REQUIRE(p.records.size() == 1);      // the bad record is skipped, no throw
+    CHECK(p.records[0].name == "Good");
+}
+
+TEST_CASE("parse_search_page survives wrong-typed metadata fields") {
+    const char* BADMETA = R"({
+      "_aMetadata": { "_nRecordCount": "158197", "_bIsComplete": 1 },
+      "_aRecords": []
+    })";
+    SearchPage p = parse_search_page(BADMETA); // must not throw
+    CHECK(p.records.empty());
+    CHECK(p.total == 0);                  // fell back to default
+}
+
+TEST_CASE("parse_mod_files skips a file with a wrong-typed field") {
+    const char* MIXED = R"({ "_aFiles": [
+      { "_idRow": 1, "_sFile": "ok.zip", "_sDownloadUrl": "u" },
+      { "_idRow": 2, "_nFilesize": "huge" }
+    ] })";
+    ModFilesResult r = parse_mod_files(MIXED);
+    REQUIRE(r.ok);
+    REQUIRE(r.files.size() == 1);         // bad file skipped, no throw
+    CHECK(r.files[0].filename == "ok.zip");
+}
