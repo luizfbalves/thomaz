@@ -99,6 +99,21 @@ No desktop os jogos são exemplos fictícios (FakeTitleService), úteis para val
 make -C tests test
 ```
 
+### Backend local (feed / auth)
+
+A API HTTP (Fastify + PostgreSQL) fica em [`api/`](api/). Requer Docker para o banco:
+
+```bash
+cd api
+docker compose up -d
+cp .env.example .env
+npm install
+npx prisma migrate deploy
+npm run dev
+```
+
+Detalhes em [`api/README.md`](api/README.md). Contrato REST: [`docs/superpowers/specs/2026-06-03-thomaz-api.md`](docs/superpowers/specs/2026-06-03-thomaz-api.md).
+
 ---
 
 ## 🧱 Estrutura
@@ -108,6 +123,7 @@ source/
 ├── core/       # lógica pura, testável (parse de cheats, resolução de build_id, índice, update)
 ├── platform/   # libnx/IO (listagem de títulos, HTTP, gravação na SD, settings, self-update)
 └── app/        # telas Borealis (home, lista, detalhe, limpar, configurações)
+api/            # backend Fastify (auth, feed, stubs de saves)
 resources/      # i18n (pt-BR/en-US) + XML das telas + ícone
 tests/          # suíte host (doctest)
 docs/           # spec de design e planos das fases
