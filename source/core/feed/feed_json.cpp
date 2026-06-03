@@ -1,6 +1,7 @@
 #include "core/feed/feed_json.hpp"
 #include <nlohmann/json.hpp>
 #include <cstdlib>
+#include <type_traits>
 
 namespace thomaz::feed {
 
@@ -34,6 +35,24 @@ json safe_parse(const std::string& body)
     return json::parse(body, nullptr, /*allow_exceptions=*/false);
 }
 
+// Type-checked scalar read: nlohmann's value(key, def) only falls back when the
+// key is MISSING; a present-but-wrong-type value throws type_error.302. This
+// returns the default for both the missing AND the wrong-type case.
+template <class T>
+T get_or(const json& j, const char* key, T def)
+{
+    if (!j.is_object() || !j.contains(key)) return def;
+    const json& v = j.at(key);
+    if constexpr (std::is_same_v<T, std::string>) {
+        if (v.is_string()) return v.get<std::string>();
+    } else if constexpr (std::is_same_v<T, bool>) {
+        if (v.is_boolean()) return v.get<bool>();
+    } else { // integral (int / std::int64_t)
+        if (v.is_number_integer()) return v.get<T>();
+    }
+    return def;
+}
+
 std::uint64_t parse_title_id_hex(const json& j, const char* key)
 {
     if (!j.contains(key) || !j.at(key).is_string()) return 0;
@@ -46,8 +65,8 @@ User parse_user(const json& j)
 {
     User u;
     if (j.is_object()) {
-        u.id       = j.value("id", std::string{});
-        u.username = j.value("username", std::string{});
+        u.id       = get_or(j, "id", std::string{});
+        u.username = get_or(j, "username", std::string{});
     }
     return u;
 }
@@ -55,26 +74,26 @@ User parse_user(const json& j)
 Post parse_post_obj(const json& j)
 {
     Post p;
-    p.id           = j.value("id", std::string{});
+    p.id           = get_or(j, "id", std::string{});
     if (j.contains("author")) p.author = parse_user(j.at("author"));
-    p.imageUrl     = j.value("imageUrl", std::string{});
-    p.caption      = j.value("caption", std::string{});
+    p.imageUrl     = get_or(j, "imageUrl", std::string{});
+    p.caption      = get_or(j, "caption", std::string{});
     p.gameTitleId  = parse_title_id_hex(j, "gameTitleId");
-    p.gameName     = j.value("gameName", std::string{});
-    p.likeCount    = j.value("likeCount", 0);
-    p.likedByMe    = j.value("likedByMe", false);
-    p.commentCount = j.value("commentCount", 0);
-    p.createdAt    = j.value("createdAt", static_cast<std::int64_t>(0));
+    p.gameName     = get_or(j, "gameName", std::string{});
+    p.likeCount    = get_or(j, "likeCount", 0);
+    p.likedByMe    = get_or(j, "likedByMe", false);
+    p.commentCount = get_or(j, "commentCount", 0);
+    p.createdAt    = get_or(j, "createdAt", static_cast<std::int64_t>(0));
     return p;
 }
 
 Comment parse_comment_obj(const json& j)
 {
     Comment c;
-    c.id        = j.value("id", std::string{});
+    c.id        = get_or(j, "id", std::string{});
     if (j.contains("author")) c.author = parse_user(j.at("author"));
-    c.text      = j.value("text", std::string{});
-    c.createdAt = j.value("createdAt", static_cast<std::int64_t>(0));
+    c.text      = get_or(j, "text", std::string{});
+    c.createdAt = get_or(j, "createdAt", static_cast<std::int64_t>(0));
     return c;
 }
 
@@ -97,10 +116,10 @@ AuthResult parse_auth_response(const std::string& body, long status)
     AuthResult r;
     json j = safe_parse(body);
     const bool twoxx = (status >= 200 && status < 300);
-    if (twoxx && !j.is_discarded() && j.value("ok", false)) {
+    if (twoxx && !j.is_discarded() && get_or(j, "ok", false)) {
         r.ok           = true;
-        r.token        = j.value("token", std::string{});
-        r.refreshToken = j.value("refreshToken", std::string{});
+        r.token        = get_or(j, "token", std::string{});
+        r.refreshToken = get_or(j, "refreshToken", std::string{});
         if (r.token.empty()) { r.ok = false; r.error = auth_error_message(j, status); }
         return r;
     }
@@ -114,9 +133,9 @@ RefreshResult parse_refresh_response(const std::string& body, long status)
     RefreshResult r;
     json j = safe_parse(body);
     const bool twoxx = (status >= 200 && status < 300);
-    if (twoxx && !j.is_discarded() && j.value("ok", false)) {
-        r.token        = j.value("token", std::string{});
-        r.refreshToken = j.value("refreshToken", std::string{});
+    if (twoxx && !j.is_discarded() && get_or(j, "ok", false)) {
+        r.token        = get_or(j, "token", std::string{});
+        r.refreshToken = get_or(j, "refreshToken", std::string{});
         r.ok           = !r.token.empty() && !r.refreshToken.empty();
     }
     return r;
@@ -130,8 +149,8 @@ FeedPage parse_feed_page(const std::string& body)
     if (j.contains("posts") && j.at("posts").is_array())
         for (const auto& jp : j.at("posts"))
             if (jp.is_object()) page.posts.push_back(parse_post_obj(jp));
-    page.nextCursor = j.value("nextCursor", std::string{});
-    page.hasMore    = j.value("hasMore", false);
+    page.nextCursor = get_or(j, "nextCursor", std::string{});
+    page.hasMore    = get_or(j, "hasMore", false);
     return page;
 }
 

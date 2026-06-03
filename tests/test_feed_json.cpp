@@ -129,3 +129,38 @@ TEST_CASE("parse_post reads a single post, nullopt on bad json") {
     CHECK(p->gameTitleId == 0x010000000E5EE000ULL);
     CHECK_FALSE(parse_post("garbage").has_value());
 }
+
+TEST_CASE("parsers do not throw on type-mismatched fields (defensive)") {
+    // feed page with wrong-typed scalars -> safe defaults, no throw
+    auto page = parse_feed_page(R"({
+        "posts":[{"id":"p1","caption":42,"likeCount":"5","likedByMe":"yes","createdAt":"oops","gameTitleId":99}],
+        "nextCursor":123,
+        "hasMore":1
+    })");
+    REQUIRE(page.posts.size() == 1);
+    CHECK(page.posts[0].id == "p1");
+    CHECK(page.posts[0].caption.empty());   // number -> default
+    CHECK(page.posts[0].likeCount == 0);     // string -> default
+    CHECK(page.posts[0].likedByMe == false); // string -> default
+    CHECK(page.posts[0].createdAt == 0);     // string -> default
+    CHECK(page.posts[0].gameTitleId == 0);   // number -> default (is_string guard)
+    CHECK(page.nextCursor.empty());          // number -> default
+    CHECK(page.hasMore == false);            // number -> default
+
+    // auth with non-bool ok must not throw
+    auto a = parse_auth_response(R"({"ok":"true","token":123})", 200);
+    CHECK_FALSE(a.ok);
+
+    // comments with wrong-typed fields
+    auto cs = parse_comments(R"([{"id":"c1","text":99,"createdAt":"x"}])");
+    REQUIRE(cs.size() == 1);
+    CHECK(cs[0].id == "c1");
+    CHECK(cs[0].text.empty());
+    CHECK(cs[0].createdAt == 0);
+
+    // post with wrong-typed createdAt
+    auto p = parse_post(R"({"post":{"id":"p9","createdAt":"nope"}})");
+    REQUIRE(p.has_value());
+    CHECK(p->id == "p9");
+    CHECK(p->createdAt == 0);
+}
