@@ -50,4 +50,12 @@ std::string backup_dir(const std::string& root, std::uint64_t title_id,
 // unchanged if it does not match the expected shape.
 std::string format_timestamp_label(const std::string& timestamp);
 
+// List a title's backups, newest first. Reads each subdir's manifest.json.
+// Subdirs without a valid manifest are skipped. Empty if none / dir missing.
+std::vector<BackupEntry> list_backups(const std::string& root, std::uint64_t title_id);
+
+// The newest backup's "YYYY-MM-DD_HH-MM-SS", or nullopt if there are none.
+std::optional<std::string> last_backup_timestamp(const std::string& root,
+                                                 std::uint64_t title_id);
+
 } // namespace thomaz::core

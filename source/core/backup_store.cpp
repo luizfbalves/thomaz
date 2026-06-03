@@ -1,7 +1,11 @@
 #include "core/backup_store.hpp"
 #include "core/db_paths.hpp"
+#include "platform/cheat_store.hpp" // read_text_file
 
 #include <nlohmann/json.hpp>
+#include <algorithm>
+#include <dirent.h>
+#include <sys/stat.h>
 
 using nlohmann::json;
 
@@ -62,6 +66,54 @@ std::string format_timestamp_label(const std::string& ts) {
     // "DD/MM HH:MM"
     return ts.substr(8, 2) + "/" + ts.substr(5, 2) + " " +
            ts.substr(11, 2) + ":" + ts.substr(14, 2);
+}
+
+std::vector<BackupEntry> list_backups(const std::string& root, std::uint64_t title_id) {
+    std::vector<BackupEntry> out;
+    std::string dir = title_backups_dir(root, title_id);
+
+    DIR* d = ::opendir(dir.c_str());
+    if (!d)
+        return out;
+
+    struct dirent* e;
+    while ((e = ::readdir(d)) != nullptr) {
+        std::string name = e->d_name;
+        if (name == "." || name == "..")
+            continue;
+        std::string sub = dir + "/" + name;
+        struct stat st;
+        if (::stat(sub.c_str(), &st) != 0 || !S_ISDIR(st.st_mode))
+            continue;
+        auto body = thomaz::read_text_file(sub + "/manifest.json");
+        if (!body)
+            continue;
+        auto info = parse_manifest(*body);
+        if (!info)
+            continue;
+        BackupEntry entry;
+        entry.path      = sub;
+        entry.timestamp = info->timestamp;
+        entry.profiles  = info->profiles;
+        out.push_back(std::move(entry));
+    }
+    ::closedir(d);
+
+    // Newest first. Timestamps are zero-padded "YYYY-MM-DD_HH-MM-SS",
+    // so lexical descending == chronological descending.
+    std::sort(out.begin(), out.end(),
+              [](const BackupEntry& a, const BackupEntry& b) {
+                  return a.timestamp > b.timestamp;
+              });
+    return out;
+}
+
+std::optional<std::string> last_backup_timestamp(const std::string& root,
+                                                 std::uint64_t title_id) {
+    auto list = list_backups(root, title_id);
+    if (list.empty())
+        return std::nullopt;
+    return list.front().timestamp;
 }
 
 } // namespace thomaz::core

@@ -1,5 +1,8 @@
 #include "doctest.h"
 #include "core/backup_store.hpp"
+#include <cstdio>
+#include <sys/stat.h>
+#include <fstream>
 
 using namespace thomaz::core;
 
@@ -47,4 +50,40 @@ TEST_CASE("path builders compose root + lowercase title id + timestamp") {
 TEST_CASE("format_timestamp_label renders dd/mm hh:mm") {
     CHECK(format_timestamp_label("2026-06-03_14-20-00") == "03/06 14:20");
     CHECK(format_timestamp_label("garbage") == "garbage");
+}
+
+static void write_file(const std::string& path, const std::string& body) {
+    std::ofstream f(path, std::ios::binary);
+    f << body;
+}
+
+TEST_CASE("list_backups reads manifests newest-first; last_backup_timestamp picks newest") {
+    std::uint64_t tid = 0x0100000000020000ULL;
+    std::string root = "test-saves-tmp";
+    std::string tdir = root + "/0100000000020000";
+    ::mkdir(root.c_str(), 0777);
+    ::mkdir(tdir.c_str(), 0777);
+
+    // Two backups, out of chronological order on disk.
+    for (const char* ts : {"2026-06-01_10-00-00", "2026-06-03_14-20-00"}) {
+        std::string b = tdir + "/" + ts;
+        ::mkdir(b.c_str(), 0777);
+        ManifestInfo m; m.title_id = tid; m.timestamp = ts; m.profiles = {"aa"};
+        write_file(b + "/manifest.json", build_manifest(m));
+    }
+    // A junk subdir with no manifest — must be ignored.
+    std::string junk = tdir + "/not-a-backup";
+    ::mkdir(junk.c_str(), 0777);
+
+    auto list = list_backups(root, tid);
+    REQUIRE(list.size() == 2);
+    CHECK(list[0].timestamp == "2026-06-03_14-20-00"); // newest first
+    CHECK(list[1].timestamp == "2026-06-01_10-00-00");
+
+    auto last = last_backup_timestamp(root, tid);
+    REQUIRE(last.has_value());
+    CHECK(*last == "2026-06-03_14-20-00");
+
+    auto none = last_backup_timestamp(root, 0xDEADBEEFULL);
+    CHECK_FALSE(none.has_value());
 }
