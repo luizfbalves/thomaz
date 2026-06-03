@@ -25,6 +25,8 @@ TEST_CASE("getStatus issues a GET with bearer and parses the slot") {
     CHECK(s.ok);
     CHECK(s.exists);
     CHECK(s.revision == 4);
+    CHECK(s.label == "Z");
+    CHECK(s.updatedAt == 9);
     CHECK(http.last.method == HttpMethod::Get);
     CHECK(http.last.url == "http://api.test/saves/0100000000010000");
     bool hasBearer = false;
@@ -60,6 +62,8 @@ TEST_CASE("pull GETs with includeData and decodes the blob") {
     REQUIRE(d.ok);
     CHECK(d.exists);
     CHECK(d.revision == 2);
+    CHECK(d.label == "x");
+    CHECK(d.updatedAt == 1);
     std::string blob(d.blob.begin(), d.blob.end());
     CHECK(blob == "hi");
     CHECK(http.last.url == "http://api.test/saves/0000000000000001?includeData=1");
@@ -99,4 +103,23 @@ TEST_CASE("push maps 409 to a conflict and 413 to a too-large error") {
     CHECK_FALSE(tooBig.ok);
     CHECK_FALSE(tooBig.conflict);
     CHECK(tooBig.error == "save_too_large");
+}
+
+TEST_CASE("transport failure (status 0) surfaces an error, not a false success") {
+    StubHttp http;
+    http.next = HttpResponse{ 0, "" };   // libcurl connection failure
+    HttpCloudSaveClient c(&http, "http://api.test");
+
+    auto s = c.getStatus("t", 0x1ULL);
+    CHECK_FALSE(s.ok);
+    CHECK_FALSE(s.error.empty());
+
+    auto d = c.pull("t", 0x1ULL);
+    CHECK_FALSE(d.ok);
+    CHECK_FALSE(d.error.empty());
+
+    auto p = c.push("t", 0x1ULL, { 1 }, "g", 0);
+    CHECK_FALSE(p.ok);
+    CHECK_FALSE(p.conflict);
+    CHECK_FALSE(p.error.empty());
 }
