@@ -182,11 +182,15 @@ void GameListActivity::populate(const std::vector<InstalledTitle>& titles)
                                    nvgRGBA(0x57, 0xC9, 0x8A, 0x29), nvgRGB(0x57, 0xC9, 0x8A)));
         }
 
-        // Version (formatted as decimal).
+        // Version. Prefer the NACP display string ("1.0.1"); the bare numeric
+        // meta version (0, 65536, ...) is opaque — "v0" just means "base game,
+        // no update installed". Fall back to it only when the string is absent.
         brls::Label* versionLabel = new brls::Label();
         versionLabel->setWidth(brls::View::AUTO);
         versionLabel->setHeight(brls::View::AUTO);
-        std::string versionStr = "v" + std::to_string(title.version);
+        std::string versionStr = title.display_version.empty()
+            ? ("v" + std::to_string(title.version))
+            : ("v" + title.display_version);
         versionLabel->setText(versionStr);
         versionLabel->setFontSize(14.0f);
         versionLabel->setMarginLeft(12.0f);

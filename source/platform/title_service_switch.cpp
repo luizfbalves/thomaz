@@ -72,6 +72,11 @@ std::vector<InstalledTitle> NsTitleService::listInstalled() {
                     t.name   = entry->name;
                     t.author = entry->author;
                 }
+                // Human-readable version string (e.g. "1.0.1"), separate from the
+                // numeric meta `version` used for build_id resolution. NUL-bounded.
+                char dv[sizeof(control->nacp.display_version) + 1] = {0};
+                std::memcpy(dv, control->nacp.display_version, sizeof(control->nacp.display_version));
+                t.display_version = dv;
                 // The icon (JPEG) follows the nacp in the control data buffer.
                 size_t iconSize = (size_t)controlSize - sizeof(control->nacp);
                 if (iconSize > 0)
