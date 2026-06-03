@@ -6,6 +6,8 @@
 
 #include "core/backup_store.hpp"
 #include "platform/cheat_store.hpp" // write_text_file
+#include "core/saves/save_package.hpp"
+#include "platform/saves/save_backup_io.hpp"
 
 namespace thomaz {
 
@@ -61,6 +63,29 @@ bool FakeSaveService::restore(const core::BackupEntry& entry, std::uint64_t,
         return false;
     }
     return true;
+}
+
+std::vector<std::uint8_t> FakeSaveService::packageActiveSave(std::uint64_t,
+                                                             std::string* outError) {
+    // Desktop stand-in: one dummy profile with one dummy file, matching what
+    // backup() writes, so the cloud round-trip is exercisable without a console.
+    core::SavePackage pkg;
+    std::string dummy = "fake save bytes";
+    pkg.files.push_back({ "11111111111111111111111111111111/save.dat",
+                          std::vector<std::uint8_t>(dummy.begin(), dummy.end()) });
+    (void)outError;
+    return core::pack_save_package(pkg);
+}
+
+bool FakeSaveService::importPackageAsBackup(std::uint64_t title_id,
+                                            const std::vector<std::uint8_t>& blob,
+                                            std::string* outError) {
+    auto pkg = core::unpack_save_package(blob);
+    if (!pkg) {
+        if (outError) *outError = "corrupted cloud save";
+        return false;
+    }
+    return write_package_as_backup(title_id, "", *pkg, outError);
 }
 
 } // namespace thomaz
