@@ -42,7 +42,8 @@
         "submit_register": "Criar conta",
         "logout": "Sair",
         "err_empty": "Preencha usuário e senha.",
-        "err_failed": "Não foi possível entrar."
+        "err_failed": "Não foi possível entrar.",
+        "err_username": "Usuário: 3–32 caracteres, apenas letras e números."
     },
     "composer": {
         "title": "Novo post",

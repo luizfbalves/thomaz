@@ -38,6 +38,7 @@ class SaveDetailActivity : public brls::Activity
     void doDownload();      // cloud download flow -> local backup + restore prompt
     void refreshCloudStatus();
     void showCloudLoggedOut();
+    void promptLogin();     // always pushes the auth screen (re-login)
     bool requireSession();
     void setCloudStatusText(const std::string& text);
     std::string cloudErrorText(const std::string& apiError) const;

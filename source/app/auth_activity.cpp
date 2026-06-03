@@ -1,4 +1,5 @@
 #include "app/auth_activity.hpp"
+#include <cctype>
 #include <borealis/core/i18n.hpp>
 #include <borealis/core/thread.hpp>
 #include <borealis/views/cells/cell_input.hpp>
@@ -71,6 +72,19 @@ void AuthActivity::submit()
     if (this->username.empty() || this->password.empty()) {
         status->setText("thomaz/auth/err_empty"_i18n);
         return;
+    }
+
+    // Ao criar conta: exigir nome alfanumérico (3–32). A unicidade é checada na
+    // API (409 → "nome já existe") antes de criar; aqui só barramos formato.
+    if (this->registerMode) {
+        const std::string& u = this->username;
+        bool validName = u.size() >= 3 && u.size() <= 32;
+        for (char ch : u)
+            if (!std::isalnum(static_cast<unsigned char>(ch))) validName = false;
+        if (!validName) {
+            status->setText("thomaz/auth/err_username"_i18n);
+            return;
+        }
     }
 
     this->busy = true;

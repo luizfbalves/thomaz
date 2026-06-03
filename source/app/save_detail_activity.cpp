@@ -1,4 +1,5 @@
 #include "app/save_detail_activity.hpp"
+#include "app/app_header.hpp"
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
@@ -45,6 +46,8 @@ SaveDetailActivity::~SaveDetailActivity()
 
 void SaveDetailActivity::onContentAvailable()
 {
+    install_header_username(this);
+
     if (auto* name = (brls::Label*)this->getView("gameName"))
         name->setText(this->title.name);
 
@@ -63,7 +66,7 @@ void SaveDetailActivity::onContentAvailable()
         down->addGestureRecognizer(new brls::TapGestureRecognizer(down));
     }
     if (auto* login = this->getView("cloudLogin")) {
-        login->registerClickAction([this](brls::View*) { this->requireSession(); return true; });
+        login->registerClickAction([this](brls::View*) { this->promptLogin(); return true; });
         login->addGestureRecognizer(new brls::TapGestureRecognizer(login));
     }
 
@@ -367,9 +370,7 @@ void SaveDetailActivity::showCloudLoggedOut() {
     this->setCloudStatusText("");
 }
 
-bool SaveDetailActivity::requireSession() {
-    if (load_session().has_value())
-        return true;
+void SaveDetailActivity::promptLogin() {
     auto alive = this->alive; // copy before push: the lambda must not touch `this` until guarded
     brls::Application::pushActivity(new AuthActivity(this->feed, [this, alive]() {
         if (!alive->load()) return;
@@ -379,6 +380,14 @@ bool SaveDetailActivity::requireSession() {
             btns->setVisibility(brls::Visibility::VISIBLE);
         this->refreshCloudStatus();
     }));
+}
+
+bool SaveDetailActivity::requireSession() {
+    // has_value() only proves a session is stored, not that its token is still
+    // valid; an expired token returns 401 downstream and we re-prompt then.
+    if (load_session().has_value())
+        return true;
+    this->promptLogin();
     return false;
 }
 

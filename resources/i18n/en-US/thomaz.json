@@ -42,7 +42,8 @@
         "submit_register": "Create account",
         "logout": "Log out",
         "err_empty": "Fill in username and password.",
-        "err_failed": "Couldn't sign you in."
+        "err_failed": "Couldn't sign you in.",
+        "err_username": "Username: 3–32 characters, letters and numbers only."
     },
     "composer": {
         "title": "New post",
