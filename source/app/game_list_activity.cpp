@@ -6,6 +6,7 @@
 #include "app/app_header.hpp"
 #include "app/cheat_detail_activity.hpp"
 #include "app/clear_cheats_activity.hpp"
+#include "app/mod_manager_activity.hpp"
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
@@ -44,8 +45,8 @@ brls::Box* makeBadge(const std::string& text, NVGcolor bg, NVGcolor fg)
 
 } // namespace
 
-GameListActivity::GameListActivity(ITitleService* titleService, IHttpClient* http)
-    : titleService(titleService), http(http)
+GameListActivity::GameListActivity(ITitleService* titleService, IHttpClient* http, Target target)
+    : titleService(titleService), http(http), target(target)
 {
 }
 
@@ -100,7 +101,8 @@ void GameListActivity::populate(const std::vector<InstalledTitle>& titles)
     if (!listBox)
         return;
 
-    // Entry to the "clear cheats" screen.
+    // Entry to the "clear cheats" screen (cheats mode only).
+    if (this->target == Target::Cheats)
     {
         ITitleService* svc = this->titleService;
         brls::Box* clearEntry = new brls::Box(brls::Axis::ROW);
@@ -171,18 +173,22 @@ void GameListActivity::populate(const std::vector<InstalledTitle>& titles)
         nameLabel->setFontSize(18.0f);
         row->addView(nameLabel);
 
-        // "Has cheats" badge — hidden until the db index loads (see below).
-        brls::Box* hasCheatBadge = makeBadge("thomaz/games/badge_has_cheats"_i18n,
-                                             nvgRGBA(0x7C, 0x5C, 0xFF, 0x29), nvgRGB(0x92, 0x77, 0xFF));
-        hasCheatBadge->setVisibility(brls::Visibility::GONE);
-        row->addView(hasCheatBadge);
-        this->hasCheatBadges.emplace_back(title.title_id, hasCheatBadge);
-
-        // "Active" badge — a cheat file is already present on the SD for this game.
-        if (dir_has_nonempty_txt(core::sd_cheats_dir(title.title_id)))
+        // Cheats-specific badges (skipped in Mods mode).
+        if (this->target == Target::Cheats)
         {
-            row->addView(makeBadge("thomaz/games/badge_active"_i18n,
-                                   nvgRGBA(0x57, 0xC9, 0x8A, 0x29), nvgRGB(0x57, 0xC9, 0x8A)));
+            // "Has cheats" badge — hidden until the db index loads (see below).
+            brls::Box* hasCheatBadge = makeBadge("thomaz/games/badge_has_cheats"_i18n,
+                                                 nvgRGBA(0x7C, 0x5C, 0xFF, 0x29), nvgRGB(0x92, 0x77, 0xFF));
+            hasCheatBadge->setVisibility(brls::Visibility::GONE);
+            row->addView(hasCheatBadge);
+            this->hasCheatBadges.emplace_back(title.title_id, hasCheatBadge);
+
+            // "Active" badge — a cheat file is already present on the SD for this game.
+            if (dir_has_nonempty_txt(core::sd_cheats_dir(title.title_id)))
+            {
+                row->addView(makeBadge("thomaz/games/badge_active"_i18n,
+                                       nvgRGBA(0x57, 0xC9, 0x8A, 0x29), nvgRGB(0x57, 0xC9, 0x8A)));
+            }
         }
 
         // Version. Prefer the NACP display string ("1.0.1"); the bare numeric
@@ -199,11 +205,15 @@ void GameListActivity::populate(const std::vector<InstalledTitle>& titles)
         versionLabel->setMarginLeft(12.0f);
         row->addView(versionLabel);
 
-        // Tapping opens the cheat detail screen for this game.
+        // Tapping opens the detail screen for this game (cheats or mods).
         InstalledTitle rowTitle = title;
         IHttpClient* client      = this->http;
-        row->registerClickAction([rowTitle, client](brls::View* view) {
-            brls::Application::pushActivity(new CheatDetailActivity(rowTitle, client));
+        Target rowTarget         = this->target;
+        row->registerClickAction([rowTitle, client, rowTarget](brls::View* view) {
+            if (rowTarget == Target::Mods)
+                brls::Application::pushActivity(new ModManagerActivity(rowTitle));
+            else
+                brls::Application::pushActivity(new CheatDetailActivity(rowTitle, client));
             return true;
         });
         // Respond to touch (Switch) and mouse (desktop), not just the A button.

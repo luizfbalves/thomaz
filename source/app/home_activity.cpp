@@ -47,6 +47,17 @@ void HomeActivity::onContentAvailable()
         cheats->addGestureRecognizer(new brls::TapGestureRecognizer(cheats));
     }
 
+    // Mods card → game list in Mods mode.
+    if (brls::View* mods = this->getView("modsCard"))
+    {
+        mods->registerClickAction([this](brls::View*) {
+            brls::Application::pushActivity(
+                new GameListActivity(this->titleService, this->http, GameListActivity::Target::Mods));
+            return true;
+        });
+        mods->addGestureRecognizer(new brls::TapGestureRecognizer(mods));
+    }
+
     // Settings card.
     if (brls::View* settings = this->getView("settingsCard"))
     {

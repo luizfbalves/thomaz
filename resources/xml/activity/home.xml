@@ -103,25 +103,21 @@
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
                 </AnimatedBox>
 
-                <!-- Mods (coming soon) -->
-                <AnimatedBox entranceDelay="330"
+                <!-- Mods (active) -->
+                <AnimatedBox id="modsCard" entranceDelay="330"
                           axis="row" alignItems="center" grow="1.0"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
-                          backgroundColor="@theme/thomaz/tile_mods">
+                          backgroundColor="@theme/thomaz/tile_mods"
+                          focusable="true" highlightCornerRadius="16"
+                          hideHighlightBackground="true">
                     <brls:Box width="44" height="44" cornerRadius="12"
                               backgroundColor="#FFFFFF29"
                               justifyContent="center" alignItems="center" marginRight="16">
                         <brls:Label text="@i18n/thomaz/icon/mods"
-                                    fontSize="24" textColor="#FFFFFFD9"/>
+                                    fontSize="24" textColor="#FFFFFF"/>
                     </brls:Box>
-                    <brls:Box axis="column" grow="1.0">
-                        <brls:Label text="@i18n/thomaz/home/mods"
-                                    fontSize="17" textColor="#FFFFFF"/>
-                        <brls:Label text="@i18n/thomaz/common/coming_soon"
-                                    fontSize="11" textColor="#FFFFFFB3" marginTop="3"/>
-                    </brls:Box>
-                    <brls:Label text="@i18n/thomaz/icon/lock"
-                                fontSize="20" textColor="#FFFFFFB3"/>
+                    <brls:Label text="@i18n/thomaz/home/mods"
+                                fontSize="17" textColor="#FFFFFF" grow="1.0"/>
                 </AnimatedBox>
 
             </brls:Box>

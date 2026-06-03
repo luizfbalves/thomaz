@@ -22,7 +22,11 @@ namespace thomaz {
 class GameListActivity : public brls::Activity
 {
   public:
-    GameListActivity(ITitleService* titleService, IHttpClient* http);
+    // Which detail screen a game tap opens (and which cheats-specific UI to show).
+    enum class Target { Cheats, Mods };
+
+    GameListActivity(ITitleService* titleService, IHttpClient* http,
+                     Target target = Target::Cheats);
     ~GameListActivity() override;
 
     CONTENT_FROM_XML_RES("activity/game_list.xml");
@@ -40,6 +44,7 @@ class GameListActivity : public brls::Activity
 
     ITitleService* titleService;
     IHttpClient* http;
+    Target target;
 
     // Set false in the destructor so an in-flight index load's UI callback bails.
     std::shared_ptr<std::atomic_bool> alive = std::make_shared<std::atomic_bool>(true);

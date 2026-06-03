@@ -1,0 +1,9 @@
+<brls:AppletFrame id="modFrame" title="@i18n/mods/title" iconInterpolation="linear">
+    <brls:ScrollingFrame width="auto" height="auto" grow="1.0">
+        <brls:Box width="auto" height="auto" axis="column" paddingTop="32" paddingLeft="48" paddingRight="48" paddingBottom="28">
+            <brls:ProgressSpinner id="spinner" width="44" height="44" marginTop="24" alignSelf="center" />
+            <brls:Label id="emptyLabel" width="auto" height="auto" visibility="gone" text="@i18n/mods/empty" fontSize="18" horizontalAlign="center" />
+            <AnimatedBox id="modListBox" width="auto" height="auto" entranceDelay="60" axis="column" />
+        </brls:Box>
+    </brls:ScrollingFrame>
+</brls:AppletFrame>
