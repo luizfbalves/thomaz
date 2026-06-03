@@ -18,6 +18,7 @@
 #include <borealis.hpp>
 #include <string>
 #include "app/theme.hpp"
+#include "app/animated_box.hpp"
 #include "app/home_activity.hpp"
 #include "platform/app_settings.hpp"
 #include "platform/http_client_curl.hpp"
@@ -57,11 +58,14 @@ int main(int argc, char* argv[])
     // Register theme colors and force dark mode (safe now: videoContext exists).
     thomaz::registerThomazTheme();
 
-    // No animated transitions — screens swap instantly and focus snaps. A 0ms
-    // "show" duration makes Application::pushActivity call show() with animate
-    // off (it gates on duration > 0), so there is no cross-fade or slide.
-    brls::Application::getStyle().addMetric("brls/animations/show", 0.0f);
-    brls::Application::getStyle().addMetric("brls/animations/highlight", 0.0f);
+    // Smooth transitions: screens cross-fade/slide in on push, and the focus
+    // ring glides between tiles instead of snapping. These drive view-owned
+    // Animatables (View::alpha, highlightAlpha), so they are lifetime-safe.
+    brls::Application::getStyle().addMetric("brls/animations/show", 220.0f);
+    brls::Application::getStyle().addMetric("brls/animations/highlight", 140.0f);
+
+    // Custom views used by the activity layouts.
+    brls::Application::registerXMLView("AnimatedBox", thomaz::AnimatedBox::create);
 
     // Select the title service for the current platform.
 #ifdef __SWITCH__

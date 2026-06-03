@@ -1,32 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   Home — "What are we doing today?" (design "Signal").
-  Big violet hero (Cheats) + vertical rail (Settings + coming soon).
+  Big violet hero (Feed) + vertical rail (Settings, Cheats, Saves, Mods).
+  Each block is an AnimatedBox so the menu cascades in on appear.
   Footer hints come from registerAction() in HomeActivity.
-  IDs feedCard / cheatsCard / settingsCard wired in HomeActivity.
+  IDs feedCard / cheatsCard / settingsCard / savesCard wired in HomeActivity.
 -->
 <brls:AppletFrame title="thomaz" iconInterpolation="linear">
 
     <brls:Box axis="column" grow="1.0"
-              paddingTop="36" paddingBottom="28"
-              paddingLeft="56" paddingRight="56">
+              paddingTop="32" paddingBottom="28"
+              paddingLeft="48" paddingRight="48">
 
         <!-- greeting -->
-        <brls:Box axis="column" marginBottom="22">
+        <AnimatedBox axis="column" marginBottom="22" entranceDelay="0">
             <brls:Label text="@i18n/thomaz/home/eyebrow"
                         fontSize="16" textColor="@theme/thomaz/text_dim"/>
             <brls:Label text="@i18n/thomaz/home/greeting"
                         fontSize="34" textColor="@theme/thomaz/text" marginTop="6"/>
-        </brls:Box>
+        </AnimatedBox>
 
         <!-- hero + rail -->
         <brls:Box axis="row" grow="1.0">
 
             <!-- ===== HERO: Feed ===== -->
-            <brls:Box id="feedCard"
+            <AnimatedBox id="feedCard" entranceDelay="80"
                       axis="column" grow="1.55" marginRight="18"
                       padding="34" cornerRadius="22"
-                      backgroundColor="@theme/thomaz/tile_cheats"
+                      background="vertical_linear"
+                      backgroundStartColor="@theme/thomaz/accent_bright"
+                      backgroundEndColor="@theme/thomaz/accent_deep"
                       focusable="true" highlightCornerRadius="22"
                       hideHighlightBackground="true">
 
@@ -44,13 +47,13 @@
                 <brls:Label text="@i18n/thomaz/module/feed/subtitle"
                             fontSize="17" textColor="#FFFFFFD9"
                             marginTop="8" width="360"/>
-            </brls:Box>
+            </AnimatedBox>
 
             <!-- ===== RAIL ===== -->
             <brls:Box axis="column" grow="1.0">
 
                 <!-- Settings (active) -->
-                <brls:Box id="settingsCard"
+                <AnimatedBox id="settingsCard" entranceDelay="150"
                           axis="row" alignItems="center" grow="1.0" marginBottom="14"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
                           backgroundColor="@theme/thomaz/tile_settings"
@@ -64,10 +67,10 @@
                     </brls:Box>
                     <brls:Label text="@i18n/thomaz/module/settings/title"
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
-                </brls:Box>
+                </AnimatedBox>
 
                 <!-- Cheats (ativo) — antes era o slot do Save Manager -->
-                <brls:Box id="cheatsCard"
+                <AnimatedBox id="cheatsCard" entranceDelay="210"
                           axis="row" alignItems="center" grow="1.0" marginBottom="14"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
                           backgroundColor="@theme/thomaz/tile_saves"
@@ -81,10 +84,10 @@
                     </brls:Box>
                     <brls:Label text="@i18n/thomaz/module/cheats/title"
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
-                </brls:Box>
+                </AnimatedBox>
 
                 <!-- Save Manager (active) -->
-                <brls:Box id="savesCard"
+                <AnimatedBox id="savesCard" entranceDelay="270"
                           axis="row" alignItems="center" grow="1.0" marginBottom="14"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
                           backgroundColor="@theme/thomaz/tile_backup"
@@ -98,10 +101,11 @@
                     </brls:Box>
                     <brls:Label text="@i18n/thomaz/saves/title"
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
-                </brls:Box>
+                </AnimatedBox>
 
                 <!-- Mods (coming soon) -->
-                <brls:Box axis="row" alignItems="center" grow="1.0"
+                <AnimatedBox entranceDelay="330"
+                          axis="row" alignItems="center" grow="1.0"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
                           backgroundColor="@theme/thomaz/tile_mods">
                     <brls:Box width="44" height="44" cornerRadius="12"
@@ -118,7 +122,7 @@
                     </brls:Box>
                     <brls:Label text="@i18n/thomaz/icon/lock"
                                 fontSize="20" textColor="#FFFFFFB3"/>
-                </brls:Box>
+                </AnimatedBox>
 
             </brls:Box>
         </brls:Box>
