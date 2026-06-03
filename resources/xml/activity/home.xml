@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   Home — "What are we doing today?" (design "Signal").
-  Big violet hero (Feed) + vertical rail (Settings, Cheats, Saves, Mods).
+  Big violet hero (Cheats) + vertical rail (Settings, Saves, Mods).
   Each block is an AnimatedBox so the menu cascades in on appear.
   Footer hints come from registerAction() in HomeActivity.
-  IDs feedCard / cheatsCard / settingsCard / savesCard wired in HomeActivity.
+  IDs cheatsCard / settingsCard / savesCard / modsCard wired in HomeActivity.
 -->
 <brls:AppletFrame title="thomaz" iconInterpolation="linear">
 
@@ -23,8 +23,8 @@
         <!-- hero + rail -->
         <brls:Box axis="row" grow="1.0">
 
-            <!-- ===== HERO: Feed ===== -->
-            <AnimatedBox id="feedCard" entranceDelay="80"
+            <!-- ===== HERO: Cheats ===== -->
+            <AnimatedBox id="cheatsCard" entranceDelay="80"
                       axis="column" grow="1.55" marginRight="18"
                       padding="34" cornerRadius="22"
                       background="vertical_linear"
@@ -42,9 +42,9 @@
 
                 <brls:Box grow="1.0"/>
 
-                <brls:Label text="@i18n/thomaz/module/feed/title"
+                <brls:Label text="@i18n/thomaz/module/cheats/title"
                             fontSize="40" textColor="#FFFFFF"/>
-                <brls:Label text="@i18n/thomaz/module/feed/subtitle"
+                <brls:Label text="@i18n/thomaz/module/cheats/subtitle"
                             fontSize="17" textColor="#FFFFFFD9"
                             marginTop="8" width="360"/>
             </AnimatedBox>
@@ -66,23 +66,6 @@
                                     fontSize="24" textColor="#FFFFFF"/>
                     </brls:Box>
                     <brls:Label text="@i18n/thomaz/module/settings/title"
-                                fontSize="17" textColor="#FFFFFF" grow="1.0"/>
-                </AnimatedBox>
-
-                <!-- Cheats (ativo) — antes era o slot do Save Manager -->
-                <AnimatedBox id="cheatsCard" entranceDelay="210"
-                          axis="row" alignItems="center" grow="1.0" marginBottom="14"
-                          paddingLeft="22" paddingRight="22" cornerRadius="16"
-                          backgroundColor="@theme/thomaz/tile_saves"
-                          focusable="true" highlightCornerRadius="16"
-                          hideHighlightBackground="true">
-                    <brls:Box width="44" height="44" cornerRadius="12"
-                              backgroundColor="#FFFFFF29"
-                              justifyContent="center" alignItems="center" marginRight="16">
-                        <brls:Label text="@i18n/thomaz/icon/cheats"
-                                    fontSize="24" textColor="#FFFFFF"/>
-                    </brls:Box>
-                    <brls:Label text="@i18n/thomaz/module/cheats/title"
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
                 </AnimatedBox>
 

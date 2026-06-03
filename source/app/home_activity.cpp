@@ -7,15 +7,14 @@
 #include "app/game_list_activity.hpp"
 #include "app/settings_activity.hpp"
 #include "app/save_manager_activity.hpp"
-#include "app/feed_activity.hpp"
 
 #include <borealis.hpp>
 
 namespace thomaz {
 
 HomeActivity::HomeActivity(ITitleService* titleService, IHttpClient* http, ISaveService* saveService,
-                           IFeedClient* feed, IAlbumSource* album, ICloudSaveClient* cloudSaves)
-    : titleService(titleService), http(http), saveService(saveService), feed(feed), album(album),
+                           IFeedClient* feed, ICloudSaveClient* cloudSaves)
+    : titleService(titleService), http(http), saveService(saveService), feed(feed),
       cloudSaves(cloudSaves)
 {
 }
@@ -24,19 +23,7 @@ void HomeActivity::onContentAvailable()
 {
     install_header_username(this);
 
-    // Feed hero → community feed.
-    if (brls::View* feedCard = this->getView("feedCard"))
-    {
-        feedCard->registerClickAction([this](brls::View*) {
-            brls::Application::pushActivity(
-                new FeedActivity(this->feed, this->album, this->titleService));
-            return true;
-        });
-        feedCard->addGestureRecognizer(new brls::TapGestureRecognizer(feedCard));
-    }
-
-    // Cheats card → game list (this is the old "trapacasCard" entry; the home
-    // was redesigned and the cheats tile is now "cheatsCard").
+    // Cheats hero → game list.
     if (brls::View* cheats = this->getView("cheatsCard"))
     {
         cheats->registerClickAction([this](brls::View*) {

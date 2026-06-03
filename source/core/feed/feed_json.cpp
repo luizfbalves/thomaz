@@ -1,6 +1,5 @@
 #include "core/feed/feed_json.hpp"
 #include <nlohmann/json.hpp>
-#include <cstdlib>
 #include <type_traits>
 
 namespace thomaz::feed {
@@ -10,21 +9,6 @@ using nlohmann::json;
 std::string build_credentials_body(const std::string& user, const std::string& pass)
 {
     return json{ {"username", user}, {"password", pass} }.dump();
-}
-
-std::string build_refresh_body(const std::string& refreshToken)
-{
-    return json{ {"refreshToken", refreshToken} }.dump();
-}
-
-std::string build_like_body(bool liked)
-{
-    return json{ {"liked", liked} }.dump();
-}
-
-std::string build_comment_body(const std::string& text)
-{
-    return json{ {"text", text} }.dump();
 }
 
 namespace {
@@ -51,50 +35,6 @@ T get_or(const json& j, const char* key, T def)
         if (v.is_number_integer()) return v.get<T>();
     }
     return def;
-}
-
-std::uint64_t parse_title_id_hex(const json& j, const char* key)
-{
-    if (!j.contains(key) || !j.at(key).is_string()) return 0;
-    const std::string s = j.at(key).get<std::string>();
-    if (s.empty()) return 0;
-    return std::strtoull(s.c_str(), nullptr, 16);
-}
-
-User parse_user(const json& j)
-{
-    User u;
-    if (j.is_object()) {
-        u.id       = get_or(j, "id", std::string{});
-        u.username = get_or(j, "username", std::string{});
-    }
-    return u;
-}
-
-Post parse_post_obj(const json& j)
-{
-    Post p;
-    p.id           = get_or(j, "id", std::string{});
-    if (j.contains("author")) p.author = parse_user(j.at("author"));
-    p.imageUrl     = get_or(j, "imageUrl", std::string{});
-    p.caption      = get_or(j, "caption", std::string{});
-    p.gameTitleId  = parse_title_id_hex(j, "gameTitleId");
-    p.gameName     = get_or(j, "gameName", std::string{});
-    p.likeCount    = get_or(j, "likeCount", 0);
-    p.likedByMe    = get_or(j, "likedByMe", false);
-    p.commentCount = get_or(j, "commentCount", 0);
-    p.createdAt    = get_or(j, "createdAt", static_cast<std::int64_t>(0));
-    return p;
-}
-
-Comment parse_comment_obj(const json& j)
-{
-    Comment c;
-    c.id        = get_or(j, "id", std::string{});
-    if (j.contains("author")) c.author = parse_user(j.at("author"));
-    c.text      = get_or(j, "text", std::string{});
-    c.createdAt = get_or(j, "createdAt", static_cast<std::int64_t>(0));
-    return c;
 }
 
 // Maps a failed/non-2xx auth response to a stable, caller-displayable message.
@@ -127,59 +67,6 @@ AuthResult parse_auth_response(const std::string& body, long status)
     r.ok = false;
     r.error = auth_error_message(j.is_discarded() ? json::object() : j, status);
     return r;
-}
-
-RefreshResult parse_refresh_response(const std::string& body, long status)
-{
-    RefreshResult r;
-    json j = safe_parse(body);
-    const bool twoxx = (status >= 200 && status < 300);
-    if (twoxx && !j.is_discarded() && get_or(j, "ok", false)) {
-        r.token        = get_or(j, "token", std::string{});
-        r.refreshToken = get_or(j, "refreshToken", std::string{});
-        r.ok           = !r.token.empty() && !r.refreshToken.empty();
-    }
-    return r;
-}
-
-FeedPage parse_feed_page(const std::string& body)
-{
-    FeedPage page;
-    json j = safe_parse(body);
-    if (j.is_discarded() || !j.is_object()) return page;
-    if (j.contains("posts") && j.at("posts").is_array())
-        for (const auto& jp : j.at("posts"))
-            if (jp.is_object()) page.posts.push_back(parse_post_obj(jp));
-    page.nextCursor = get_or(j, "nextCursor", std::string{});
-    page.hasMore    = get_or(j, "hasMore", false);
-    return page;
-}
-
-std::vector<Comment> parse_comments(const std::string& body)
-{
-    std::vector<Comment> out;
-    json j = safe_parse(body);
-    if (j.is_discarded()) return out;
-    // Tolerates bare array OR {"comments":[...]}. Keep whichever the API uses.
-    const json* arr = nullptr;
-    if (j.is_array()) arr = &j;
-    else if (j.is_object() && j.contains("comments") && j.at("comments").is_array())
-        arr = &j.at("comments");
-    if (arr)
-        for (const auto& jc : *arr)
-            if (jc.is_object()) out.push_back(parse_comment_obj(jc));
-    return out;
-}
-
-std::optional<Post> parse_post(const std::string& body)
-{
-    json j = safe_parse(body);
-    if (j.is_discarded()) return std::nullopt;
-    if (j.is_object() && j.contains("post") && j.at("post").is_object())
-        return parse_post_obj(j.at("post"));
-    if (j.is_object() && j.contains("id"))
-        return parse_post_obj(j);
-    return std::nullopt;
 }
 
 } // namespace thomaz::feed

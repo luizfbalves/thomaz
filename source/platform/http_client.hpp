@@ -28,8 +28,8 @@ struct HttpRequest {
     std::vector<std::pair<std::string, std::string>> headers;
     std::string body; // JSON body; ignored when multipart fields/files are set
 
-    // Multipart/form-data (used by createPost). When either is non-empty the
-    // request is sent as multipart and `body` is ignored.
+    // Multipart/form-data (used by the cloud save upload). When either is
+    // non-empty the request is sent as multipart and `body` is ignored.
     std::vector<std::pair<std::string, std::string>> fields;
     std::vector<MultipartFile> files;
 };

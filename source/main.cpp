@@ -8,11 +8,9 @@
 #include <switch.h>
 #include "platform/title_service_switch.hpp"
 #include "platform/save_service_switch.hpp"
-#include "platform/feed/switch_album_source.hpp"
 #else
 #include "platform/title_service_fake.hpp"
 #include "platform/save_service_fake.hpp"
-#include "platform/feed/fake_album_source.hpp"
 #endif
 
 #include <borealis.hpp>
@@ -89,43 +87,34 @@ int main(int argc, char* argv[])
     // HTTP client for downloading cheats (libcurl; libnx sockets on Switch).
     auto httpClient = std::make_unique<thomaz::CurlHttpClient>();
 
-    // Community feed: real HTTP client against the thomaz-api. Base URL has a
-    // compiled default (localhost on desktop, prod host on Switch) plus a
-    // Settings override. The client owns the session and persists it via
-    // auth_store on login/refresh; on refresh failure it clears the session.
+    // Auth client against the thomaz-api. Base URL has a compiled default
+    // (localhost on desktop, prod host on Switch) plus a Settings override. The
+    // client persists the session via auth_store on login; Cloud Saves reads the
+    // access token from auth_store per call.
     std::string apiBaseUrl = thomaz::load_api_base_url();
     auto restoredSession   = thomaz::load_session();
     auto feedClient = std::make_unique<thomaz::HttpFeedClient>(
         httpClient.get(),
         apiBaseUrl,
         restoredSession,
-        [](const thomaz::feed::Session& s) { thomaz::save_session(s); },
-        []() { thomaz::clear_session(); });
+        [](const thomaz::feed::Session& s) { thomaz::save_session(s); });
 
     // Cloud saves: real HTTP client against the same thomaz-api base URL. The
     // access token is read from auth_store per call by the Save Detail screen.
     auto cloudSaveClient = std::make_unique<thomaz::HttpCloudSaveClient>(
         httpClient.get(), apiBaseUrl);
 
-#ifdef __SWITCH__
-    auto albumSource = std::make_unique<thomaz::SwitchAlbumSource>();
-    albumSource->init();
-#else
-    auto albumSource = std::make_unique<thomaz::FakeAlbumSource>();
-#endif
-
     // Quit the app with the + (START) button from any activity.
     brls::Application::setGlobalQuit(true);
 
     brls::Application::pushActivity(
         new thomaz::HomeActivity(titleService.get(), httpClient.get(), saveService.get(),
-                                 feedClient.get(), albumSource.get(), cloudSaveClient.get()));
+                                 feedClient.get(), cloudSaveClient.get()));
 
     while (brls::Application::mainLoop())
         ;
 
 #ifdef __SWITCH__
-    albumSource->exit();
     titleService->exit();
 #endif
 

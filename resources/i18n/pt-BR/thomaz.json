@@ -7,10 +7,6 @@
         "mods": "Mods"
     },
     "module": {
-        "feed": {
-            "title": "Comunidade",
-            "subtitle": "Compartilhe suas screenshots do Switch"
-        },
         "cheats": {
             "title": "Trapaças",
             "subtitle": "Gerencie os cheats dos seus jogos"
@@ -18,20 +14,6 @@
         "settings": {
             "title": "Configurações"
         }
-    },
-    "feed": {
-        "title": "Comunidade",
-        "compose": "+ Postar",
-        "empty": "Ainda não há posts.",
-        "error": "Não foi possível carregar o feed.",
-        "retry": "Tentar de novo",
-        "loading_more": "Carregando…",
-        "like": "Curtir",
-        "comments": "Comentários",
-        "add_comment": "Escreva um comentário…",
-        "send": "Enviar",
-        "game_tag": "De: ",
-        "login_required": "Entre para interagir."
     },
     "auth": {
         "login_tab": "Entrar",
@@ -44,15 +26,6 @@
         "err_empty": "Preencha usuário e senha.",
         "err_failed": "Não foi possível entrar.",
         "err_username": "Usuário: 3–32 caracteres, apenas letras e números."
-    },
-    "composer": {
-        "title": "Novo post",
-        "pick": "Escolha uma captura",
-        "album_empty": "Seu álbum está vazio.",
-        "caption": "Escreva uma legenda…",
-        "post": "Postar",
-        "posting": "Postando…",
-        "post_failed": "Falha ao postar — sua legenda foi mantida."
     },
     "settings": {
         "title": "Configurações",
