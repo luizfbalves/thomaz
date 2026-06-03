@@ -2,10 +2,6 @@
 
 #include <curl/curl.h>
 
-#ifdef __SWITCH__
-#include <switch.h>
-#endif
-
 namespace thomaz {
 
 namespace {
@@ -20,8 +16,13 @@ size_t writeToString(char* ptr, size_t size, size_t nmemb, void* userdata) {
 
 CurlHttpClient::CurlHttpClient() {
 #ifdef __SWITCH__
-    // libnx socket stack must be up before libcurl can open connections.
-    networkReady = R_SUCCEEDED(socketInitializeDefault());
+    // The libnx socket stack is already brought up by Borealis in userAppInit()
+    // (lib/borealis/.../switch/switch_wrapper.c). Calling socketInitializeDefault()
+    // again returns an "already initialized" error — which previously made us mark
+    // the network as unavailable and silently fail EVERY request even when the
+    // console was online. Sockets are guaranteed up by the time we run, so just
+    // use them; teardown is likewise owned by Borealis (userAppExit -> socketExit).
+    networkReady = true;
 #else
     networkReady = true;
 #endif
@@ -30,10 +31,7 @@ CurlHttpClient::CurlHttpClient() {
 
 CurlHttpClient::~CurlHttpClient() {
     curl_global_cleanup();
-#ifdef __SWITCH__
-    if (networkReady)
-        socketExit();
-#endif
+    // Socket teardown is owned by Borealis (userAppExit), not us — see ctor.
 }
 
 HttpResponse CurlHttpClient::get(const std::string& url) {
