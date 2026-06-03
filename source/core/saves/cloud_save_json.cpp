@@ -76,17 +76,20 @@ std::optional<std::vector<std::uint8_t>> base64_decode(const std::string& in) {
         return -1;
     };
     std::vector<std::uint8_t> out;
-    int buf = 0, bits = 0;
+    std::uint32_t buf = 0; // unsigned: defined wrap-around (signed shift would be UB)
+    int  bits    = 0;
+    bool padding = false;  // once '=' is seen, only '=' / whitespace may follow
     for (char c : in) {
-        if (c == '=') break;
         if (c == '\n' || c == '\r') continue;
+        if (c == '=') { padding = true; continue; }
+        if (padding) return std::nullopt;          // data after padding => malformed
         int v = val(c);
-        if (v < 0) return std::nullopt;
-        buf = (buf << 6) | v;
+        if (v < 0) return std::nullopt;            // outside the base64 alphabet
+        buf = (buf << 6) | (std::uint32_t)v;
         bits += 6;
         if (bits >= 8) {
             bits -= 8;
-            out.push_back((std::uint8_t)((buf >> bits) & 0xFF));
+            out.push_back(static_cast<std::uint8_t>((buf >> bits) & 0xFF));
         }
     }
     return out;

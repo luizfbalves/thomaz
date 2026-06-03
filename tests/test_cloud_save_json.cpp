@@ -12,6 +12,13 @@ TEST_CASE("base64 decodes including padding") {
     CHECK_FALSE(base64_decode("!!!!").has_value()); // invalid alphabet
 }
 
+TEST_CASE("base64 rejects misplaced padding and accepts unpadded input") {
+    CHECK_FALSE(base64_decode("dGhv=bWF6").has_value()); // '=' in the middle
+    auto np = base64_decode("aGVsbG8");                  // unpadded "hello"
+    REQUIRE(np.has_value());
+    CHECK(std::string(np->begin(), np->end()) == "hello");
+}
+
 TEST_CASE("parse_slot_meta: 200 with a slot") {
     const char* body = R"({"slot":{"titleId":"0100000000010000","label":"Zelda","revision":4,"updatedAt":1733242800}})";
     auto m = parse_slot_meta(body, 200);
