@@ -84,6 +84,25 @@
     "common": {
         "coming_soon": "Em breve"
     },
+    "saves": {
+        "title": "Gerenciador de Saves",
+        "subtitle": "Faça backup e restaure os saves dos seus jogos",
+        "last_backup": "Último backup: {{when}}",
+        "never": "Nunca foi feito backup",
+        "action_backup": "Fazer backup agora",
+        "action_restore": "Restaurar",
+        "history": "Backups",
+        "confirm_restore_title": "Restaurar este backup?",
+        "confirm_restore_body": "Isso sobrescreve o save atual deste jogo.",
+        "backing_up": "Fazendo backup…",
+        "restoring": "Restaurando…",
+        "backup_ok": "Backup concluído",
+        "backup_none": "Nenhum save para backup",
+        "backup_fail": "Falha no backup",
+        "restore_ok": "Restauração concluída",
+        "restore_fail": "Falha na restauração",
+        "empty": "Nenhum jogo instalado"
+    },
     "games": {
         "title": "Meus Jogos",
         "empty": "Nenhum jogo encontrado — rode no Switch para ver seus jogos.",

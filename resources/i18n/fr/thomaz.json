@@ -1,0 +1,21 @@
+{
+    "saves": {
+        "title": "Gestionnaire de sauvegardes",
+        "subtitle": "Sauvegardez et restaurez vos sauvegardes de jeux",
+        "last_backup": "Dernière sauvegarde : {{when}}",
+        "never": "Jamais sauvegardé",
+        "action_backup": "Sauvegarder maintenant",
+        "action_restore": "Restaurer",
+        "history": "Sauvegardes",
+        "confirm_restore_title": "Restaurer cette sauvegarde ?",
+        "confirm_restore_body": "Cela écrasera la sauvegarde actuelle de ce jeu.",
+        "backing_up": "Sauvegarde en cours…",
+        "restoring": "Restauration en cours…",
+        "backup_ok": "Sauvegarde terminée",
+        "backup_none": "Aucune donnée de sauvegarde à sauvegarder",
+        "backup_fail": "Échec de la sauvegarde",
+        "restore_ok": "Restauration terminée",
+        "restore_fail": "Échec de la restauration",
+        "empty": "Aucun jeu installé"
+    }
+}

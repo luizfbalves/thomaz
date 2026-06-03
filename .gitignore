@@ -25,8 +25,14 @@ tests/run
 !/resources/i18n/
 !/resources/i18n/en-US/
 !/resources/i18n/pt-BR/
+!/resources/i18n/fr/
+!/resources/i18n/ru/
+!/resources/i18n/zh-Hans/
 !/resources/i18n/en-US/thomaz.json
 !/resources/i18n/pt-BR/thomaz.json
+!/resources/i18n/fr/thomaz.json
+!/resources/i18n/ru/thomaz.json
+!/resources/i18n/zh-Hans/thomaz.json
 !/resources/img/
 !/resources/img/icon.jpg
 !/resources/xml/

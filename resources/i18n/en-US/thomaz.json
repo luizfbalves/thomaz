@@ -84,6 +84,25 @@
     "common": {
         "coming_soon": "Coming soon"
     },
+    "saves": {
+        "title": "Save Manager",
+        "subtitle": "Back up and restore your game saves",
+        "last_backup": "Last backup: {{when}}",
+        "never": "Never backed up",
+        "action_backup": "Back up now",
+        "action_restore": "Restore",
+        "history": "Backups",
+        "confirm_restore_title": "Restore this backup?",
+        "confirm_restore_body": "This overwrites the current save for this game.",
+        "backing_up": "Backing up…",
+        "restoring": "Restoring…",
+        "backup_ok": "Backup complete",
+        "backup_none": "No save data to back up",
+        "backup_fail": "Backup failed",
+        "restore_ok": "Restore complete",
+        "restore_fail": "Restore failed",
+        "empty": "No games installed"
+    },
     "games": {
         "title": "My Games",
         "empty": "No games found — run on a Switch to see your games.",
