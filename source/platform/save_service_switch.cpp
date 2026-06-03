@@ -193,9 +193,47 @@ bool NsSaveService::backup(const InstalledTitle& title, std::string* outError) {
     return true;
 }
 
-bool NsSaveService::restore(const core::BackupEntry&, std::uint64_t, std::string* outError) {
-    if (outError) *outError = "not implemented";
-    return false;
+bool NsSaveService::restore(const core::BackupEntry& entry, std::uint64_t title_id,
+                            std::string* outError) {
+    accountInitialize(AccountServiceType_System);
+
+    std::vector<std::string> done;
+    std::vector<std::string> skipped;
+
+    for (const std::string& profileHex : entry.profiles) {
+        AccountUid uid;
+        std::sscanf(profileHex.c_str(), "%016lx%016lx",
+                    (unsigned long*)&uid.uid[0], (unsigned long*)&uid.uid[1]);
+
+        // Mounting only succeeds for a profile that still exists and has a save
+        // slot for this title. If not, skip it and report.
+        if (R_FAILED(fsdevMountSaveData(kMount, title_id, uid))) {
+            skipped.push_back(profileHex);
+            continue;
+        }
+
+        std::string mountRoot = std::string(kMount) + ":/";
+        std::string src       = entry.path + "/" + profileHex;
+
+        clear_tree(mountRoot);                 // wipe current save contents
+        bool ok = copy_tree(src, mountRoot);   // write backup files back in
+        if (ok && R_SUCCEEDED(fsdevCommitDevice(kMount))) // commit, or it is discarded
+            done.push_back(profileHex);
+        else
+            skipped.push_back(profileHex);
+
+        fsdevUnmountDevice(kMount);
+    }
+    accountExit();
+
+    if (done.empty()) {
+        if (outError) *outError = "restore failed (no profiles restored)";
+        return false;
+    }
+    if (!skipped.empty() && outError)
+        *outError = "restored " + std::to_string(done.size()) +
+                    " profile(s); skipped " + std::to_string(skipped.size());
+    return true;
 }
 
 } // namespace thomaz
