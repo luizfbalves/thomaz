@@ -24,7 +24,8 @@ std::optional<CloudSlotMeta> parse_slot_meta(const std::string& body, long statu
 // 200 -> meta + decoded blob; 404 -> meta exists=false, empty data; else nullopt.
 std::optional<CloudSlotData> parse_slot_data(const std::string& body, long status);
 
-// New revision from a successful PUT body, or nullopt.
+// New revision from a PUT response body, or nullopt. The caller must only call
+// this after confirming a 2xx status (it does not inspect the status itself).
 std::optional<int> parse_push_revision(const std::string& body);
 
 // "error" string from the body, or "http_<status>" if absent/unparseable.
