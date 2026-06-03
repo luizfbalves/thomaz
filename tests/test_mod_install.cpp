@@ -13,6 +13,8 @@ TEST_CASE("is_safe_archive_path rejects absolute and traversal paths") {
     CHECK_FALSE(is_safe_archive_path(".."));
     CHECK_FALSE(is_safe_archive_path("romfs/../../x"));
     CHECK_FALSE(is_safe_archive_path("a/../b"));
+    // A single dot is deliberately accepted — only ".." is a traversal segment.
+    CHECK(is_safe_archive_path("."));
 }
 
 TEST_CASE("plan_install: archive already rooted at romfs/ needs no strip") {

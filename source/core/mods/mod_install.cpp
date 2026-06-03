@@ -6,7 +6,7 @@ bool is_safe_archive_path(const std::string& path) {
     if (path.empty() || path.front() == '/')
         return false;
     std::size_t start = 0;
-    while (start <= path.size()) {
+    for (;;) {
         std::size_t slash = path.find('/', start);
         std::string seg = (slash == std::string::npos)
                               ? path.substr(start)
