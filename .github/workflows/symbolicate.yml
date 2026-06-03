@@ -1,0 +1,64 @@
+name: symbolicate
+
+# On-demand crash symbolication. Builds the .elf (WITH symbols) for a given ref
+# and resolves Atmosphère crash-report offsets ("thomaz + 0xNNNN") to file:line
+# via addr2line. Same commit + same devkitpro image as the build/release workflow,
+# so the .text layout — and therefore the offsets — match the shipped .nro.
+#
+# Trigger: Actions tab -> symbolicate -> Run workflow (pick the ref, e.g. v0.2.1).
+# The offsets below come from the crash report; edit them for a new crash.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to build (tag/branch/sha matching the crashed .nro)'
+        required: true
+        default: 'v0.2.1'
+      offsets:
+        description: 'Space-separated module offsets (hex, e.g. 0xf39f0 0x4dd68)'
+        required: true
+        default: '0xf39f0 0x4dd68 0x24700 0x1ec80 0x189134 0xaa080 0x191c64 0x195178'
+
+jobs:
+  symbolicate:
+    name: Build .elf and resolve offsets
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkita64
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref }}
+          submodules: recursive
+
+      - name: Merge Borealis runtime resources into romfs
+        run: cp -rn lib/borealis/resources/* resources/
+
+      - name: Configure (Switch, deko3d)
+        run: cmake -B build_switch -DCMAKE_BUILD_TYPE=Release -DPLATFORM_SWITCH=ON -DUSE_DEKO3D=ON
+
+      - name: Build thomaz.nro (produces thomaz.elf with symbols)
+        run: make -C build_switch thomaz.nro -j$(nproc)
+
+      - name: Upload .elf artifact (for offline addr2line)
+        uses: actions/upload-artifact@v4
+        with:
+          name: thomaz-elf-${{ github.event.inputs.ref }}
+          path: build_switch/thomaz.elf
+          if-no-files-found: error
+
+      - name: Symbolicate offsets
+        run: |
+          ADDR2LINE=/opt/devkitpro/devkitA64/bin/aarch64-none-elf-addr2line
+          ELF=build_switch/thomaz.elf
+          echo "=== ELF load segments (vaddr base) ==="
+          /opt/devkitpro/devkitA64/bin/aarch64-none-elf-readelf -l "$ELF" | grep -A1 LOAD | head -20
+          echo
+          echo "=== addr2line (function + file:line, inlined frames) ==="
+          for off in ${{ github.event.inputs.offsets }}; do
+            echo "--- thomaz + $off ---"
+            "$ADDR2LINE" -f -C -i -e "$ELF" "$off"
+            echo
+          done
