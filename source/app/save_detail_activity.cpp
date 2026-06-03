@@ -141,36 +141,41 @@ void SaveDetailActivity::doBackup()
     });
 }
 
+void SaveDetailActivity::performRestore(const core::BackupEntry& entry)
+{
+    if (auto* spinner = this->getView("spinner"))
+        spinner->setVisibility(brls::Visibility::VISIBLE);
+    ISaveService* svc   = this->saveService;
+    std::uint64_t tid   = this->title.title_id;
+    core::BackupEntry e = entry;
+    auto alive          = this->alive;
+    brls::async([this, svc, e, tid, alive]() {
+        std::string err;
+        bool ok = svc->restore(e, tid, &err);
+        brls::sync([this, alive, ok, err]() {
+            if (!alive->load())
+                return;
+            if (auto* spinner = this->getView("spinner"))
+                spinner->setVisibility(brls::Visibility::GONE);
+            brls::Application::notify(ok ? "thomaz/saves/restore_ok"_i18n
+                                         : ("thomaz/saves/restore_fail"_i18n + std::string(": ") + err));
+            if (ok)
+                this->refreshHistory();
+        });
+    });
+}
+
 void SaveDetailActivity::doRestore(const core::BackupEntry& entry)
 {
-    auto doIt = [this, entry]() {
-        if (!this->alive->load())
-            return; // activity gone before the user confirmed
-        if (auto* spinner = this->getView("spinner"))
-            spinner->setVisibility(brls::Visibility::VISIBLE);
-        ISaveService* svc   = this->saveService;
-        std::uint64_t tid   = this->title.title_id;
-        core::BackupEntry e = entry;
-        auto alive          = this->alive;
-        brls::async([this, svc, e, tid, alive]() {
-            std::string err;
-            bool ok = svc->restore(e, tid, &err);
-            brls::sync([this, alive, ok, err]() {
-                if (!alive->load())
-                    return;
-                if (auto* spinner = this->getView("spinner"))
-                    spinner->setVisibility(brls::Visibility::GONE);
-                brls::Application::notify(ok ? "thomaz/saves/restore_ok"_i18n
-                                             : ("thomaz/saves/restore_fail"_i18n + std::string(": ") + err));
-                if (ok)
-                    this->refreshHistory();
-            });
-        });
-    };
-
+    auto alive          = this->alive;
+    core::BackupEntry e = entry;
     // Destructive — confirm first.
     brls::Dialog* dialog = new brls::Dialog("thomaz/saves/confirm_restore_body"_i18n);
-    dialog->addButton("thomaz/saves/action_restore"_i18n, [doIt]() { doIt(); });
+    dialog->addButton("thomaz/saves/action_restore"_i18n, [this, alive, e]() {
+        if (!alive->load())
+            return; // activity gone before the user confirmed
+        this->performRestore(e);
+    });
     dialog->addButton("brls/hints/back"_i18n, []() {});
     dialog->open();
 }
@@ -268,7 +273,66 @@ void SaveDetailActivity::pushAtRevision(int revision) {
     });
 }
 
-void SaveDetailActivity::doDownload() { /* Task 13 */ }
+void SaveDetailActivity::doDownload() {
+    if (this->cloudBusy) return;
+    if (!this->requireSession()) return;
+    this->cloudBusy = true;
+    this->setCloudStatusText("thomaz/saves/cloud_downloading"_i18n);
+
+    auto sess = load_session();
+    std::string token = sess ? sess->token : "";
+    ICloudSaveClient* c = this->cloudSaves;
+    ISaveService* svc   = this->saveService;
+    std::uint64_t tid   = this->title.title_id;
+    auto alive          = this->alive;
+
+    brls::async([this, c, svc, alive, token, tid]() {
+        CloudPull p = c->pull(token, tid);
+        std::string importErr;
+        bool imported = false;
+        if (p.ok && p.exists)
+            imported = svc->importPackageAsBackup(tid, p.blob, &importErr);
+
+        brls::sync([this, alive, p, imported, importErr, tid]() {
+            if (!alive->load()) return;
+            this->cloudBusy = false;
+            if (!p.ok) {
+                if (p.error == kCloudAuthExpired) this->showCloudLoggedOut();
+                this->setCloudStatusText(this->cloudErrorText(p.error));
+                return;
+            }
+            if (!p.exists) {
+                this->setCloudStatusText("thomaz/saves/cloud_status_none"_i18n);
+                return;
+            }
+            if (!imported) {
+                this->setCloudStatusText("thomaz/saves/cloud_err_generic"_i18n);
+                brls::Application::notify(importErr.empty()
+                    ? "thomaz/saves/cloud_err_generic"_i18n : importErr);
+                return;
+            }
+            save_synced_revision(tid, p.revision);
+            this->cloudRevision = p.revision;
+            brls::Application::notify("thomaz/saves/cloud_download_ok"_i18n);
+            this->refreshHistory();      // the new backup now shows in the list
+            this->refreshCloudStatus();  // now in sync
+
+            // The cloud copy was saved as a local backup. cloud_restore_q is the
+            // confirmation, so restore directly (no second confirm dialog).
+            auto entries = core::list_backups(core::saves_root(), tid);
+            if (!entries.empty()) {
+                core::BackupEntry newest = entries.front(); // list_backups is newest-first
+                brls::Dialog* dlg = new brls::Dialog("thomaz/saves/cloud_restore_q"_i18n);
+                dlg->addButton("thomaz/saves/action_restore"_i18n, [this, alive, newest]() {
+                    if (!alive->load()) return;
+                    this->performRestore(newest);
+                });
+                dlg->addButton("brls/hints/back"_i18n, []() {});
+                dlg->open();
+            }
+        });
+    });
+}
 
 void SaveDetailActivity::setCloudStatusText(const std::string& text) {
     if (auto* lbl = (brls::Label*)this->getView("cloudStatus"))

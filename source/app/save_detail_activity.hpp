@@ -31,10 +31,11 @@ class SaveDetailActivity : public brls::Activity
     void refreshHistory();
     void doBackup();
     void doRestore(const core::BackupEntry& entry);
+    void performRestore(const core::BackupEntry& entry);
 
     void doUpload();        // cloud upload flow (see pushAtRevision)
     void pushAtRevision(int revision);
-    void doDownload();      // implemented in Task 13 (stub for now)
+    void doDownload();      // cloud download flow -> local backup + restore prompt
     void refreshCloudStatus();
     void showCloudLoggedOut();
     bool requireSession();
