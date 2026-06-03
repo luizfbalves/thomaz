@@ -57,3 +57,4 @@ thomaz-cache/
 # Desktop fake save backups + unit-test scratch dir
 thomaz-saves/
 tests/test-saves-tmp/
+tests/test-mods-tmp/
