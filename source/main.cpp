@@ -42,6 +42,11 @@ int main(int argc, char* argv[])
     // Register theme colors and force dark mode.
     thomaz::registerThomazTheme();
 
+    // Smoother screen transitions: soften the activity cross-fade (default is a
+    // quick 200ms) and the focus highlight. Eased (quadraticOut) by Borealis.
+    brls::Application::getStyle().addMetric("brls/animations/show", 340.0f);
+    brls::Application::getStyle().addMetric("brls/animations/highlight", 130.0f);
+
     brls::Application::createWindow("thomaz/title"_i18n);
 
     // Select the title service for the current platform.
