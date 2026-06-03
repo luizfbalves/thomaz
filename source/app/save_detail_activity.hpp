@@ -41,7 +41,7 @@ class SaveDetailActivity : public brls::Activity
     std::string cloudErrorText(const std::string& apiError) const;
 
     int  cloudRevision = 0;
-    bool cloudBusy     = false;
+    bool cloudBusy     = false; // guards against concurrent upload/download (doUpload/doDownload)
 
     InstalledTitle title;
     ISaveService* saveService;

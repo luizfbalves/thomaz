@@ -194,14 +194,14 @@ void SaveDetailActivity::showCloudLoggedOut() {
 bool SaveDetailActivity::requireSession() {
     if (load_session().has_value())
         return true;
-    brls::Application::pushActivity(new AuthActivity(this->feed, [this]() {
-        if (this->alive->load()) {
-            if (auto* login = this->getView("cloudLogin"))
-                login->setVisibility(brls::Visibility::GONE);
-            if (auto* btns = this->getView("cloudButtons"))
-                btns->setVisibility(brls::Visibility::VISIBLE);
-            this->refreshCloudStatus();
-        }
+    auto alive = this->alive; // copy before push: the lambda must not touch `this` until guarded
+    brls::Application::pushActivity(new AuthActivity(this->feed, [this, alive]() {
+        if (!alive->load()) return;
+        if (auto* login = this->getView("cloudLogin"))
+            login->setVisibility(brls::Visibility::GONE);
+        if (auto* btns = this->getView("cloudButtons"))
+            btns->setVisibility(brls::Visibility::VISIBLE);
+        this->refreshCloudStatus();
     }));
     return false;
 }

@@ -112,7 +112,6 @@
         "cloud_status_synced": "Cloud: rev {{n}}",
         "cloud_status_ahead": "Cloud is newer than local (rev {{n}})",
         "cloud_status_loading": "Checking the cloud…",
-        "cloud_status_error": "Couldn't reach the cloud",
         "cloud_uploading": "Uploading…",
         "cloud_downloading": "Downloading…",
         "cloud_upload_ok": "Uploaded to cloud",
