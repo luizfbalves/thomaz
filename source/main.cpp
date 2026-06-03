@@ -7,8 +7,10 @@
 #ifdef __SWITCH__
 #include <switch.h>
 #include "platform/title_service_switch.hpp"
+#include "platform/save_service_switch.hpp"
 #else
 #include "platform/title_service_fake.hpp"
+#include "platform/save_service_fake.hpp"
 #endif
 
 #include <borealis.hpp>
@@ -68,13 +70,21 @@ int main(int argc, char* argv[])
     auto titleService = std::make_unique<thomaz::FakeTitleService>();
 #endif
 
+    // Save backup/restore service for the current platform.
+#ifdef __SWITCH__
+    auto saveService = std::make_unique<thomaz::NsSaveService>();
+#else
+    auto saveService = std::make_unique<thomaz::FakeSaveService>();
+#endif
+
     // HTTP client for downloading cheats (libcurl; libnx sockets on Switch).
     auto httpClient = std::make_unique<thomaz::CurlHttpClient>();
 
     // Quit the app with the + (START) button from any activity.
     brls::Application::setGlobalQuit(true);
 
-    brls::Application::pushActivity(new thomaz::HomeActivity(titleService.get(), httpClient.get()));
+    brls::Application::pushActivity(
+        new thomaz::HomeActivity(titleService.get(), httpClient.get(), saveService.get()));
 
     while (brls::Application::mainLoop())
         ;
