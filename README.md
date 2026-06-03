@@ -23,6 +23,23 @@ Os cheats vêm da base open-source [**switch-cheats-db**](https://github.com/Ham
 
 ---
 
+## 📸 Capturas de tela
+
+<!-- Coloque as imagens em docs/screenshots/ e descomente as linhas abaixo. -->
+<!--
+| Início | Meus jogos | Trapaças |
+|:------:|:----------:|:--------:|
+| ![Início](docs/screenshots/home.png) | ![Meus jogos](docs/screenshots/games.png) | ![Trapaças](docs/screenshots/cheats.png) |
+
+| Limpar trapaças | Configurações |
+|:---------------:|:-------------:|
+| ![Limpar](docs/screenshots/clear.png) | ![Configurações](docs/screenshots/settings.png) |
+-->
+
+> _Capturas de tela em breve._
+
+---
+
 ## 📦 Requisitos
 
 - Nintendo Switch com **Atmosphère** (CFW) e um menu de homebrew (hbmenu).
@@ -133,4 +150,8 @@ Inspirado por ferramentas como EdiZon-SE, Breeze e AIO-switch-updater — com o 
 
 thomaz é uma ferramenta para uso pessoal em jogos que você possui. Cheats podem causar comportamento inesperado; **nunca use trapaças em jogos online**, sob risco de banimento. Use por sua conta e risco.
 
-> Licença: a definir.
+---
+
+## 📄 Licença
+
+Distribuído sob a licença **MIT** — veja [`LICENSE`](LICENSE).
