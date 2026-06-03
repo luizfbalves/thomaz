@@ -30,12 +30,10 @@ std::string api_url_file() {
 }
 
 std::string default_api_base_url() {
-#ifdef __SWITCH__
-    // Production host on Lightsail. Override in Settings if you self-host.
+    // Both desktop and Switch default to the live API on Lightsail. For local
+    // API development, set a localhost override in Settings (API URL field) —
+    // it persists per platform and survives restarts.
     return "https://api.thomaz.baseup.cc";
-#else
-    return "http://localhost:3000";
-#endif
 }
 
 std::string strip_trailing_slash(std::string s) {
