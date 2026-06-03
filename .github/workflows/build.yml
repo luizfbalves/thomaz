@@ -8,6 +8,10 @@ name: build
 
 on:
   push:
+    # Skip tags (v*): the release workflow already builds and publishes the .nro
+    # for tagged versions, so building here too would be a redundant duplicate run.
+    tags-ignore:
+      - 'v*'
   pull_request:
   workflow_dispatch:
 
