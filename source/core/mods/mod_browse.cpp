@@ -56,13 +56,30 @@ GameResolve resolve_game(std::uint64_t title_id, const std::string& name,
         r.status = GameResolveStatus::NotFound;
         return r;
     }
-    const ModRecord* chosen = &page.records[0];
+    // GameBanana's Switch platform hub (id 6384) is named "Nintendo Switch" and
+    // is NOT an individual game; per-game pages use the "<Name> (Switch)"
+    // convention. Prefer a "(Switch)" record that isn't the hub; then any
+    // non-hub record; finally the first record.
+    constexpr std::uint64_t kSwitchHubGameId = 6384;
+    const ModRecord* chosen = nullptr;
     for (const ModRecord& rec : page.records) {
-        if (rec.name.find("Switch") != std::string::npos) {
+        if (rec.id != kSwitchHubGameId &&
+            rec.name.find("(Switch)") != std::string::npos) {
             chosen = &rec;
             break;
         }
     }
+    if (!chosen) {
+        for (const ModRecord& rec : page.records) {
+            if (rec.id != kSwitchHubGameId) {
+                chosen = &rec;
+                break;
+            }
+        }
+    }
+    if (!chosen)
+        chosen = &page.records[0];
+
     r.status = GameResolveStatus::Ok;
     r.game_id = chosen->id;
     r.matched_name = chosen->name;

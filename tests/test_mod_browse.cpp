@@ -106,6 +106,22 @@ TEST_CASE("resolve_game reports NetworkError on transport failure") {
     CHECK(g.status == GameResolveStatus::NetworkError);
 }
 
+TEST_CASE("resolve_game skips the 'Nintendo Switch' platform hub and picks the real game") {
+    std::uint64_t tid = 0x0100BBBBBBBBB000ULL; // not in override table
+    const char* HUB_FIRST = R"hub({
+      "_aMetadata": { "_nRecordCount": 2, "_nPerpage": 15, "_bIsComplete": true },
+      "_aRecords": [
+        { "_idRow": 6384, "_sModelName": "Game", "_sName": "Nintendo Switch", "_sProfileUrl": "g" },
+        { "_idRow": 15056, "_sModelName": "Game", "_sName": "Splatoon 3 (Switch)", "_sProfileUrl": "g" }
+      ]
+    })hub";
+    auto fetch = mapFetcher({ { gb_game_search_url("Splatoon 3 (Switch)", 1), HUB_FIRST } });
+    GameResolve g = resolve_game(tid, "Splatoon 3", fetch);
+    REQUIRE(g.status == GameResolveStatus::Ok);
+    CHECK(g.game_id == 15056);                  // NOT 6384 (the hub)
+    CHECK(g.matched_name == "Splatoon 3 (Switch)");
+}
+
 TEST_CASE("list_game_mods returns the subfeed mods page") {
     auto fetch = mapFetcher({ { gb_subfeed_url(6170, "", 1), GAME_MODS_JSON } });
     BrowseResult r = list_game_mods(6170, "", 1, fetch);
