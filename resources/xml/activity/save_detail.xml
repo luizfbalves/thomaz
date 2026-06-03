@@ -14,6 +14,31 @@
                         fontSize="18" textColor="#FFFFFF"/>
         </brls:Box>
 
+        <brls:Label text="@i18n/thomaz/saves/cloud_section"
+                    fontSize="15" textColor="@theme/thomaz/text_dim" marginBottom="8"/>
+        <brls:Label id="cloudStatus" text="" fontSize="14"
+                    textColor="@theme/thomaz/text_dim" marginBottom="10"/>
+        <brls:Box id="cloudButtons" axis="row" visibility="gone" marginBottom="20">
+            <brls:Box id="cloudUpload" axis="row" alignItems="center" justifyContent="center"
+                      height="48" grow="1.0" cornerRadius="12" focusable="true"
+                      backgroundColor="@theme/thomaz/tile_saves" marginRight="8">
+                <brls:Label text="@i18n/thomaz/saves/cloud_upload"
+                            fontSize="16" textColor="#FFFFFF"/>
+            </brls:Box>
+            <brls:Box id="cloudDownload" axis="row" alignItems="center" justifyContent="center"
+                      height="48" grow="1.0" cornerRadius="12" focusable="true"
+                      backgroundColor="@theme/thomaz/surface_2" marginLeft="8">
+                <brls:Label text="@i18n/thomaz/saves/cloud_download"
+                            fontSize="16" textColor="@theme/thomaz/text"/>
+            </brls:Box>
+        </brls:Box>
+        <brls:Box id="cloudLogin" axis="row" alignItems="center" justifyContent="center"
+                  height="48" cornerRadius="12" focusable="true" visibility="gone"
+                  backgroundColor="@theme/thomaz/surface_2" marginBottom="20">
+            <brls:Label text="@i18n/thomaz/saves/cloud_login"
+                        fontSize="16" textColor="@theme/thomaz/text"/>
+        </brls:Box>
+
         <brls:Label text="@i18n/thomaz/saves/history"
                     fontSize="15" textColor="@theme/thomaz/text_dim" marginBottom="8"/>
         <brls:ProgressSpinner id="spinner" width="36" height="36" visibility="gone" alignSelf="center"/>

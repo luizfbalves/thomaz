@@ -3,6 +3,8 @@
 #include <borealis.hpp>
 #include <atomic>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "core/backup_store.hpp"
 #include "platform/save_service.hpp"
@@ -29,6 +31,17 @@ class SaveDetailActivity : public brls::Activity
     void refreshHistory();
     void doBackup();
     void doRestore(const core::BackupEntry& entry);
+
+    void doUpload();        // implemented in Task 12 (stub for now)
+    void doDownload();      // implemented in Task 13 (stub for now)
+    void refreshCloudStatus();
+    void showCloudLoggedOut();
+    bool requireSession();
+    void setCloudStatusText(const std::string& text);
+    std::string cloudErrorText(const std::string& apiError) const;
+
+    int  cloudRevision = 0;
+    bool cloudBusy     = false;
 
     InstalledTitle title;
     ISaveService* saveService;

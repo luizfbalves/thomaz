@@ -5,6 +5,10 @@
 #include <borealis/core/thread.hpp>
 
 #include "core/backup_store.hpp"
+#include "app/auth_activity.hpp"
+#include "platform/feed/auth_store.hpp"
+#include "platform/saves/sync_store.hpp"
+#include "core/saves/save_sync.hpp"
 
 using namespace brls::literals;
 
@@ -47,6 +51,24 @@ void SaveDetailActivity::onContentAvailable()
         btn->addGestureRecognizer(new brls::TapGestureRecognizer(btn));
     }
     this->refreshHistory();
+
+    if (auto* up = this->getView("cloudUpload")) {
+        up->registerClickAction([this](brls::View*) { this->doUpload(); return true; });
+        up->addGestureRecognizer(new brls::TapGestureRecognizer(up));
+    }
+    if (auto* down = this->getView("cloudDownload")) {
+        down->registerClickAction([this](brls::View*) { this->doDownload(); return true; });
+        down->addGestureRecognizer(new brls::TapGestureRecognizer(down));
+    }
+    if (auto* login = this->getView("cloudLogin")) {
+        login->registerClickAction([this](brls::View*) { this->requireSession(); return true; });
+        login->addGestureRecognizer(new brls::TapGestureRecognizer(login));
+    }
+
+    if (load_session().has_value())
+        this->refreshCloudStatus();
+    else
+        this->showCloudLoggedOut();
 }
 
 void SaveDetailActivity::refreshHistory()
@@ -151,6 +173,87 @@ void SaveDetailActivity::doRestore(const core::BackupEntry& entry)
     dialog->addButton("thomaz/saves/action_restore"_i18n, [doIt]() { doIt(); });
     dialog->addButton("brls/hints/back"_i18n, []() {});
     dialog->open();
+}
+
+void SaveDetailActivity::doUpload()   { /* Task 12 */ }
+void SaveDetailActivity::doDownload() { /* Task 13 */ }
+
+void SaveDetailActivity::setCloudStatusText(const std::string& text) {
+    if (auto* lbl = (brls::Label*)this->getView("cloudStatus"))
+        lbl->setText(text);
+}
+
+void SaveDetailActivity::showCloudLoggedOut() {
+    if (auto* btns = this->getView("cloudButtons"))
+        btns->setVisibility(brls::Visibility::GONE);
+    if (auto* login = this->getView("cloudLogin"))
+        login->setVisibility(brls::Visibility::VISIBLE);
+    this->setCloudStatusText("");
+}
+
+bool SaveDetailActivity::requireSession() {
+    if (load_session().has_value())
+        return true;
+    brls::Application::pushActivity(new AuthActivity(this->feed, [this]() {
+        if (this->alive->load()) {
+            if (auto* login = this->getView("cloudLogin"))
+                login->setVisibility(brls::Visibility::GONE);
+            if (auto* btns = this->getView("cloudButtons"))
+                btns->setVisibility(brls::Visibility::VISIBLE);
+            this->refreshCloudStatus();
+        }
+    }));
+    return false;
+}
+
+std::string SaveDetailActivity::cloudErrorText(const std::string& apiError) const {
+    if (apiError == kCloudAuthExpired)   return "thomaz/saves/cloud_err_auth"_i18n;
+    if (apiError == "save_too_large")    return "thomaz/saves/cloud_err_toobig"_i18n;
+    if (apiError.rfind("http_", 0) == 0) return "thomaz/saves/cloud_err_generic"_i18n;
+    if (apiError.empty())                return "thomaz/saves/cloud_err_network"_i18n;
+    return "thomaz/saves/cloud_err_generic"_i18n;
+}
+
+void SaveDetailActivity::refreshCloudStatus() {
+    if (auto* btns = this->getView("cloudButtons"))
+        btns->setVisibility(brls::Visibility::VISIBLE);
+    if (auto* login = this->getView("cloudLogin"))
+        login->setVisibility(brls::Visibility::GONE);
+    this->setCloudStatusText("thomaz/saves/cloud_status_loading"_i18n);
+
+    auto sess = load_session();
+    std::string token = sess ? sess->token : "";
+    ICloudSaveClient* c = this->cloudSaves;
+    std::uint64_t tid   = this->title.title_id;
+    auto alive          = this->alive;
+
+    brls::async([this, c, alive, token, tid]() {
+        CloudStatus s = c->getStatus(token, tid);
+        brls::sync([this, alive, s, tid]() {
+            if (!alive->load()) return;
+            if (!s.ok) {
+                if (s.error == kCloudAuthExpired) this->showCloudLoggedOut();
+                this->setCloudStatusText(this->cloudErrorText(s.error));
+                return;
+            }
+            this->cloudRevision = s.revision;
+            int synced = load_synced_revision(tid);
+            core::SyncSituation sit = core::classify(s.exists, s.revision, synced);
+            std::string text;
+            if (sit == core::SyncSituation::NoCloud) {
+                text = "thomaz/saves/cloud_status_none"_i18n;
+            } else {
+                std::string key = (sit == core::SyncSituation::CloudAhead)
+                                      ? "thomaz/saves/cloud_status_ahead"_i18n
+                                      : "thomaz/saves/cloud_status_synced"_i18n;
+                auto pos = key.find("{{n}}");
+                if (pos != std::string::npos)
+                    key.replace(pos, 5, std::to_string(s.revision));
+                text = key;
+            }
+            this->setCloudStatusText(text);
+        });
+    });
 }
 
 } // namespace thomaz
