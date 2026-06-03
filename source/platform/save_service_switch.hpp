@@ -13,6 +13,11 @@ class NsSaveService : public ISaveService {
     bool backup(const InstalledTitle& title, std::string* outError) override;
     bool restore(const core::BackupEntry& entry, std::uint64_t title_id,
                  std::string* outError) override;
+    std::vector<std::uint8_t> packageActiveSave(std::uint64_t title_id,
+                                                std::string* outError) override;
+    bool importPackageAsBackup(std::uint64_t title_id,
+                               const std::vector<std::uint8_t>& blob,
+                               std::string* outError) override;
 };
 
 } // namespace thomaz

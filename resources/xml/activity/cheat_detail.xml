@@ -12,12 +12,14 @@
     <brls:ScrollingFrame width="auto" height="auto" grow="1.0">
 
         <brls:Box width="auto" height="auto" axis="column"
-                  paddingTop="24" paddingLeft="56" paddingRight="56" paddingBottom="24">
+                  paddingTop="32" paddingLeft="48" paddingRight="48" paddingBottom="28">
 
             <!-- hero -->
-            <brls:Box axis="row" alignItems="center"
+            <AnimatedBox axis="row" alignItems="center" entranceDelay="0"
                       padding="16" cornerRadius="16"
-                      backgroundColor="@theme/thomaz/accent"
+                      background="vertical_linear"
+                      backgroundStartColor="@theme/thomaz/accent_bright"
+                      backgroundEndColor="@theme/thomaz/accent_deep"
                       marginBottom="18">
                 <brls:Box width="56" height="56" cornerRadius="14"
                           backgroundColor="#FFFFFF29"
@@ -28,7 +30,7 @@
                 <brls:Label id="gameTitle"
                             width="auto" height="auto" grow="1.0"
                             fontSize="24" textColor="#FFFFFF"/>
-            </brls:Box>
+            </AnimatedBox>
 
             <!-- loading / fallback / empty / error -->
             <brls:Label id="statusLabel"
@@ -41,7 +43,7 @@
                         width="44" height="44" marginTop="8" marginBottom="8"/>
 
             <!-- cheat toggles inserted by CheatDetailActivity -->
-            <brls:Box id="cheatListBox"
+            <AnimatedBox id="cheatListBox" entranceDelay="80"
                       width="auto" height="auto" axis="column"/>
 
         </brls:Box>

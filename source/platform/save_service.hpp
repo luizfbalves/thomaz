@@ -25,6 +25,17 @@ class ISaveService {
     // success returns true; on failure returns false and sets *outError.
     virtual bool restore(const core::BackupEntry& entry, std::uint64_t title_id,
                          std::string* outError) = 0;
+
+    // Read the title's active save (all profiles) into an opaque blob suitable
+    // for upload. Returns empty + sets *outError on failure.
+    virtual std::vector<std::uint8_t> packageActiveSave(std::uint64_t title_id,
+                                                        std::string* outError) = 0;
+
+    // Write a downloaded blob as a new local backup (so it appears in the
+    // history and can be restored). Returns false + sets *outError on failure.
+    virtual bool importPackageAsBackup(std::uint64_t title_id,
+                                       const std::vector<std::uint8_t>& blob,
+                                       std::string* outError) = 0;
 };
 
 } // namespace thomaz

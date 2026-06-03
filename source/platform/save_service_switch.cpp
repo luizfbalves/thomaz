@@ -14,6 +14,8 @@
 
 #include "core/backup_store.hpp"
 #include "platform/cheat_store.hpp" // write_text_file
+#include "core/saves/save_package.hpp"
+#include "platform/saves/save_backup_io.hpp"
 
 namespace thomaz {
 
@@ -82,6 +84,41 @@ bool copy_tree(const std::string& src, const std::string& dst) {
                 if (std::fwrite(buf, 1, n, out) != n) { ok = false; break; }
             std::fclose(in);
             std::fclose(out);
+        }
+    }
+    ::closedir(d);
+    return ok;
+}
+
+// Recursively read every file under `src` into the package, prefixing each
+// path with `prefix` (the profile's uid_hex). Returns false on any read error.
+bool read_tree(const std::string& src, const std::string& prefix,
+               core::SavePackage& pkg) {
+    DIR* d = ::opendir(src.c_str());
+    if (!d) return false;
+    bool ok = true;
+    struct dirent* e;
+    while (ok && (e = ::readdir(d)) != nullptr) {
+        std::string name = e->d_name;
+        if (name == "." || name == "..") continue;
+        std::string s = src + "/" + name;
+        std::string rel = prefix.empty() ? name : prefix + "/" + name;
+        struct stat st;
+        if (::stat(s.c_str(), &st) != 0) { ok = false; break; }
+        if (S_ISDIR(st.st_mode)) {
+            ok = read_tree(s, rel, pkg);
+        } else {
+            FILE* in = std::fopen(s.c_str(), "rb");
+            if (!in) { ok = false; break; }
+            std::vector<std::uint8_t> bytes;
+            char buf[8192];
+            size_t n;
+            while ((n = std::fread(buf, 1, sizeof(buf), in)) > 0)
+                bytes.insert(bytes.end(), buf, buf + n);
+            bool readErr = std::ferror(in) != 0;
+            std::fclose(in);
+            if (readErr) { ok = false; break; }
+            pkg.files.push_back({ rel, std::move(bytes) });
         }
     }
     ::closedir(d);
@@ -234,6 +271,50 @@ bool NsSaveService::restore(const core::BackupEntry& entry, std::uint64_t title_
         *outError = "restored " + std::to_string(done.size()) +
                     " profile(s); skipped " + std::to_string(skipped.size());
     return true;
+}
+
+std::vector<std::uint8_t> NsSaveService::packageActiveSave(std::uint64_t title_id,
+                                                           std::string* outError) {
+    accountInitialize(AccountServiceType_System);
+    core::SavePackage pkg;
+    bool any        = false;
+    bool readFailed = false;
+    for (auto& p : all_profiles()) {
+        AccountUid uid;
+        std::sscanf(p.uid_hex.c_str(), "%016lx%016lx",
+                    (unsigned long*)&uid.uid[0], (unsigned long*)&uid.uid[1]);
+        if (R_FAILED(fsdevMountSaveData(kMount, title_id, uid)))
+            continue; // no save for this profile
+        std::string mountRoot = std::string(kMount) + ":/";
+        core::SavePackage tmp;
+        bool ok = read_tree(mountRoot, p.uid_hex, tmp);
+        fsdevUnmountDevice(kMount);
+        if (!ok) { readFailed = true; break; } // never upload a partially-read save
+        for (auto& f : tmp.files)
+            pkg.files.push_back(std::move(f));
+        any = true;
+    }
+    accountExit();
+    if (readFailed) {
+        if (outError) *outError = "failed to read save";
+        return {};
+    }
+    if (!any) {
+        if (outError) *outError = "no save data";
+        return {};
+    }
+    return core::pack_save_package(pkg);
+}
+
+bool NsSaveService::importPackageAsBackup(std::uint64_t title_id,
+                                          const std::vector<std::uint8_t>& blob,
+                                          std::string* outError) {
+    auto pkg = core::unpack_save_package(blob);
+    if (!pkg) {
+        if (outError) *outError = "corrupted cloud save";
+        return false;
+    }
+    return write_package_as_backup(title_id, "", *pkg, outError);
 }
 
 } // namespace thomaz

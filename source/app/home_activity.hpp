@@ -12,6 +12,7 @@
 #include "platform/save_service.hpp"
 #include "platform/feed/feed_client.hpp"
 #include "platform/feed/album_source.hpp"
+#include "platform/saves/cloud_save_client.hpp"
 
 namespace thomaz {
 
@@ -19,7 +20,7 @@ class HomeActivity : public brls::Activity
 {
   public:
     HomeActivity(ITitleService* titleService, IHttpClient* http, ISaveService* saveService,
-                 IFeedClient* feed, IAlbumSource* album);
+                 IFeedClient* feed, IAlbumSource* album, ICloudSaveClient* cloudSaves);
 
     CONTENT_FROM_XML_RES("activity/home.xml");
 
@@ -31,6 +32,7 @@ class HomeActivity : public brls::Activity
     ISaveService* saveService;
     IFeedClient* feed;
     IAlbumSource* album;
+    ICloudSaveClient* cloudSaves;
 };
 
 } // namespace thomaz
