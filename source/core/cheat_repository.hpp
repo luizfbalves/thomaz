@@ -28,7 +28,10 @@ struct FetchResult {
     CheatSet set;
 };
 
-// Fetches a URL; returns the body, or nullopt on any network/HTTP failure.
+// Fetches a URL. Returns the body on success; an empty string when the server
+// was reached but has no such document (e.g. HTTP 404 — game not in the db);
+// and nullopt ONLY on a transport/connection failure (so NetworkError is
+// reserved for genuine "can't reach the network", not "game has no cheats").
 using UrlFetcher = std::function<std::optional<std::string>(const std::string& url)>;
 
 // Orchestrate: fetch versions+cheats JSON, resolve the build_id for `version`,

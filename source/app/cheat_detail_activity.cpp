@@ -41,8 +41,17 @@ void CheatDetailActivity::onContentAvailable()
     brls::async([this, titleCopy, client, alive]() {
         core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
             HttpResponse r = client->get(url);
-            if (!r.ok())
+            // Distinguish "couldn't reach the server" from "server answered, but
+            // this game isn't in the db". status 0 == transport/connection failure
+            // -> nullopt -> NetworkError ("check your connection"). A reachable
+            // non-200 (typically 404: most games simply aren't in switch-cheats-db)
+            // is NOT a connection problem: return an empty doc so the resolver
+            // ends up at NotInDb ("no cheats for this game") instead of scaring
+            // the user with a bogus network error.
+            if (r.status == 0)
                 return std::nullopt;
+            if (!r.ok())
+                return std::string{};
             return r.body;
         };
         core::FetchResult result =

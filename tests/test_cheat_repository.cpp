@@ -75,6 +75,18 @@ TEST_CASE("fetch_cheat_set reports NotInDb when no build has cheats") {
     CHECK(r.set.cheats.empty());
 }
 
+TEST_CASE("fetch_cheat_set treats a reachable-but-empty doc (HTTP 404) as NotInDb, not NetworkError") {
+    // The fetcher contract: nullopt == transport failure; an empty string ==
+    // server reached but no such document (404 — the game simply isn't in the
+    // db). A 404 must NOT surface as a connection error to the user.
+    auto fetch = mapFetcher({
+        {versions_url(SMO), std::string{}},
+        {cheats_url(SMO),   std::string{}},
+    });
+    FetchResult r = fetch_cheat_set(SMO, 393216, fetch);
+    CHECK(r.status == FetchStatus::NotInDb);
+}
+
 TEST_CASE("fetch_cheat_set reports NetworkError when a document is unreachable") {
     // versions reachable, cheats missing
     auto fetch1 = mapFetcher({ {versions_url(SMO), VERSIONS_JSON} });
