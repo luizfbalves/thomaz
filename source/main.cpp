@@ -15,7 +15,6 @@
 #include <string>
 #include "app/theme.hpp"
 #include "app/home_activity.hpp"
-#include "app/slide_frame.hpp"
 #include "platform/app_settings.hpp"
 #include "platform/http_client_curl.hpp"
 #include "platform/self_update.hpp"
@@ -51,14 +50,11 @@ int main(int argc, char* argv[])
     // Register theme colors and force dark mode (safe now: videoContext exists).
     thomaz::registerThomazTheme();
 
-    // Custom XML tag <thomaz:SlideFrame>: an AppletFrame that slides up as it
-    // fades in. Activity XML roots use it in place of <brls:AppletFrame>.
-    brls::Application::registerXMLView("thomaz:SlideFrame", thomaz::SlideFrame::create);
-
-    // Smoother screen transitions: soften the activity cross-fade (default is a
-    // quick 200ms) and the focus highlight. Eased (quadraticOut) by Borealis.
-    brls::Application::getStyle().addMetric("brls/animations/show", 340.0f);
-    brls::Application::getStyle().addMetric("brls/animations/highlight", 130.0f);
+    // No animated transitions — screens swap instantly and focus snaps. A 0ms
+    // "show" duration makes Application::pushActivity call show() with animate
+    // off (it gates on duration > 0), so there is no cross-fade or slide.
+    brls::Application::getStyle().addMetric("brls/animations/show", 0.0f);
+    brls::Application::getStyle().addMetric("brls/animations/highlight", 0.0f);
 
     // Select the title service for the current platform.
 #ifdef __SWITCH__
