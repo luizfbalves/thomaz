@@ -48,7 +48,8 @@ std::vector<core::ArchiveEntry> list_archive_entries(const std::string& archive_
     ArchiveCloser closer{a};
 
     struct archive_entry* entry;
-    while (archive_read_next_header(a, &entry) == ARCHIVE_OK) {
+    int hr;
+    while ((hr = archive_read_next_header(a, &entry)) == ARCHIVE_OK || hr == ARCHIVE_WARN) {
         const char* name = archive_entry_pathname(entry);
         if (!name)
             continue;
@@ -77,7 +78,8 @@ ExtractResult extract_archive(const std::string& archive_path,
 
     struct archive_entry* entry;
     int seen = 0;
-    while (archive_read_next_header(a, &entry) == ARCHIVE_OK) {
+    int hr;
+    while ((hr = archive_read_next_header(a, &entry)) == ARCHIVE_OK || hr == ARCHIVE_WARN) {
         ++seen;
         if (progress)
             progress(seen, total);
@@ -117,7 +119,8 @@ ExtractResult extract_archive(const std::string& archive_path,
         la_int64_t offset;
         int r;
         bool wrote_ok = true;
-        while ((r = archive_read_data_block(a, &buff, &size, &offset)) == ARCHIVE_OK) {
+        while ((r = archive_read_data_block(a, &buff, &size, &offset)) == ARCHIVE_OK ||
+               r == ARCHIVE_WARN) {
             if (std::fwrite(buff, 1, size, out) != size) {
                 wrote_ok = false;
                 break;
