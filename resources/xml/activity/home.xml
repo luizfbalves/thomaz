@@ -5,7 +5,7 @@
   Footer hints come from registerAction() in HomeActivity.
   IDs trapacasCard / settingsCard are kept so the activity wiring is unchanged.
 -->
-<brls:AppletFrame title="thomaz" iconInterpolation="linear">
+<thomaz:SlideFrame title="thomaz" iconInterpolation="linear">
 
     <brls:Box axis="column" grow="1.0"
               paddingTop="36" paddingBottom="28"
@@ -107,4 +107,4 @@
             </brls:Box>
         </brls:Box>
     </brls:Box>
-</brls:AppletFrame>
+</thomaz:SlideFrame>

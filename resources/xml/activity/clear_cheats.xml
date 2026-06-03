@@ -1,4 +1,4 @@
-<brls:AppletFrame id="clearFrame"
+<thomaz:SlideFrame id="clearFrame"
     title="@i18n/thomaz/clear/title"
     iconInterpolation="linear">
 
@@ -45,4 +45,4 @@
 
     </brls:ScrollingFrame>
 
-</brls:AppletFrame>
+</thomaz:SlideFrame>

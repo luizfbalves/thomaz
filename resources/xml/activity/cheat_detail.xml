@@ -5,7 +5,7 @@
   cheat toggle list. IDs (gameTitle/statusLabel/spinner/cheatListBox/cheatFrame)
   are kept so CheatDetailActivity wiring is unchanged.
 -->
-<brls:AppletFrame id="cheatFrame"
+<thomaz:SlideFrame id="cheatFrame"
     title="@i18n/thomaz/cheats/title"
     iconInterpolation="linear">
 
@@ -48,4 +48,4 @@
 
     </brls:ScrollingFrame>
 
-</brls:AppletFrame>
+</thomaz:SlideFrame>
