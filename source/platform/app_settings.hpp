@@ -13,4 +13,12 @@ std::string load_locale();
 // Persist the chosen locale. Takes effect on the next launch.
 void save_locale(const std::string& locale);
 
+// Returns the saved API base URL override, or the compiled default if none.
+// Never has a trailing slash. Takes effect on next launch.
+std::string load_api_base_url();
+
+// Persist an API base URL override. Trims whitespace and any trailing slash.
+// An empty value clears the override (falls back to the compiled default).
+void save_api_base_url(const std::string& url);
+
 } // namespace thomaz

@@ -21,6 +21,28 @@ std::string trim(const std::string& s) {
     return s.substr(a, b - a + 1);
 }
 
+std::string api_url_file() {
+#ifdef __SWITCH__
+    return "/switch/thomaz/config/api_url.txt";
+#else
+    return "thomaz-cache/api_url.txt";
+#endif
+}
+
+std::string default_api_base_url() {
+#ifdef __SWITCH__
+    // Production host (placeholder until the API is deployed). Override in Settings.
+    return "https://thomaz-api.fly.dev";
+#else
+    return "http://localhost:3000";
+#endif
+}
+
+std::string strip_trailing_slash(std::string s) {
+    while (!s.empty() && s.back() == '/') s.pop_back();
+    return s;
+}
+
 } // namespace
 
 std::string load_locale() {
@@ -34,6 +56,20 @@ std::string load_locale() {
 
 void save_locale(const std::string& locale) {
     write_text_file(locale_file(), locale);
+}
+
+std::string load_api_base_url() {
+    if (auto saved = read_text_file(api_url_file())) {
+        std::string v = trim(*saved);
+        if (!v.empty())
+            return strip_trailing_slash(v);
+    }
+    return default_api_base_url();
+}
+
+void save_api_base_url(const std::string& url) {
+    std::string v = strip_trailing_slash(trim(url));
+    write_text_file(api_url_file(), v);
 }
 
 } // namespace thomaz
