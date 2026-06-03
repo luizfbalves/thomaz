@@ -19,14 +19,19 @@ HomeActivity::HomeActivity(ITitleService* titleService, IHttpClient* http, ISave
 void HomeActivity::onContentAvailable()
 {
     // Register click on the Trapaças card to navigate to the game list.
-    brls::View* card = this->getView("trapacasCard");
-    card->setFocusable(true);
-    card->registerClickAction([this](brls::View* view) {
-        brls::Application::pushActivity(new GameListActivity(this->titleService, this->http));
-        return true;
-    });
-    // Make the card respond to touch (Switch) and mouse (desktop), not just A.
-    card->addGestureRecognizer(new brls::TapGestureRecognizer(card));
+    // Guard against the id being absent: the home layout was redesigned (the
+    // hero is now "feedCard"), so "trapacasCard" may not exist — getView would
+    // return null and dereferencing it crashes at startup.
+    if (brls::View* card = this->getView("trapacasCard"))
+    {
+        card->setFocusable(true);
+        card->registerClickAction([this](brls::View* view) {
+            brls::Application::pushActivity(new GameListActivity(this->titleService, this->http));
+            return true;
+        });
+        // Make the card respond to touch (Switch) and mouse (desktop), not just A.
+        card->addGestureRecognizer(new brls::TapGestureRecognizer(card));
+    }
 
     // Settings card.
     if (brls::View* settings = this->getView("settingsCard"))
