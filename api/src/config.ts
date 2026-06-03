@@ -11,8 +11,11 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
-  JWT_ACCESS_EXPIRES: z.string().default("15m"),
-  REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(7),
+  // Long-lived sessions: the homebrew client stores the access token and does
+  // not auto-refresh for cloud saves, so a short access token surfaces as
+  // "session expired". Default to 1 year for a frictionless console experience.
+  JWT_ACCESS_EXPIRES: z.string().default("365d"),
+  REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(365),
   // Max requests/minute per IP for the credential endpoints (/auth/login,
   // /auth/register). Strict by default to blunt brute-force and signup spam;
   // raise via env if legitimate users behind shared NAT hit it.
