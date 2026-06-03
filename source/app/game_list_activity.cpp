@@ -85,9 +85,9 @@ void GameListActivity::onContentAvailable()
         clearEntry->setFocusable(true);
         clearEntry->setMarginBottom(12.0f);
         clearEntry->setPadding(8.0f, 16.0f, 8.0f, 16.0f);
-        clearEntry->setCornerRadius(8.0f);
+        clearEntry->setCornerRadius(12.0f);
         clearEntry->setAlignItems(brls::AlignItems::CENTER);
-        clearEntry->setBackgroundColor(nvgRGB(0x2A, 0x2D, 0x36));
+        clearEntry->setBackgroundColor(nvgRGB(0x22, 0x24, 0x2D)); // surface_2
 
         brls::Label* clearLabel = new brls::Label();
         clearLabel->setText("thomaz/clear/entry"_i18n);
@@ -112,8 +112,8 @@ void GameListActivity::onContentAvailable()
         row->setFocusable(true);
         row->setMarginBottom(4.0f);
         row->setPadding(12.0f, 20.0f, 12.0f, 20.0f);
-        row->setBackgroundColor(nvgRGB(0x1E, 0x20, 0x27));
-        row->setCornerRadius(8.0f);
+        row->setBackgroundColor(nvgRGB(0x1A, 0x1C, 0x23)); // surface_1
+        row->setCornerRadius(12.0f);
         row->setAlignItems(brls::AlignItems::CENTER);
 
         // Game icon (JPEG from control data) or a placeholder square.
@@ -135,7 +135,7 @@ void GameListActivity::onContentAvailable()
             placeholder->setHeight(48.0f);
             placeholder->setCornerRadius(8.0f);
             placeholder->setMarginRight(16.0f);
-            placeholder->setBackgroundColor(nvgRGB(0x2A, 0x2D, 0x36));
+            placeholder->setBackgroundColor(nvgRGB(0x22, 0x24, 0x2D)); // surface_2
             row->addView(placeholder);
         }
 
@@ -150,7 +150,7 @@ void GameListActivity::onContentAvailable()
 
         // "Has cheats" badge — hidden until the db index loads (see below).
         brls::Box* hasCheatBadge = makeBadge("thomaz/games/badge_has_cheats"_i18n,
-                                             nvgRGB(0x7C, 0x5C, 0xFF), nvgRGB(0xFF, 0xFF, 0xFF));
+                                             nvgRGBA(0x7C, 0x5C, 0xFF, 0x29), nvgRGB(0x92, 0x77, 0xFF));
         hasCheatBadge->setVisibility(brls::Visibility::GONE);
         row->addView(hasCheatBadge);
         this->hasCheatBadges.emplace_back(title.title_id, hasCheatBadge);
@@ -159,7 +159,7 @@ void GameListActivity::onContentAvailable()
         if (dir_has_nonempty_txt(core::sd_cheats_dir(title.title_id)))
         {
             row->addView(makeBadge("thomaz/games/badge_active"_i18n,
-                                   nvgRGB(0x2E, 0x7D, 0x46), nvgRGB(0xFF, 0xFF, 0xFF)));
+                                   nvgRGBA(0x57, 0xC9, 0x8A, 0x29), nvgRGB(0x57, 0xC9, 0x8A)));
         }
 
         // Version (formatted as decimal).

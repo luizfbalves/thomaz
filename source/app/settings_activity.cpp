@@ -31,9 +31,9 @@ brls::Box* makeActionRow(const std::string& text)
     row->setFocusable(true);
     row->setMarginTop(10.0f);
     row->setPadding(8.0f, 16.0f, 8.0f, 16.0f);
-    row->setCornerRadius(8.0f);
+    row->setCornerRadius(12.0f);
     row->setAlignItems(brls::AlignItems::CENTER);
-    row->setBackgroundColor(nvgRGB(0x2A, 0x2D, 0x36));
+    row->setBackgroundColor(nvgRGB(0x22, 0x24, 0x2D)); // surface_2
 
     auto* label = new brls::Label();
     label->setText(text);

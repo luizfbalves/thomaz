@@ -1,52 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Cheat detail — per-game toggles (design "Signal").
+  Violet hero (icon + game name) above the status line, spinner and the
+  cheat toggle list. IDs (gameTitle/statusLabel/spinner/cheatListBox/cheatFrame)
+  are kept so CheatDetailActivity wiring is unchanged.
+-->
 <brls:AppletFrame id="cheatFrame"
     title="@i18n/thomaz/cheats/title"
     iconInterpolation="linear">
 
-    <brls:ScrollingFrame
-        width="auto"
-        height="auto"
-        grow="1.0">
+    <brls:ScrollingFrame width="auto" height="auto" grow="1.0">
 
-        <brls:Box
-            width="auto"
-            height="auto"
-            axis="column"
-            paddingTop="20"
-            paddingLeft="60"
-            paddingRight="60"
-            paddingBottom="20">
+        <brls:Box width="auto" height="auto" axis="column"
+                  paddingTop="24" paddingLeft="56" paddingRight="56" paddingBottom="24">
 
-            <!-- Game name (set programmatically) -->
-            <brls:Label
-                id="gameTitle"
-                width="auto"
-                height="auto"
-                fontSize="24"
-                marginBottom="6" />
+            <!-- hero -->
+            <brls:Box axis="row" alignItems="center"
+                      padding="16" cornerRadius="16"
+                      backgroundColor="@theme/thomaz/accent"
+                      marginBottom="18">
+                <brls:Box width="56" height="56" cornerRadius="14"
+                          backgroundColor="#FFFFFF29"
+                          justifyContent="center" alignItems="center" marginRight="18">
+                    <brls:Label text="@i18n/thomaz/icon/cheats"
+                                fontSize="30" textColor="#FFFFFF"/>
+                </brls:Box>
+                <brls:Label id="gameTitle"
+                            width="auto" height="auto" grow="1.0"
+                            fontSize="24" textColor="#FFFFFF"/>
+            </brls:Box>
 
-            <!-- Loading / fallback / empty / error status (set programmatically) -->
-            <brls:Label
-                id="statusLabel"
-                width="auto"
-                height="auto"
-                text="@i18n/thomaz/cheats/loading"
-                fontSize="16"
-                marginBottom="14" />
+            <!-- loading / fallback / empty / error -->
+            <brls:Label id="statusLabel"
+                        width="auto" height="auto"
+                        text="@i18n/thomaz/cheats/loading"
+                        fontSize="16" textColor="@theme/thomaz/text_dim"
+                        marginBottom="14"/>
 
-            <!-- Spinner shown while the download is in flight -->
-            <brls:ProgressSpinner
-                id="spinner"
-                width="44"
-                height="44"
-                marginTop="8"
-                marginBottom="8" />
+            <brls:ProgressSpinner id="spinner"
+                        width="44" height="44" marginTop="8" marginBottom="8"/>
 
-            <!-- Cheat toggles inserted by CheatDetailActivity -->
-            <brls:Box
-                id="cheatListBox"
-                width="auto"
-                height="auto"
-                axis="column" />
+            <!-- cheat toggles inserted by CheatDetailActivity -->
+            <brls:Box id="cheatListBox"
+                      width="auto" height="auto" axis="column"/>
 
         </brls:Box>
 

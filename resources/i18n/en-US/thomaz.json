@@ -1,7 +1,10 @@
 {
     "title": "thomaz",
     "home": {
-        "greeting": "What are we doing today?"
+        "greeting": "What are we doing today?",
+        "eyebrow": "Welcome back",
+        "saves": "Save Manager",
+        "mods": "Mods"
     },
     "module": {
         "cheats": {
@@ -73,5 +76,18 @@
         "save": "Save and apply",
         "saved": "Cheats saved — applied on the game's next boot.",
         "save_failed": "Couldn't write to the SD card."
+    },
+    "icon": {
+        "cheats": "",
+        "settings": "",
+        "lock": "",
+        "save": "",
+        "mods": "",
+        "update": "",
+        "database": "",
+        "info": "",
+        "language": "",
+        "check": "",
+        "clear": ""
     }
 }

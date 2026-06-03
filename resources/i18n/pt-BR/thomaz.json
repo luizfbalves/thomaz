@@ -1,7 +1,10 @@
 {
     "title": "thomaz",
     "home": {
-        "greeting": "O que vamos fazer hoje?"
+        "greeting": "O que vamos fazer hoje?",
+        "eyebrow": "Bem-vindo de volta",
+        "saves": "Gerenciador de saves",
+        "mods": "Mods"
     },
     "module": {
         "cheats": {
@@ -73,5 +76,18 @@
         "save": "Salvar e aplicar",
         "saved": "Trapaças salvas — aplicam no próximo boot do jogo.",
         "save_failed": "Não foi possível salvar na SD."
+    },
+    "icon": {
+        "cheats": "",
+        "settings": "",
+        "lock": "",
+        "save": "",
+        "mods": "",
+        "update": "",
+        "database": "",
+        "info": "",
+        "language": "",
+        "check": "",
+        "clear": ""
     }
 }
