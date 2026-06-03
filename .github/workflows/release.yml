@@ -1,0 +1,42 @@
+name: release
+
+# Cutting a release: push a tag like v0.2.0 (keep it in sync with
+# source/app/version.hpp and CMakeLists VERSION_*). This builds thomaz.nro and
+# attaches it to the GitHub Release for that tag — which is exactly what the
+# in-app updater downloads (asset name: thomaz.nro).
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & publish thomaz.nro
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkita64
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Merge Borealis runtime resources into romfs
+        run: cp -rn lib/borealis/resources/* resources/
+
+      - name: Configure (Switch, deko3d)
+        run: cmake -B build_switch -DCMAKE_BUILD_TYPE=Release -DPLATFORM_SWITCH=ON -DUSE_DEKO3D=ON
+
+      - name: Build thomaz.nro
+        run: make -C build_switch thomaz.nro -j$(nproc)
+
+      - name: Publish to the GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build_switch/thomaz.nro
+          generate_release_notes: true

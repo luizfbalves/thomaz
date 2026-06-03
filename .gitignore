@@ -1,6 +1,11 @@
-# Build artifacts (devkitPro)
+# Build artifacts (devkitPro / CMake)
 build/
+build.nx/
+build_switch/
+build_desktop/
 *.nro
+*.nacp
+*.map
 *.nso
 *.nacp
 *.elf
@@ -11,3 +16,26 @@ build/
 
 # OS
 .DS_Store
+tests/run
+
+# Resources: Borealis's runtime resources (fonts, material, shaders, demo
+# strings/xml) are merged in from lib/borealis/resources at build time
+# (CI + scripts/build-desktop.sh). Track ONLY our authored files.
+/resources/**
+!/resources/i18n/
+!/resources/i18n/en-US/
+!/resources/i18n/pt-BR/
+!/resources/i18n/en-US/thomaz.json
+!/resources/i18n/pt-BR/thomaz.json
+!/resources/img/
+!/resources/img/icon.jpg
+!/resources/xml/
+!/resources/xml/activity/
+!/resources/xml/activity/home.xml
+!/resources/xml/activity/game_list.xml
+!/resources/xml/activity/cheat_detail.xml
+!/resources/xml/activity/clear_cheats.xml
+!/resources/xml/activity/settings.xml
+
+# Desktop index cache (downloaded switch-cheats-db index)
+thomaz-cache/

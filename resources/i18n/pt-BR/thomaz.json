@@ -1,0 +1,77 @@
+{
+    "title": "thomaz",
+    "home": {
+        "greeting": "O que vamos fazer hoje?"
+    },
+    "module": {
+        "cheats": {
+            "title": "Trapaças",
+            "subtitle": "Gerencie os cheats dos seus jogos"
+        },
+        "settings": {
+            "title": "Configurações"
+        }
+    },
+    "settings": {
+        "title": "Configurações",
+        "language": "Idioma",
+        "lang_auto": "Automático (sistema)",
+        "saved": "Idioma salvo — reinicie o app para aplicar.",
+        "restart_hint": "A mudança de idioma é aplicada ao reiniciar o app."
+    },
+    "update": {
+        "check": "Buscar atualizações",
+        "current_version": "Versão atual: v",
+        "checking": "Verificando atualizações…",
+        "up_to_date": "Você já está na versão mais recente.",
+        "none": "Nenhuma release encontrada.",
+        "error": "Falha ao verificar — verifique a conexão.",
+        "confirm_pre": "Nova versão ",
+        "confirm_post": " disponível. Atualizar agora?",
+        "confirm_yes": "Atualizar",
+        "confirm_no": "Agora não",
+        "downloading": "Baixando atualização…",
+        "done": "Atualizado! Reinicie o app para usar a nova versão.",
+        "failed": "Falha ao atualizar."
+    },
+    "db": {
+        "refresh": "Atualizar base de cheats",
+        "refreshing": "Atualizando base…",
+        "refresh_done": "Base de cheats atualizada.",
+        "refresh_failed": "Falha ao atualizar a base — verifique a conexão."
+    },
+    "common": {
+        "coming_soon": "Em breve"
+    },
+    "games": {
+        "title": "Meus Jogos",
+        "empty": "Nenhum jogo encontrado — rode no Switch para ver seus jogos.",
+        "coming_soon": "Cheats: em breve",
+        "badge_has_cheats": "Tem cheat",
+        "badge_active": "Ativado"
+    },
+    "clear": {
+        "entry": "Limpar trapaças",
+        "title": "Limpar trapaças",
+        "empty": "Nenhum jogo encontrado.",
+        "active_suffix": "  • ativo",
+        "select_all": "Marcar / desmarcar todos",
+        "clear_selected": "Limpar selecionados",
+        "none_selected": "Selecione ao menos um jogo.",
+        "confirm_pre": "Limpar trapaças de ",
+        "confirm_post": " jogo(s)? Os arquivos de cheat serão removidos da SD.",
+        "confirm_button": "Limpar",
+        "cancel": "Cancelar",
+        "done": "Trapaças removidas."
+    },
+    "cheats": {
+        "title": "Trapaças",
+        "loading": "Buscando trapaças…",
+        "none": "Nenhuma trapaça disponível para este jogo.",
+        "error_network": "Falha ao baixar — verifique a conexão e tente de novo.",
+        "fallback": "Sem trapaças para esta versão; usando as da versão anterior.",
+        "save": "Salvar e aplicar",
+        "saved": "Trapaças salvas — aplicam no próximo boot do jogo.",
+        "save_failed": "Não foi possível salvar na SD."
+    }
+}

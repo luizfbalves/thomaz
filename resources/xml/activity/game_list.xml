@@ -1,0 +1,38 @@
+<brls:AppletFrame title="@i18n/thomaz/games/title"
+    iconInterpolation="linear">
+
+    <brls:ScrollingFrame
+        width="auto"
+        height="auto"
+        grow="1.0">
+
+        <brls:Box
+            width="auto"
+            height="auto"
+            axis="column"
+            paddingTop="20"
+            paddingLeft="60"
+            paddingRight="60"
+            paddingBottom="20">
+
+            <!-- Empty state label (shown when no titles are found) -->
+            <brls:Label
+                id="emptyLabel"
+                width="auto"
+                height="auto"
+                text="@i18n/thomaz/games/empty"
+                fontSize="18"
+                horizontalAlign="center" />
+
+            <!-- Dynamic list of game rows inserted by GameListActivity -->
+            <brls:Box
+                id="gameListBox"
+                width="auto"
+                height="auto"
+                axis="column" />
+
+        </brls:Box>
+
+    </brls:ScrollingFrame>
+
+</brls:AppletFrame>

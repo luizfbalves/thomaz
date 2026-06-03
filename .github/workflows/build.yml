@@ -1,0 +1,42 @@
+name: build
+
+# Builds thomaz.nro in the cloud (the maintainer's network is Cloudflare-blocked
+# from the devkitPro servers; GitHub runners use the prebuilt devkitpro/devkita64
+# image which already bundles libnx + deko3d + cmake, so NO dkp-pacman is needed).
+# Mirrors xfangfang/borealis's own CI. Download the .nro artifact and copy it to
+# the SD card at /switch/thomaz.nro.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  switch:
+    name: Nintendo Switch (.nro)
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkita64
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Merge Borealis runtime resources into romfs
+        # Fills in Borealis's fonts/material/i18n/shaders without clobbering our
+        # own xml/i18n (cp -n = no-clobber). No network access required.
+        run: cp -rn lib/borealis/resources/* resources/
+
+      - name: Configure (Switch, deko3d)
+        run: cmake -B build_switch -DCMAKE_BUILD_TYPE=Release -DPLATFORM_SWITCH=ON -DUSE_DEKO3D=ON
+
+      - name: Build thomaz.nro
+        run: make -C build_switch thomaz.nro -j$(nproc)
+
+      - name: Upload NRO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: thomaz-nro
+          path: build_switch/thomaz.nro
+          if-no-files-found: error
