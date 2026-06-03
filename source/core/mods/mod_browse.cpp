@@ -3,7 +3,39 @@
 #include "core/mods/gamebanana_urls.hpp"
 #include "core/mods/gamebanana_overrides.hpp"
 
+#include <cctype>
+
 namespace thomaz::core {
+
+namespace {
+
+// Lowercase and keep only [a-z0-9] (drops spaces, punctuation, parentheses, and
+// — because we strip the literal "switch" token first — the "(Switch)" suffix).
+std::string normalize_name(const std::string& s) {
+    std::string low;
+    low.reserve(s.size());
+    for (char c : s)
+        low.push_back((char)std::tolower((unsigned char)c));
+    // remove the word "switch" so "Splatoon (Switch)" and "Splatoon" compare equal
+    for (std::string::size_type p; (p = low.find("switch")) != std::string::npos; )
+        low.erase(p, 6);
+    std::string out;
+    out.reserve(low.size());
+    for (unsigned char c : low)
+        if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'))
+            out.push_back((char)c);
+    return out;
+}
+
+// True if the two normalized names match: equal, or one contains the other
+// (handles minor suffix/edition differences between NACP and GameBanana names).
+bool names_match(const std::string& a, const std::string& b) {
+    if (a.empty() || b.empty()) return false;
+    if (a == b) return true;
+    return a.find(b) != std::string::npos || b.find(a) != std::string::npos;
+}
+
+} // anonymous namespace
 
 BrowseResult search_mods(const std::string& query, std::uint64_t game_id, int page,
                          const UrlFetcher& fetch) {
@@ -56,30 +88,32 @@ GameResolve resolve_game(std::uint64_t title_id, const std::string& name,
         r.status = GameResolveStatus::NotFound;
         return r;
     }
-    // GameBanana's Switch platform hub (id 6384) is named "Nintendo Switch" and
-    // is NOT an individual game; per-game pages use the "<Name> (Switch)"
-    // convention. Prefer a "(Switch)" record that isn't the hub; then any
-    // non-hub record; finally the first record.
     constexpr std::uint64_t kSwitchHubGameId = 6384;
+    const std::string q = normalize_name(name);
     const ModRecord* chosen = nullptr;
+    // Prefer a "(Switch)" page whose name matches the query.
     for (const ModRecord& rec : page.records) {
-        if (rec.id != kSwitchHubGameId &&
-            rec.name.find("(Switch)") != std::string::npos) {
+        if (rec.id == kSwitchHubGameId) continue;
+        if (rec.name.find("(Switch)") != std::string::npos &&
+            names_match(q, normalize_name(rec.name))) {
             chosen = &rec;
             break;
         }
     }
+    // Otherwise any non-hub record whose name matches the query.
     if (!chosen) {
         for (const ModRecord& rec : page.records) {
-            if (rec.id != kSwitchHubGameId) {
+            if (rec.id == kSwitchHubGameId) continue;
+            if (names_match(q, normalize_name(rec.name))) {
                 chosen = &rec;
                 break;
             }
         }
     }
-    if (!chosen)
-        chosen = &page.records[0];
-
+    if (!chosen) {            // no confident match -> let the UI fall back to manual search
+        r.status = GameResolveStatus::NotFound;
+        return r;
+    }
     r.status = GameResolveStatus::Ok;
     r.game_id = chosen->id;
     r.matched_name = chosen->name;

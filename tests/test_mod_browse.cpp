@@ -122,6 +122,19 @@ TEST_CASE("resolve_game skips the 'Nintendo Switch' platform hub and picks the r
     CHECK(g.matched_name == "Splatoon 3 (Switch)");
 }
 
+TEST_CASE("resolve_game returns NotFound when best_match yields an unrelated game") {
+    std::uint64_t tid = 0x0100CCCCCCCCC000ULL; // not in override table
+    const char* WRONG = R"json({
+      "_aMetadata": { "_nRecordCount": 1, "_nPerpage": 15, "_bIsComplete": true },
+      "_aRecords": [
+        { "_idRow": 14819, "_sModelName": "Game", "_sName": "The Witcher 3 (Switch)", "_sProfileUrl": "g" }
+      ]
+    })json";
+    auto fetch = mapFetcher({ { gb_game_search_url("Splatoon 3 (Switch)", 1), WRONG } });
+    GameResolve g = resolve_game(tid, "Splatoon 3", fetch);
+    CHECK(g.status == GameResolveStatus::NotFound);   // refuses the wrong game
+}
+
 TEST_CASE("list_game_mods returns the subfeed mods page") {
     auto fetch = mapFetcher({ { gb_subfeed_url(6170, "", 1), GAME_MODS_JSON } });
     BrowseResult r = list_game_mods(6170, "", 1, fetch);
