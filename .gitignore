@@ -36,6 +36,7 @@ tests/run
 !/resources/xml/activity/cheat_detail.xml
 !/resources/xml/activity/clear_cheats.xml
 !/resources/xml/activity/settings.xml
+!/resources/xml/activity/auth.xml
 
 # Desktop index cache (downloaded switch-cheats-db index)
 thomaz-cache/

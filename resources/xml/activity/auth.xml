@@ -1,0 +1,28 @@
+<thomaz:SlideFrame title="@i18n/thomaz/auth/login_tab" iconInterpolation="linear">
+    <brls:Box axis="column" grow="1.0"
+              paddingTop="36" paddingBottom="28" paddingLeft="56" paddingRight="56"
+              justifyContent="center" alignItems="center">
+
+        <brls:Box id="authForm" axis="column" width="420" height="auto">
+
+            <brls:Box id="tabsRow" axis="row" marginBottom="20" />
+
+            <brls:InputCell id="usernameCell" />
+            <brls:InputCell id="passwordCell" marginTop="10" />
+
+            <brls:Box id="submitBtn"
+                      axis="row" justifyContent="center" alignItems="center"
+                      height="52" marginTop="20" cornerRadius="14"
+                      backgroundColor="@theme/thomaz/tile_cheats"
+                      focusable="true" highlightCornerRadius="14"
+                      hideHighlightBackground="true">
+                <brls:Label id="submitLabel" text="@i18n/thomaz/auth/submit_login"
+                            fontSize="18" textColor="#FFFFFF"/>
+            </brls:Box>
+
+            <brls:Label id="authStatus" text="" fontSize="14"
+                        marginTop="14" horizontalAlign="center"
+                        textColor="@theme/thomaz/text_dim"/>
+        </brls:Box>
+    </brls:Box>
+</thomaz:SlideFrame>
