@@ -16,5 +16,18 @@
     "enable_failed": "Failed to enable the mod",
     "disable_failed": "Failed to disable the mod",
     "uninstall_failed": "Failed to uninstall the mod",
-    "active": "Active"
+    "active": "Active",
+    "browse": "Get mods (GameBanana)",
+    "search": "Search mods",
+    "search_hint": "Type the mod name",
+    "searching": "Searching…",
+    "no_results": "No mods found.",
+    "load_more": "Load more",
+    "likes": "likes",
+    "no_files": "This mod has no files.",
+    "download": "Download & install",
+    "downloading": "Downloading…",
+    "download_failed": "Download failed",
+    "search_error": "Search failed. Check your connection.",
+    "installed_ok": "Mod downloaded and installed."
 }

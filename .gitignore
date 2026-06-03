@@ -50,6 +50,8 @@ tests/run
 !/resources/xml/activity/feed.xml
 !/resources/xml/activity/composer.xml
 !/resources/xml/activity/mod_manager.xml
+!/resources/xml/activity/mod_browser.xml
+!/resources/xml/activity/mod_detail.xml
 
 # Desktop index cache (downloaded switch-cheats-db index)
 thomaz-cache/
