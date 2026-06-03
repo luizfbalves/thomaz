@@ -58,6 +58,7 @@ feed::FeedPage FakeFeedClient::fetchFeed(const std::string& cursor)
         page.posts.push_back(posts[i]);
     page.hasMore    = end < posts.size();
     page.nextCursor = page.hasMore ? std::to_string(end) : "";
+    page.ok         = true; // the fake always "succeeds"
     return page;
 }
 
