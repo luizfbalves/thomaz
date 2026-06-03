@@ -39,3 +39,6 @@ tests/run
 
 # Desktop index cache (downloaded switch-cheats-db index)
 thomaz-cache/
+
+# Brainstorming visual companion (mockups)
+.superpowers/
