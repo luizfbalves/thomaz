@@ -58,7 +58,9 @@
         "language": "Idioma",
         "lang_auto": "Automático (sistema)",
         "saved": "Idioma salvo — reinicie o app para aplicar.",
-        "restart_hint": "A mudança de idioma é aplicada ao reiniciar o app."
+        "restart_hint": "A mudança de idioma é aplicada ao reiniciar o app.",
+        "api_url": "URL da API",
+        "api_url_hint": "Endereço do servidor (reinicie para aplicar)"
     },
     "update": {
         "check": "Buscar atualizações",

@@ -7,6 +7,7 @@
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
 #include <borealis/core/thread.hpp>
+#include <borealis/views/cells/cell_input.hpp>
 #include <string>
 #include <vector>
 
@@ -87,6 +88,20 @@ void SettingsActivity::onContentAvailable()
         });
     langCell->addGestureRecognizer(new brls::TapGestureRecognizer(langCell));
     listBox->addView(langCell);
+
+    // --- API URL --------------------------------------------------------------
+    auto* apiCell = new brls::InputCell();
+    apiCell->init(
+        "thomaz/settings/api_url"_i18n,
+        load_api_base_url(),
+        [](std::string v) {
+            save_api_base_url(v);
+            brls::Application::notify("thomaz/settings/saved"_i18n);
+        },
+        "thomaz/settings/api_url_hint"_i18n,
+        "", 128);
+    apiCell->addGestureRecognizer(new brls::TapGestureRecognizer(apiCell));
+    listBox->addView(apiCell);
 
     // Shared status line for the network actions below.
     auto* status = new brls::Label();
