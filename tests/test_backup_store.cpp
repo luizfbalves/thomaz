@@ -19,6 +19,17 @@ TEST_CASE("manifest round-trips through build + parse") {
     CHECK(out->timestamp == "2026-06-03_14-20-00");
     CHECK(out->profiles.size() == 2);
     CHECK(out->profiles[0] == "e0e0...aa");
+    CHECK(out->profiles[1] == "11112222");
+}
+
+TEST_CASE("parse_manifest: title_id as a string is rejected; missing game_name is allowed") {
+    // title_id stored as a string -> rejected (would otherwise silently become 0)
+    CHECK_FALSE(parse_manifest(R"({"title_id":"0100","timestamp":"2026-01-01_00-00-00"})").has_value());
+    // game_name optional: a manifest without it still parses, name defaults to ""
+    auto ok = parse_manifest(R"({"title_id":4096,"timestamp":"2026-01-01_00-00-00"})");
+    REQUIRE(ok.has_value());
+    CHECK(ok->game_name == "");
+    CHECK(ok->title_id == 4096);
 }
 
 TEST_CASE("parse_manifest returns nullopt on garbage") {

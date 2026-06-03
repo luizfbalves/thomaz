@@ -32,6 +32,6 @@ struct BackupEntry {
 std::string build_manifest(const ManifestInfo& info);
 
 // Parse a manifest.json body; nullopt if malformed.
-std::optional<ManifestInfo> parse_manifest(const std::string& json);
+std::optional<ManifestInfo> parse_manifest(const std::string& body);
 
 } // namespace thomaz::core

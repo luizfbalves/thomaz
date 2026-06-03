@@ -19,7 +19,10 @@ std::optional<ManifestInfo> parse_manifest(const std::string& body) {
     json j = json::parse(body, nullptr, /*allow_exceptions=*/false);
     if (j.is_discarded() || !j.is_object())
         return std::nullopt;
-    if (!j.contains("title_id") || !j.contains("timestamp"))
+    // Required: title_id (unsigned) + timestamp (string). game_name/profiles are optional.
+    if (!j.contains("timestamp") || !j["timestamp"].is_string())
+        return std::nullopt;
+    if (!j.contains("title_id") || !j["title_id"].is_number_unsigned())
         return std::nullopt;
 
     ManifestInfo info;
