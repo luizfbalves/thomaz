@@ -11,26 +11,33 @@
             width="auto"
             height="auto"
             axis="column"
-            paddingTop="20"
-            paddingLeft="60"
-            paddingRight="60"
-            paddingBottom="20">
+            paddingTop="32"
+            paddingLeft="48"
+            paddingRight="48"
+            paddingBottom="28">
 
             <!-- Settings cells inserted by SettingsActivity (language, ...) -->
-            <brls:Box
+            <AnimatedBox
                 id="settingsListBox"
                 width="auto"
                 height="auto"
+                entranceDelay="0"
                 axis="column" />
 
             <!-- Note: language change applies on next launch -->
-            <brls:Label
-                id="restartNote"
+            <AnimatedBox
                 width="auto"
                 height="auto"
-                text="@i18n/thomaz/settings/restart_hint"
-                fontSize="14"
-                marginTop="16" />
+                entranceDelay="120"
+                axis="column">
+                <brls:Label
+                    id="restartNote"
+                    width="auto"
+                    height="auto"
+                    text="@i18n/thomaz/settings/restart_hint"
+                    fontSize="14"
+                    marginTop="16" />
+            </AnimatedBox>
 
         </brls:Box>
 

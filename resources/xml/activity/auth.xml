@@ -3,7 +3,11 @@
               paddingTop="36" paddingBottom="28" paddingLeft="56" paddingRight="56"
               justifyContent="center" alignItems="center">
 
-        <brls:Box id="authForm" axis="column" width="420" height="auto">
+        <AnimatedBox id="authForm" axis="column" width="440" height="auto"
+                     entranceDelay="0" entranceRise="28"
+                     padding="32" cornerRadius="20"
+                     backgroundColor="@theme/thomaz/surface_1"
+                     borderColor="@theme/thomaz/line" borderThickness="1">
 
             <brls:Box id="tabsRow" axis="row" marginBottom="20" />
 
@@ -23,6 +27,6 @@
             <brls:Label id="authStatus" text="" fontSize="14"
                         marginTop="14" horizontalAlign="center"
                         textColor="@theme/thomaz/text_dim"/>
-        </brls:Box>
+        </AnimatedBox>
     </brls:Box>
 </brls:AppletFrame>
