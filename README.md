@@ -25,18 +25,11 @@ Os cheats vêm da base open-source [**switch-cheats-db**](https://github.com/Ham
 
 ## 📸 Capturas de tela
 
-<!-- Coloque as imagens em docs/screenshots/ e descomente as linhas abaixo. -->
-<!--
-| Início | Meus jogos | Trapaças |
-|:------:|:----------:|:--------:|
-| ![Início](docs/screenshots/home.png) | ![Meus jogos](docs/screenshots/games.png) | ![Trapaças](docs/screenshots/cheats.png) |
+| Início | Meus jogos |
+|:------:|:----------:|
+| ![Início](docs/screenshots/home.png) | ![Meus jogos](docs/screenshots/games.png) |
 
-| Limpar trapaças | Configurações |
-|:---------------:|:-------------:|
-| ![Limpar](docs/screenshots/clear.png) | ![Configurações](docs/screenshots/settings.png) |
--->
-
-> _Capturas de tela em breve._
+<!-- Mais telas em breve: trapaças (toggles), limpar e configurações. -->
 
 ---
 
