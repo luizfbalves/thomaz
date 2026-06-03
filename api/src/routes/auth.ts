@@ -26,7 +26,16 @@ export async function authRoutes(
   app: FastifyInstance,
   env: Env,
 ): Promise<void> {
-  app.post("/auth/register", async (request, reply) => {
+  // Per-IP throttle for the credential endpoints. These are the only public
+  // unauthenticated write paths, so they're the real brute-force / signup-spam
+  // surface; each route gets its own counter (max requests/minute per IP).
+  const authRateLimit = {
+    config: {
+      rateLimit: { max: env.AUTH_RATE_MAX, timeWindow: "1 minute" },
+    },
+  };
+
+  app.post("/auth/register", authRateLimit, async (request, reply) => {
     const parsed = credentialsSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send(authError("invalid_credentials"));
@@ -46,7 +55,7 @@ export async function authRoutes(
     return signAuthResponse(reply, app.prisma, env, user);
   });
 
-  app.post("/auth/login", async (request, reply) => {
+  app.post("/auth/login", authRateLimit, async (request, reply) => {
     const parsed = credentialsSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send(authError("invalid_credentials"));

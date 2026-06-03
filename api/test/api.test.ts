@@ -19,6 +19,10 @@ beforeAll(async () => {
   process.env.JWT_SECRET = JWT_SECRET;
   process.env.PUBLIC_BASE_URL = "http://localhost:3000";
   process.env.NODE_ENV = "test";
+  // Keep the auth rate limit effectively off for the shared app so the many
+  // register/login calls across tests don't trip it; the dedicated rate-limit
+  // test below builds its own app with a low limit.
+  process.env.AUTH_RATE_MAX = "10000";
   uploadDir = await mkdtemp(join(tmpdir(), "thomaz-api-"));
   process.env.UPLOAD_DIR = uploadDir;
 
@@ -456,5 +460,54 @@ describe("thomaz-api", () => {
       headers: { authorization: `Bearer ${token}` },
     });
     expect(gone.statusCode).toBe(404);
+  });
+
+  it("rate-limits repeated /auth/login from the same IP", async () => {
+    const prev = process.env.AUTH_RATE_MAX;
+    const built = await buildApp({ AUTH_RATE_MAX: 3 });
+    const rlApp = built.app;
+    try {
+      const hit = () =>
+        rlApp.inject({
+          method: "POST",
+          url: "/auth/login",
+          payload: { username: "ghost_user", password: "password1" },
+        });
+
+      // Under the limit (3/min): non-existent user → 401, never 429.
+      const first = [await hit(), await hit(), await hit()];
+      expect(first.map((r) => r.statusCode)).toEqual([401, 401, 401]);
+
+      // The 4th request in the window is throttled.
+      const throttled = await hit();
+      expect(throttled.statusCode).toBe(429);
+    } finally {
+      await rlApp.close();
+      process.env.AUTH_RATE_MAX = prev;
+    }
+  });
+
+  it("rate-limits repeated /auth/register from the same IP", async () => {
+    const prev = process.env.AUTH_RATE_MAX;
+    const built = await buildApp({ AUTH_RATE_MAX: 2 });
+    const rlApp = built.app;
+    try {
+      const hit = (n: number) =>
+        rlApp.inject({
+          method: "POST",
+          url: "/auth/register",
+          payload: { username: `rl_reg_${Date.now()}_${n}`, password: "password1" },
+        });
+
+      const r1 = await hit(1);
+      const r2 = await hit(2);
+      const r3 = await hit(3);
+      expect(r1.statusCode).toBe(200);
+      expect(r2.statusCode).toBe(200);
+      expect(r3.statusCode).toBe(429);
+    } finally {
+      await rlApp.close();
+      process.env.AUTH_RATE_MAX = prev;
+    }
   });
 });

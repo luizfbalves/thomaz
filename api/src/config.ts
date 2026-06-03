@@ -13,6 +13,10 @@ const envSchema = z.object({
     .default("development"),
   JWT_ACCESS_EXPIRES: z.string().default("15m"),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(7),
+  // Max requests/minute per IP for the credential endpoints (/auth/login,
+  // /auth/register). Strict by default to blunt brute-force and signup spam;
+  // raise via env if legitimate users behind shared NAT hit it.
+  AUTH_RATE_MAX: z.coerce.number().int().positive().default(10),
 });
 
 export type Env = z.infer<typeof envSchema>;
