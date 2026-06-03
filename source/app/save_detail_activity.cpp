@@ -175,7 +175,99 @@ void SaveDetailActivity::doRestore(const core::BackupEntry& entry)
     dialog->open();
 }
 
-void SaveDetailActivity::doUpload()   { /* Task 12 */ }
+void SaveDetailActivity::doUpload() {
+    if (this->cloudBusy) return;
+    if (!this->requireSession()) return;
+    this->cloudBusy = true;
+    this->setCloudStatusText("thomaz/saves/cloud_uploading"_i18n);
+
+    auto sess = load_session();
+    std::string token = sess ? sess->token : "";
+    ICloudSaveClient* c = this->cloudSaves;
+    std::uint64_t tid   = this->title.title_id;
+    auto alive          = this->alive;
+
+    brls::async([this, c, alive, token, tid]() {
+        // Fresh status decides clean push vs conflict.
+        CloudStatus s = c->getStatus(token, tid);
+        brls::sync([this, alive, s, tid]() {
+            if (!alive->load()) return;
+            if (!s.ok) {
+                this->cloudBusy = false;
+                if (s.error == kCloudAuthExpired) this->showCloudLoggedOut();
+                this->setCloudStatusText(this->cloudErrorText(s.error));
+                return;
+            }
+            int synced = load_synced_revision(tid);
+            core::SyncSituation sit = core::classify(s.exists, s.revision, synced);
+            core::PushPlan plan = core::plan_push(sit, s.revision);
+            if (plan.isConflict) {
+                this->cloudBusy = false; // wait on the user's choice
+                auto alive2 = this->alive;
+                int rev = plan.revision;
+                brls::Dialog* dlg = new brls::Dialog("thomaz/saves/cloud_conflict_body"_i18n);
+                dlg->addButton("thomaz/saves/cloud_send_mine"_i18n, [this, alive2, rev]() {
+                    if (!alive2->load()) return;
+                    this->pushAtRevision(rev);
+                });
+                dlg->addButton("thomaz/saves/cloud_keep_cloud"_i18n, [this, alive2]() {
+                    if (!alive2->load()) return;
+                    this->doDownload();
+                });
+                dlg->open();
+                return;
+            }
+            // Clean push (NoCloud -> rev 0, InSync -> current rev).
+            this->pushAtRevision(plan.revision);
+        });
+    });
+}
+
+void SaveDetailActivity::pushAtRevision(int revision) {
+    this->cloudBusy = true;
+    this->setCloudStatusText("thomaz/saves/cloud_uploading"_i18n);
+
+    auto sess = load_session();
+    std::string token = sess ? sess->token : "";
+    ICloudSaveClient* c = this->cloudSaves;
+    ISaveService* svc   = this->saveService;
+    std::uint64_t tid   = this->title.title_id;
+    std::string label   = this->title.name;
+    auto alive          = this->alive;
+
+    brls::async([this, c, svc, alive, token, tid, label, revision]() {
+        std::string err;
+        std::vector<std::uint8_t> blob = svc->packageActiveSave(tid, &err);
+        if (blob.empty()) {
+            brls::sync([this, alive]() {
+                if (!alive->load()) return;
+                this->cloudBusy = false;
+                this->setCloudStatusText("thomaz/saves/cloud_err_generic"_i18n);
+                brls::Application::notify("thomaz/saves/cloud_err_generic"_i18n);
+            });
+            return;
+        }
+        CloudPush r = c->push(token, tid, blob, label, revision);
+        brls::sync([this, alive, r, tid]() {
+            if (!alive->load()) return;
+            this->cloudBusy = false;
+            if (r.ok) {
+                save_synced_revision(tid, r.newRevision);
+                brls::Application::notify("thomaz/saves/cloud_upload_ok"_i18n);
+                this->refreshCloudStatus();
+                return;
+            }
+            if (r.conflict) {
+                this->doUpload(); // lost a race — re-run the decision (will re-prompt)
+                return;
+            }
+            if (r.error == kCloudAuthExpired) this->showCloudLoggedOut();
+            this->setCloudStatusText(this->cloudErrorText(r.error));
+            brls::Application::notify(this->cloudErrorText(r.error));
+        });
+    });
+}
+
 void SaveDetailActivity::doDownload() { /* Task 13 */ }
 
 void SaveDetailActivity::setCloudStatusText(const std::string& text) {
