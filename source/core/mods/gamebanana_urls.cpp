@@ -39,4 +39,19 @@ std::string gb_mod_files_url(std::uint64_t mod_id) {
            "?_csvProperties=_aFiles";
 }
 
+std::string gb_game_search_url(const std::string& query, int page) {
+    return std::string(kBase) +
+           "/Util/Search/Results?_sModelName=Game&_sOrder=best_match&_sSearchString=" +
+           url_encode(query) + "&_nPage=" + std::to_string(page);
+}
+
+std::string gb_subfeed_url(std::uint64_t game_id, const std::string& query, int page) {
+    std::string u = std::string(kBase) + "/Game/" + std::to_string(game_id) +
+                    "/Subfeed?_nPage=" + std::to_string(page) +
+                    "&_nPerpage=50&_csvModelInclusions=Mod";
+    if (!query.empty())
+        u += "&_sName=" + url_encode(query);
+    return u;
+}
+
 } // namespace thomaz::core

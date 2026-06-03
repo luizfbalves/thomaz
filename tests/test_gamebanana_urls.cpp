@@ -25,3 +25,21 @@ TEST_CASE("gb_mod_files_url requests only the _aFiles property") {
     CHECK(gb_mod_files_url(682977) ==
           "https://gamebanana.com/apiv11/Mod/682977?_csvProperties=_aFiles");
 }
+
+TEST_CASE("gb_game_search_url builds the apiv11 Game search query") {
+    CHECK(gb_game_search_url("Splatoon (Switch)", 1) ==
+          "https://gamebanana.com/apiv11/Util/Search/Results"
+          "?_sModelName=Game&_sOrder=best_match&_sSearchString=Splatoon%20%28Switch%29&_nPage=1");
+}
+
+TEST_CASE("gb_subfeed_url lists a game's mods, Mod-filtered, 50 per page") {
+    CHECK(gb_subfeed_url(6170, "", 2) ==
+          "https://gamebanana.com/apiv11/Game/6170/Subfeed"
+          "?_nPage=2&_nPerpage=50&_csvModelInclusions=Mod");
+}
+
+TEST_CASE("gb_subfeed_url adds _sName for in-game text search") {
+    CHECK(gb_subfeed_url(6170, "ink skin", 1) ==
+          "https://gamebanana.com/apiv11/Game/6170/Subfeed"
+          "?_nPage=1&_nPerpage=50&_csvModelInclusions=Mod&_sName=ink%20skin");
+}
