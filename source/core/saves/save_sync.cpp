@@ -12,9 +12,11 @@ PushPlan plan_push(SyncSituation situation, int cloudRevision) {
     switch (situation) {
         case SyncSituation::NoCloud:    return PushPlan{ 0, false };
         case SyncSituation::CloudAhead: return PushPlan{ cloudRevision, true };
-        case SyncSituation::InSync:
-        default:                        return PushPlan{ cloudRevision, false };
+        case SyncSituation::InSync:     return PushPlan{ cloudRevision, false };
     }
+    // Unreachable: all enumerators are handled above. Present only to satisfy
+    // -Wreturn-type; -Wswitch now flags any new SyncSituation that's added.
+    return PushPlan{ cloudRevision, false };
 }
 
 } // namespace thomaz::core
