@@ -18,19 +18,16 @@ HomeActivity::HomeActivity(ITitleService* titleService, IHttpClient* http, ISave
 
 void HomeActivity::onContentAvailable()
 {
-    // Register click on the Trapaças card to navigate to the game list.
-    // Guard against the id being absent: the home layout was redesigned (the
-    // hero is now "feedCard"), so "trapacasCard" may not exist — getView would
-    // return null and dereferencing it crashes at startup.
-    if (brls::View* card = this->getView("trapacasCard"))
+    // Cheats card → game list (this is the old "trapacasCard" entry; the home
+    // was redesigned and the cheats tile is now "cheatsCard").
+    if (brls::View* cheats = this->getView("cheatsCard"))
     {
-        card->setFocusable(true);
-        card->registerClickAction([this](brls::View* view) {
+        cheats->registerClickAction([this](brls::View*) {
             brls::Application::pushActivity(new GameListActivity(this->titleService, this->http));
             return true;
         });
-        // Make the card respond to touch (Switch) and mouse (desktop), not just A.
-        card->addGestureRecognizer(new brls::TapGestureRecognizer(card));
+        // Respond to touch (Switch) and mouse (desktop), not just the A button.
+        cheats->addGestureRecognizer(new brls::TapGestureRecognizer(cheats));
     }
 
     // Settings card.

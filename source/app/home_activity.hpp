@@ -1,6 +1,7 @@
 /*
     thomaz — home activity (bento hub).
-    Shows a Trapaças card (navigates to game list) and three disabled "Em breve" cards.
+    Rail tiles: Cheats (→ game list), Settings, Save Manager (→ save backup),
+    and a locked "Em breve" Mods tile. The Feed hero is wired by the feed team.
 */
 
 #pragma once
