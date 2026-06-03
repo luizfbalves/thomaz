@@ -1,0 +1,282 @@
+#include "app/feed_activity.hpp"
+#include "app/composer_activity.hpp"
+#include "app/auth_activity.hpp"
+#include <borealis/core/i18n.hpp>
+#include <borealis/core/thread.hpp>
+#include "core/feed/feed_pagination.hpp"
+#include "platform/feed/auth_store.hpp"
+
+using namespace brls::literals;
+
+namespace thomaz {
+
+FeedActivity::FeedActivity(IFeedClient* client, IAlbumSource* album, ITitleService* titles)
+    : client(client), album(album), titles(titles) {}
+
+FeedActivity::~FeedActivity() { *this->alive = false; }
+
+void FeedActivity::onContentAvailable()
+{
+    auto* compose = this->getView("composeBtn");
+    compose->registerClickAction([this](brls::View*) { this->onComposePressed(); return true; });
+    compose->addGestureRecognizer(new brls::TapGestureRecognizer(compose));
+
+    auto* retry = this->getView("feedRetry");
+    retry->registerClickAction([this](brls::View*) { this->loadFirstPage(); return true; });
+    retry->addGestureRecognizer(new brls::TapGestureRecognizer(retry));
+
+    this->loadFirstPage();
+}
+
+void FeedActivity::loadFirstPage()
+{
+    this->posts.clear();
+    this->nextCursor.clear();
+    if (auto* box = (brls::Box*)this->getView("feedListBox")) box->clearViews();
+    this->getView("feedError")->setVisibility(brls::Visibility::GONE);
+    this->getView("feedEmpty")->setVisibility(brls::Visibility::GONE);
+    this->getView("feedSpinner")->setVisibility(brls::Visibility::VISIBLE);
+
+    IFeedClient* c = this->client;
+    auto alive     = this->alive;
+
+    brls::async([this, c, alive]() {
+        feed::FeedPage page = c->fetchFeed("");
+        brls::sync([this, alive, page]() {
+            if (!alive->load()) return;
+            this->getView("feedSpinner")->setVisibility(brls::Visibility::GONE);
+
+            bool transportFail = page.posts.empty() && !page.hasMore && page.nextCursor.empty();
+            size_t before = this->posts.size();
+            this->hasMore = feed::merge_feed_page(this->posts, page);
+            this->nextCursor = page.nextCursor;
+
+            if (this->posts.empty()) {
+                if (transportFail)
+                    this->getView("feedError")->setVisibility(brls::Visibility::VISIBLE);
+                else
+                    this->getView("feedEmpty")->setVisibility(brls::Visibility::VISIBLE);
+                return;
+            }
+            this->renderNewRows(before);
+            this->showDetail(this->posts.front().id);
+        });
+    });
+}
+
+void FeedActivity::loadNextPage()
+{
+    if (this->loading || !this->hasMore) return;
+    this->loading = true;
+
+    IFeedClient* c = this->client;
+    auto alive     = this->alive;
+    std::string cur = this->nextCursor;
+
+    brls::async([this, c, alive, cur]() {
+        feed::FeedPage page = c->fetchFeed(cur);
+        brls::sync([this, alive, page]() {
+            if (!alive->load()) return;
+            this->loading = false;
+            size_t before = this->posts.size();
+            this->hasMore = feed::merge_feed_page(this->posts, page);
+            this->nextCursor = page.nextCursor;
+            this->renderNewRows(before);
+        });
+    });
+}
+
+void FeedActivity::renderNewRows(size_t fromIndex)
+{
+    auto* listBox = (brls::Box*)this->getView("feedListBox");
+    if (!listBox) return;
+
+    for (size_t i = fromIndex; i < this->posts.size(); ++i) {
+        const feed::Post& post = this->posts[i];
+        std::string id = post.id;
+
+        auto* row = new brls::Box(brls::Axis::COLUMN);
+        row->setFocusable(true);
+        row->setMarginBottom(8.0f);
+        row->setPadding(10.0f, 12.0f, 10.0f, 12.0f);
+        row->setCornerRadius(12.0f);
+        row->setBackgroundColor(nvgRGB(0x1A, 0x1C, 0x23));
+
+        auto* user = new brls::Label();
+        user->setText("@" + post.author.username);
+        user->setFontSize(15.0f);
+        row->addView(user);
+
+        if (!post.caption.empty()) {
+            auto* cap = new brls::Label();
+            cap->setText(post.caption);
+            cap->setFontSize(14.0f);
+            cap->setTextColor(nvgRGB(0xC9, 0xCA, 0xD1));
+            cap->setMarginTop(4.0f);
+            row->addView(cap);
+        }
+
+        auto* meta = new brls::Label();
+        meta->setText("♥ " + std::to_string(post.likeCount) +
+                      "   \U0001F4AC " + std::to_string(post.commentCount));
+        meta->setFontSize(13.0f);
+        meta->setTextColor(nvgRGB(0x8b, 0x8d, 0x98));
+        meta->setMarginTop(6.0f);
+        row->addView(meta);
+
+        row->registerClickAction([this, id](brls::View*) { this->showDetail(id); return true; });
+        row->getFocusEvent()->subscribe([this, id](brls::View*) { this->showDetail(id); });
+        row->addGestureRecognizer(new brls::TapGestureRecognizer(row));
+
+        listBox->addView(row);
+
+        if (i + 3 >= this->posts.size())
+            this->loadNextPage();
+    }
+}
+
+void FeedActivity::showDetail(const std::string& postId)
+{
+    if (this->selectedId == postId) return;
+    this->selectedId = postId;
+
+    auto* pane = (brls::Box*)this->getView("detailPane");
+    if (!pane) return;
+    pane->clearViews();
+
+    feed::Post* post = feed::find_post(this->posts, postId);
+    if (!post) return;
+
+    auto* user = new brls::Label();
+    user->setText("@" + post->author.username);
+    user->setFontSize(18.0f);
+    pane->addView(user);
+
+    if (post->gameTitleId != 0 && !post->gameName.empty()) {
+        auto* game = new brls::Label();
+        game->setText("thomaz/feed/game_tag"_i18n + post->gameName);
+        game->setFontSize(13.0f);
+        game->setTextColor(nvgRGB(0x92, 0x77, 0xFF));
+        game->setMarginTop(4.0f);
+        pane->addView(game);
+    }
+
+    if (!post->caption.empty()) {
+        auto* cap = new brls::Label();
+        cap->setText(post->caption);
+        cap->setFontSize(15.0f);
+        cap->setMarginTop(10.0f);
+        pane->addView(cap);
+    }
+
+    auto* likeBtn = new brls::Box(brls::Axis::ROW);
+    likeBtn->setFocusable(true);
+    likeBtn->setHeight(40.0f);
+    likeBtn->setMarginTop(14.0f);
+    likeBtn->setPadding(6.0f, 14.0f, 6.0f, 14.0f);
+    likeBtn->setCornerRadius(10.0f);
+    likeBtn->setAlignItems(brls::AlignItems::CENTER);
+    likeBtn->setBackgroundColor(nvgRGB(0x22, 0x24, 0x2D));
+    auto* likeLbl = new brls::Label();
+    likeLbl->setText((post->likedByMe ? "♥ " : "♡ ") + std::to_string(post->likeCount));
+    likeLbl->setFontSize(15.0f);
+    likeBtn->addView(likeLbl);
+    likeBtn->registerClickAction([this, postId, likeLbl](brls::View*) {
+        if (!this->requireSession()) return true;
+        feed::Post* p = feed::find_post(this->posts, postId);
+        if (!p) return true;
+        bool target = !p->likedByMe;
+        p->likedByMe = target; p->likeCount += target ? 1 : -1;
+        likeLbl->setText((target ? "♥ " : "♡ ") + std::to_string(p->likeCount));
+
+        auto sess = load_session();
+        std::string token = sess ? sess->token : "";
+        IFeedClient* c = this->client; auto alive = this->alive;
+        brls::async([this, c, alive, token, postId, target, likeLbl]() {
+            ActionResult r = c->setLike(token, postId, target);
+            brls::sync([this, alive, r, postId, target, likeLbl]() {
+                if (!alive->load()) return;
+                if (!r.ok) {
+                    feed::Post* p = feed::find_post(this->posts, postId);
+                    if (p) { p->likedByMe = !target; p->likeCount += target ? -1 : 1;
+                             likeLbl->setText((p->likedByMe ? "♥ " : "♡ ") + std::to_string(p->likeCount)); }
+                }
+            });
+        });
+        return true;
+    });
+    likeBtn->addGestureRecognizer(new brls::TapGestureRecognizer(likeBtn));
+    pane->addView(likeBtn);
+
+    auto* commentsBox = new brls::Box(brls::Axis::COLUMN);
+    commentsBox->setMarginTop(14.0f);
+    pane->addView(commentsBox);
+
+    IFeedClient* c = this->client; auto alive = this->alive;
+    brls::async([this, c, alive, postId, commentsBox]() {
+        auto list = c->fetchComments(postId);
+        brls::sync([this, alive, list, commentsBox, postId]() {
+            if (!alive->load()) return;
+            if (this->selectedId != postId) return;
+            commentsBox->clearViews();
+            for (const auto& cm : list) {
+                auto* l = new brls::Label();
+                l->setText("@" + cm.author.username + ": " + cm.text);
+                l->setFontSize(13.0f);
+                l->setMarginBottom(4.0f);
+                commentsBox->addView(l);
+            }
+        });
+    });
+
+    auto* addBtn = new brls::Box(brls::Axis::ROW);
+    addBtn->setFocusable(true);
+    addBtn->setHeight(40.0f);
+    addBtn->setMarginTop(10.0f);
+    addBtn->setPadding(6.0f, 14.0f, 6.0f, 14.0f);
+    addBtn->setCornerRadius(10.0f);
+    addBtn->setAlignItems(brls::AlignItems::CENTER);
+    addBtn->setBackgroundColor(nvgRGB(0x22, 0x24, 0x2D));
+    auto* addLbl = new brls::Label(); addLbl->setText("thomaz/feed/add_comment"_i18n);
+    addLbl->setFontSize(14.0f); addBtn->addView(addLbl);
+    addBtn->registerClickAction([this, postId, commentsBox](brls::View*) {
+        if (!this->requireSession()) return true;
+        brls::Application::getImeManager()->openForText(
+            [this, postId, commentsBox](std::string text) {
+                if (text.empty()) return;
+                auto sess = load_session();
+                std::string token = sess ? sess->token : "";
+                IFeedClient* c = this->client; auto alive = this->alive;
+                brls::async([this, c, alive, token, postId, text, commentsBox]() {
+                    ActionResult r = c->addComment(token, postId, text);
+                    brls::sync([this, alive, r, postId, commentsBox]() {
+                        if (!alive->load()) return;
+                        if (r.ok && this->selectedId == postId) this->showDetail(postId);
+                    });
+                });
+            },
+            "thomaz/feed/add_comment"_i18n, "", 280);
+        return true;
+    });
+    addBtn->addGestureRecognizer(new brls::TapGestureRecognizer(addBtn));
+    pane->addView(addBtn);
+}
+
+bool FeedActivity::requireSession()
+{
+    if (load_session().has_value())
+        return true;
+    brls::Application::pushActivity(new AuthActivity(this->client, []() {}));
+    return false;
+}
+
+void FeedActivity::onComposePressed()
+{
+    if (!this->requireSession()) return;
+    auto alive = this->alive;
+    brls::Application::pushActivity(new ComposerActivity(
+        this->client, this->album, this->titles,
+        [this, alive]() { if (alive->load()) this->loadFirstPage(); }));
+}
+
+} // namespace thomaz

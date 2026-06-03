@@ -1,0 +1,38 @@
+<brls:AppletFrame title="@i18n/thomaz/feed/title" iconInterpolation="linear">
+    <brls:Box axis="column" grow="1.0" paddingTop="16"
+              paddingLeft="40" paddingRight="40" paddingBottom="16">
+
+        <brls:Box axis="row" marginBottom="12">
+            <brls:Box grow="1.0"/>
+            <brls:Box id="composeBtn" axis="row" alignItems="center" justifyContent="center"
+                      height="40" paddingLeft="18" paddingRight="18" cornerRadius="12"
+                      backgroundColor="@theme/thomaz/tile_cheats"
+                      focusable="true" highlightCornerRadius="12" hideHighlightBackground="true">
+                <brls:Label text="@i18n/thomaz/feed/compose" fontSize="15" textColor="#FFFFFF"/>
+            </brls:Box>
+        </brls:Box>
+
+        <brls:Box axis="row" grow="1.0">
+            <brls:ScrollingFrame width="auto" height="auto" grow="1.4" marginRight="14">
+                <brls:Box id="feedListBox" width="auto" height="auto" axis="column"/>
+            </brls:ScrollingFrame>
+            <brls:Box id="detailPane" axis="column" grow="1.0"
+                      cornerRadius="14" padding="16"
+                      backgroundColor="@theme/thomaz/tile_saves"/>
+        </brls:Box>
+
+        <brls:ProgressSpinner id="feedSpinner" width="44" height="44"
+                              marginTop="24" alignSelf="center"/>
+        <brls:Label id="feedEmpty" visibility="gone" text="@i18n/thomaz/feed/empty"
+                    fontSize="18" horizontalAlign="center" marginTop="24"/>
+        <brls:Box id="feedError" visibility="gone" axis="column" alignItems="center" marginTop="24">
+            <brls:Label text="@i18n/thomaz/feed/error" fontSize="16"/>
+            <brls:Box id="feedRetry" axis="row" justifyContent="center" alignItems="center"
+                      height="44" paddingLeft="20" paddingRight="20" marginTop="12" cornerRadius="12"
+                      backgroundColor="@theme/thomaz/tile_settings"
+                      focusable="true" highlightCornerRadius="12" hideHighlightBackground="true">
+                <brls:Label text="@i18n/thomaz/feed/retry" fontSize="15" textColor="#FFFFFF"/>
+            </brls:Box>
+        </brls:Box>
+    </brls:Box>
+</brls:AppletFrame>
