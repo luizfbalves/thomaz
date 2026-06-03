@@ -16,6 +16,7 @@
 #include "platform/app_settings.hpp"
 #include "platform/cheat_store.hpp"
 #include "platform/self_update.hpp"
+#include "platform/feed/auth_store.hpp"
 
 using namespace brls::literals;
 
@@ -112,6 +113,17 @@ void SettingsActivity::onContentAvailable()
     listBox->addView(dbRow);
 
     listBox->addView(status);
+
+    // --- Log out of the community feed --------------------------------------
+    // Clears the persisted session; the next post/like/comment will prompt login.
+    auto* logoutRow = makeActionRow("thomaz/auth/logout"_i18n);
+    logoutRow->registerClickAction([](brls::View*) {
+        clear_session();
+        brls::Application::notify("thomaz/auth/logout"_i18n);
+        return true;
+    });
+    logoutRow->addGestureRecognizer(new brls::TapGestureRecognizer(logoutRow));
+    listBox->addView(logoutRow);
 }
 
 void SettingsActivity::checkForUpdate(brls::Label* status)
