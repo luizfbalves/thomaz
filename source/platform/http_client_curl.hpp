@@ -10,7 +10,7 @@ class CurlHttpClient : public IHttpClient {
     CurlHttpClient();
     ~CurlHttpClient() override;
 
-    HttpResponse get(const std::string& url) override;
+    HttpResponse request(const HttpRequest& req) override;
 
   private:
     bool networkReady = false; // Switch: socketInitializeDefault() succeeded

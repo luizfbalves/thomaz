@@ -34,7 +34,7 @@ CurlHttpClient::~CurlHttpClient() {
     // Socket teardown is owned by Borealis (userAppExit), not us — see ctor.
 }
 
-HttpResponse CurlHttpClient::get(const std::string& url) {
+HttpResponse CurlHttpClient::request(const HttpRequest& req) {
     HttpResponse response;
     if (!networkReady)
         return response; // status 0 -> caller treats as network error
@@ -43,11 +43,11 @@ HttpResponse CurlHttpClient::get(const std::string& url) {
     if (!curl)
         return response;
 
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, req.url.c_str());
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "thomaz/0.1 (+switch homebrew)");
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20L);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToString);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response.body);
     // v1: skip TLS verification to avoid shipping a CA bundle. We only fetch
@@ -55,12 +55,52 @@ HttpResponse CurlHttpClient::get(const std::string& url) {
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
+    switch (req.method) {
+        case HttpMethod::Get:    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L); break;
+        case HttpMethod::Post:   curl_easy_setopt(curl, CURLOPT_POST, 1L); break;
+        case HttpMethod::Put:    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT"); break;
+        case HttpMethod::Delete: curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE"); break;
+    }
+
+    struct curl_slist* headerList = nullptr;
+    for (const auto& h : req.headers) {
+        std::string line = h.first + ": " + h.second;
+        headerList = curl_slist_append(headerList, line.c_str());
+    }
+    if (headerList)
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerList);
+
+    curl_mime* mime = nullptr;
+    const bool isMultipart = !req.files.empty() || !req.fields.empty();
+    if (isMultipart) {
+        mime = curl_mime_init(curl);
+        for (const auto& f : req.fields) {
+            curl_mimepart* part = curl_mime_addpart(mime);
+            curl_mime_name(part, f.first.c_str());
+            curl_mime_data(part, f.second.c_str(), CURL_ZERO_TERMINATED);
+        }
+        for (const auto& file : req.files) {
+            curl_mimepart* part = curl_mime_addpart(mime);
+            curl_mime_name(part, file.field.c_str());
+            curl_mime_data(part, reinterpret_cast<const char*>(file.bytes.data()),
+                           file.bytes.size());
+            curl_mime_filename(part, file.filename.c_str());
+            curl_mime_type(part, file.contentType.c_str());
+        }
+        curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
+    } else if (!req.body.empty()) {
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, req.body.c_str());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)req.body.size());
+    }
+
     CURLcode rc = curl_easy_perform(curl);
     if (rc == CURLE_OK)
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.status);
     else
         response.status = 0; // transport failure
 
+    if (mime) curl_mime_free(mime);
+    if (headerList) curl_slist_free_all(headerList);
     curl_easy_cleanup(curl);
     return response;
 }
