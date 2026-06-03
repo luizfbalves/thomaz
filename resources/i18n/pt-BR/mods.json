@@ -15,5 +15,6 @@
     "cancel": "Cancelar",
     "enable_failed": "Falha ao ativar o mod",
     "disable_failed": "Falha ao desativar o mod",
+    "uninstall_failed": "Falha ao desinstalar o mod",
     "active": "Ativo"
 }

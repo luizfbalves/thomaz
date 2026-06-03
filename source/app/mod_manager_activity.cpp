@@ -94,7 +94,7 @@ void ModManagerActivity::refreshList()
         importLabel->setTextColor(nvgRGB(0xFF, 0xFF, 0xFF));
         importBtn->addView(importLabel);
         importBtn->registerClickAction([this](brls::View*) {
-            this->importFlow();
+            brls::sync([this]() { this->importFlow(); });
             return true;
         });
         importBtn->addGestureRecognizer(new brls::TapGestureRecognizer(importBtn));
@@ -142,7 +142,7 @@ void ModManagerActivity::refreshList()
                 }
             }
             // Reflect one-active-per-game across rows.
-            this->refreshList();
+            brls::sync([this]() { this->refreshList(); });
         });
         cell->addGestureRecognizer(new brls::TapGestureRecognizer(cell));
         listBox->addView(cell);
@@ -166,7 +166,7 @@ void ModManagerActivity::refreshList()
             dialog->addButton("mods/uninstall_button"_i18n, [this, tid, modName]() {
                 ModActionResult r = uninstall_mod(tid, modName);
                 if (!r.ok)
-                    brls::Application::notify("mods/import_failed"_i18n);
+                    brls::Application::notify("mods/uninstall_failed"_i18n);
                 this->refreshList();
             });
             dialog->addButton("mods/cancel"_i18n, []() {});
@@ -241,7 +241,7 @@ void ModManagerActivity::importFlow()
         label->setGrow(1.0f);
         row->addView(label);
         row->registerClickAction([this, fullPath, modName](brls::View*) {
-            this->doImport(fullPath, modName);
+            brls::sync([this, fullPath, modName]() { this->doImport(fullPath, modName); });
             return true;
         });
         row->addGestureRecognizer(new brls::TapGestureRecognizer(row));
@@ -264,7 +264,7 @@ void ModManagerActivity::importFlow()
         backLabel->setGrow(1.0f);
         backRow->addView(backLabel);
         backRow->registerClickAction([this](brls::View*) {
-            this->refreshList();
+            brls::sync([this]() { this->refreshList(); });
             return true;
         });
         backRow->addGestureRecognizer(new brls::TapGestureRecognizer(backRow));
