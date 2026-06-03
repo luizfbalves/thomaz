@@ -1,4 +1,4 @@
-<thomaz:SlideFrame title="@i18n/thomaz/auth/login_tab" iconInterpolation="linear">
+<brls:AppletFrame title="@i18n/thomaz/auth/login_tab" iconInterpolation="linear">
     <brls:Box axis="column" grow="1.0"
               paddingTop="36" paddingBottom="28" paddingLeft="56" paddingRight="56"
               justifyContent="center" alignItems="center">
@@ -25,4 +25,4 @@
                         textColor="@theme/thomaz/text_dim"/>
         </brls:Box>
     </brls:Box>
-</thomaz:SlideFrame>
+</brls:AppletFrame>
