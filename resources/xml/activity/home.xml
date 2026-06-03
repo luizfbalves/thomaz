@@ -26,7 +26,7 @@
             <brls:Box id="trapacasCard"
                       axis="column" grow="1.55" marginRight="18"
                       padding="34" cornerRadius="22"
-                      backgroundColor="@theme/thomaz/accent"
+                      backgroundColor="@theme/thomaz/tile_cheats"
                       focusable="true" highlightCornerRadius="22">
 
                 <brls:Box width="64" height="64" cornerRadius="18"
@@ -52,59 +52,56 @@
                 <brls:Box id="settingsCard"
                           axis="row" alignItems="center" grow="1.0" marginBottom="14"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
-                          backgroundColor="@theme/thomaz/surface_1"
-                          borderColor="@theme/thomaz/line_2" borderThickness="1"
+                          backgroundColor="@theme/thomaz/tile_settings"
                           focusable="true" highlightCornerRadius="16">
                     <brls:Box width="44" height="44" cornerRadius="12"
-                              backgroundColor="@theme/thomaz/surface_2"
+                              backgroundColor="#FFFFFF29"
                               justifyContent="center" alignItems="center" marginRight="16">
                         <brls:Label text="@i18n/thomaz/icon/settings"
-                                    fontSize="24" textColor="@theme/thomaz/accent_bright"/>
+                                    fontSize="24" textColor="#FFFFFF"/>
                     </brls:Box>
                     <brls:Label text="@i18n/thomaz/module/settings/title"
-                                fontSize="17" textColor="@theme/thomaz/text" grow="1.0"/>
+                                fontSize="17" textColor="#FFFFFF" grow="1.0"/>
                 </brls:Box>
 
                 <!-- Save Manager (coming soon) -->
                 <brls:Box axis="row" alignItems="center" grow="1.0" marginBottom="14"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
-                          backgroundColor="@theme/thomaz/surface_1"
-                          borderColor="@theme/thomaz/line" borderThickness="1">
+                          backgroundColor="@theme/thomaz/tile_saves">
                     <brls:Box width="44" height="44" cornerRadius="12"
-                              backgroundColor="@theme/thomaz/surface_2"
+                              backgroundColor="#FFFFFF29"
                               justifyContent="center" alignItems="center" marginRight="16">
                         <brls:Label text="@i18n/thomaz/icon/save"
-                                    fontSize="24" textColor="@theme/thomaz/text_faint"/>
+                                    fontSize="24" textColor="#FFFFFFD9"/>
                     </brls:Box>
                     <brls:Box axis="column" grow="1.0">
                         <brls:Label text="@i18n/thomaz/home/saves"
-                                    fontSize="17" textColor="@theme/thomaz/text_dim"/>
+                                    fontSize="17" textColor="#FFFFFF"/>
                         <brls:Label text="@i18n/thomaz/common/coming_soon"
-                                    fontSize="11" textColor="@theme/thomaz/text_faint" marginTop="3"/>
+                                    fontSize="11" textColor="#FFFFFFB3" marginTop="3"/>
                     </brls:Box>
                     <brls:Label text="@i18n/thomaz/icon/lock"
-                                fontSize="20" textColor="@theme/thomaz/text_faint"/>
+                                fontSize="20" textColor="#FFFFFFB3"/>
                 </brls:Box>
 
                 <!-- Mods (coming soon) -->
                 <brls:Box axis="row" alignItems="center" grow="1.0"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
-                          backgroundColor="@theme/thomaz/surface_1"
-                          borderColor="@theme/thomaz/line" borderThickness="1">
+                          backgroundColor="@theme/thomaz/tile_mods">
                     <brls:Box width="44" height="44" cornerRadius="12"
-                              backgroundColor="@theme/thomaz/surface_2"
+                              backgroundColor="#FFFFFF29"
                               justifyContent="center" alignItems="center" marginRight="16">
                         <brls:Label text="@i18n/thomaz/icon/mods"
-                                    fontSize="24" textColor="@theme/thomaz/text_faint"/>
+                                    fontSize="24" textColor="#FFFFFFD9"/>
                     </brls:Box>
                     <brls:Box axis="column" grow="1.0">
                         <brls:Label text="@i18n/thomaz/home/mods"
-                                    fontSize="17" textColor="@theme/thomaz/text_dim"/>
+                                    fontSize="17" textColor="#FFFFFF"/>
                         <brls:Label text="@i18n/thomaz/common/coming_soon"
-                                    fontSize="11" textColor="@theme/thomaz/text_faint" marginTop="3"/>
+                                    fontSize="11" textColor="#FFFFFFB3" marginTop="3"/>
                     </brls:Box>
                     <brls:Label text="@i18n/thomaz/icon/lock"
-                                fontSize="20" textColor="@theme/thomaz/text_faint"/>
+                                fontSize="20" textColor="#FFFFFFB3"/>
                 </brls:Box>
 
             </brls:Box>

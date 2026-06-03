@@ -42,6 +42,14 @@ void registerThomazTheme()
     dark.addColor("thomaz/accent_line",   nvgRGBA(0x7C, 0x5C, 0xFF, 0x73));
     dark.addColor("thomaz/good",          nvgRGB(0x57, 0xC9, 0x8A));
 
+    // Main-menu tile colors — one distinct hue per module so each button reads
+    // as its own thing. The focus highlight (a violet ring) draws on top, so a
+    // focused tile keeps its own fill AND gains the border.
+    dark.addColor("thomaz/tile_cheats",   nvgRGB(0x7C, 0x5C, 0xFF)); // violet (hero)
+    dark.addColor("thomaz/tile_settings", nvgRGB(0x1F, 0x8A, 0x8C)); // teal
+    dark.addColor("thomaz/tile_saves",    nvgRGB(0xB5, 0x76, 0x2E)); // amber
+    dark.addColor("thomaz/tile_mods",     nvgRGB(0xB0, 0x46, 0x6E)); // rose
+
     // Borealis surfaces + focus ring → our palette.
     dark.addColor("brls/background",      nvgRGB(0x0E, 0x0F, 0x14));
     dark.addColor("brls/accent",          nvgRGB(0x7C, 0x5C, 0xFF));
