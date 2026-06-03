@@ -145,11 +145,11 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
 ### 7. Reverse proxy + TLS (one-time)
-- Subdomain: **`thomaz.baseup.cc`** (confirm — could be `api.thomaz.baseup.cc`).
-- DNS A record `thomaz.baseup.cc → 3.209.35.78` (manual, in DNS provider; wait for propagation).
+- Subdomain: **`api.thomaz.baseup.cc`**.
+- DNS A record `api.thomaz.baseup.cc → 3.209.35.78` (manual, in DNS provider; wait for propagation).
 - Obtain Let's Encrypt cert for the subdomain (bncert / certbot) — required before `apache.sh`.
-- Run `~/apps/apache.sh thomaz.baseup.cc 3000` to generate http+https vhosts.
-- Set `PUBLIC_BASE_URL=https://thomaz.baseup.cc` and `CORS_ORIGINS` accordingly in `.env`.
+- Run `~/apps/apache.sh api.thomaz.baseup.cc 3000` to generate http+https vhosts.
+- Set `PUBLIC_BASE_URL=https://api.thomaz.baseup.cc` and `CORS_ORIGINS` accordingly in `.env`.
 
 ## Bootstrap vs recurring
 
@@ -177,6 +177,7 @@ DNS + cert + `apache.sh`.
 - Blue/green or zero-downtime multi-instance deploys.
 - Automated DB backups (recommended follow-up).
 
-## Open items to confirm
-1. Subdomain: `thomaz.baseup.cc` vs `api.thomaz.baseup.cc` vs other.
-2. Strong password for the `thomaz` Postgres user (generate during bootstrap).
+## Confirmed
+1. Subdomain: **`api.thomaz.baseup.cc`**.
+2. `thomaz` Postgres user password: **randomly generated during bootstrap**, stored only in
+   VM `api/.env` (never committed).
