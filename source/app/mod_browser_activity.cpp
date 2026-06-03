@@ -36,28 +36,122 @@ void ModBrowserActivity::onContentAvailable()
 {
     install_header_username(this);
 
-    // Open the on-screen keyboard for the search query. The callback runs on the
-    // UI thread; it is not a view-click handler, so runSearch() can be called
-    // directly (no deferred brls::sync needed here).
-    brls::Application::getPlatform()->getImeManager()->openForText(
-        [this](std::string q) {
-            if (q.empty())
-            {
-                if (auto* emptyLabel = (brls::Label*)this->getView("emptyLabel"))
-                {
-                    emptyLabel->setText("mods/no_results"_i18n);
-                    emptyLabel->setVisibility(brls::Visibility::VISIBLE);
-                }
-                return;
-            }
-            this->query = q;
-            this->page  = 1;
-            this->runSearch();
-        },
-        "mods/search"_i18n, "mods/search_hint"_i18n, 64);
+    // Show the spinner while we resolve this game on GameBanana. Instead of
+    // immediately opening the keyboard (M2 behaviour), we first try to resolve
+    // the installed title to a GameBanana game_id and list ITS mods. The
+    // keyboard only opens as a fallback when the game isn't found.
+    if (auto* spinner = this->getView("spinner"))
+        spinner->setVisibility(brls::Visibility::VISIBLE);
+    if (auto* emptyLabel = (brls::Label*)this->getView("emptyLabel"))
+    {
+        emptyLabel->setText("mods/resolving"_i18n);
+        emptyLabel->setVisibility(brls::Visibility::VISIBLE);
+    }
+
+    auto alive       = this->alive;
+    IHttpClient* http = this->http; // owned by main(), app-lifetime
+    std::uint64_t tid = this->title.title_id; // copy — worker must not touch `this`
+    std::string name  = this->title.name;
+
+    brls::async([this, alive, http, tid, name]() {
+        core::UrlFetcher fetch = [http](const std::string& url) -> std::optional<std::string> {
+            HttpResponse r = http->get(url);
+            return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
+        };
+        core::GameResolve g = core::resolve_game(tid, name, fetch);
+        core::BrowseResult mods;
+        if (g.status == core::GameResolveStatus::Ok)
+            mods = core::list_game_mods(g.game_id, "", 1, fetch);
+
+        brls::sync([this, alive, g, mods]() {
+            if (!alive->load())
+                return; // activity was popped while we were resolving
+            this->onResolved(g, mods);
+        });
+    });
 }
 
-void ModBrowserActivity::runSearch()
+void ModBrowserActivity::onResolved(const core::GameResolve& g, const core::BrowseResult& mods)
+{
+    if (auto* spinner = this->getView("spinner"))
+        spinner->setVisibility(brls::Visibility::GONE);
+
+    if (g.status == core::GameResolveStatus::NetworkError)
+    {
+        brls::Application::notify("mods/search_error"_i18n);
+        if (auto* emptyLabel = (brls::Label*)this->getView("emptyLabel"))
+        {
+            emptyLabel->setText("mods/search_error"_i18n);
+            emptyLabel->setVisibility(brls::Visibility::VISIBLE);
+        }
+        return;
+    }
+
+    if (g.status == core::GameResolveStatus::NotFound)
+    {
+        // Fall back to the M2 global free-text search: tell the user, then open
+        // the keyboard. The callback runs on the UI thread (not a view-click
+        // handler), so runGlobalSearch() may be called directly.
+        this->gameId = 0;
+        if (auto* emptyLabel = (brls::Label*)this->getView("emptyLabel"))
+        {
+            emptyLabel->setText("mods/game_not_found"_i18n);
+            emptyLabel->setVisibility(brls::Visibility::VISIBLE);
+        }
+        brls::Application::getPlatform()->getImeManager()->openForText(
+            [this](std::string q) {
+                if (q.empty())
+                    return;
+                this->query = q;
+                this->page  = 1;
+                this->runGlobalSearch();
+            },
+            "mods/search"_i18n, "mods/search_hint"_i18n, 64);
+        return;
+    }
+
+    // Ok: resolved to a GameBanana game. Show its mods (Subfeed).
+    this->gameId = g.game_id;
+    this->query  = "";
+    this->page   = 1;
+
+    if (mods.status != core::BrowseStatus::Ok)
+    {
+        brls::Application::notify("mods/search_error"_i18n);
+        return;
+    }
+
+    this->lastPage = mods.page;
+    this->populate(mods); // populate() prepends the in-game search row in game mode
+}
+
+void ModBrowserActivity::runGameSearch(const std::string& query)
+{
+    if (auto* spinner = this->getView("spinner"))
+        spinner->setVisibility(brls::Visibility::VISIBLE);
+
+    IHttpClient* client = this->http; // owned by main(), app-lifetime
+    auto alive          = this->alive;
+    std::uint64_t gid   = this->gameId; // copy — worker must not touch `this`
+    std::string q       = query;
+    int page            = this->page;
+
+    brls::async([this, alive, client, gid, q, page]() {
+        core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
+            HttpResponse r = client->get(url);
+            return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
+        };
+        core::BrowseResult res = core::list_game_mods(gid, q, page, fetch);
+
+        brls::sync([this, alive, res]() {
+            if (!alive->load())
+                return; // activity was popped while we were loading
+            this->populate(res);
+        });
+    });
+}
+
+void ModBrowserActivity::runGlobalSearch()
 {
     if (auto* spinner = this->getView("spinner"))
         spinner->setVisibility(brls::Visibility::VISIBLE);
@@ -102,6 +196,44 @@ void ModBrowserActivity::populate(const core::BrowseResult& result)
         return;
 
     resultsBox->clearViews();
+
+    // In game mode, prepend a row that opens the keyboard for an in-game search
+    // (Subfeed text query). Re-added on every rebuild so load-more keeps it.
+    if (this->gameId != 0)
+    {
+        auto* searchRow = new brls::Box(brls::Axis::ROW);
+        searchRow->setHeight(48.0f);
+        searchRow->setFocusable(true);
+        searchRow->setMarginBottom(8.0f);
+        searchRow->setPadding(8.0f, 16.0f, 8.0f, 16.0f);
+        searchRow->setCornerRadius(12.0f);
+        searchRow->setJustifyContent(brls::JustifyContent::CENTER);
+        searchRow->setAlignItems(brls::AlignItems::CENTER);
+        searchRow->setBackgroundColor(nvgRGB(0x22, 0x24, 0x2D)); // surface_2
+
+        auto* searchLabel = new brls::Label();
+        searchLabel->setText("mods/game_search"_i18n);
+        searchLabel->setFontSize(16.0f);
+        searchRow->addView(searchLabel);
+
+        searchRow->registerClickAction([this](brls::View*) {
+            // Opening the keyboard from a click handler is fine; the rebuild
+            // happens later inside the IME callback (UI thread), but wrap the
+            // list rebuild in brls::sync to be safe (M2 lesson).
+            brls::Application::getPlatform()->getImeManager()->openForText(
+                [this](std::string q) {
+                    if (q.empty())
+                        return;
+                    this->query = q;
+                    this->page  = 1;
+                    brls::sync([this, q]() { this->runGameSearch(q); });
+                },
+                "mods/game_search"_i18n, "mods/search_hint"_i18n, 64);
+            return true;
+        });
+        searchRow->addGestureRecognizer(new brls::TapGestureRecognizer(searchRow));
+        resultsBox->addView(searchRow);
+    }
 
     if (this->lastPage.records.empty())
     {
@@ -149,7 +281,7 @@ void ModBrowserActivity::populate(const core::BrowseResult& result)
         resultsBox->addView(row);
     }
 
-    // "Load more" row when the page is not the last. NOTE (draft): runSearch()
+    // "Load more" row when the page is not the last. NOTE (draft): the search
     // replaces the list with the next page rather than appending — acceptable for
     // now; a future refinement would accumulate records across pages.
     if (!this->lastPage.is_complete)
@@ -173,8 +305,14 @@ void ModBrowserActivity::populate(const core::BrowseResult& result)
             this->page++;
             // Deferred: this rebuild runs from inside a view-click handler, so it
             // MUST be wrapped in brls::sync to avoid destroying the row mid-event
-            // (use-after-free). M1 lesson.
-            brls::sync([this]() { this->runSearch(); });
+            // (use-after-free). M1 lesson. Game mode pages the Subfeed; otherwise
+            // the global free-text search.
+            brls::sync([this]() {
+                if (this->gameId != 0)
+                    this->runGameSearch(this->query);
+                else
+                    this->runGlobalSearch();
+            });
             return true;
         });
         moreRow->addGestureRecognizer(new brls::TapGestureRecognizer(moreRow));

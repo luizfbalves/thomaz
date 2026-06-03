@@ -7,6 +7,7 @@
 #pragma once
 
 #include <atomic>
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -29,8 +30,13 @@ class ModBrowserActivity : public brls::Activity
     void onContentAvailable() override;
 
   private:
-    // Run a search for the current `query`/`page` (off-thread), then populate.
-    void runSearch();
+    // Called on the UI thread once resolve_game + (optional) first mod listing
+    // finish. Decides between game-mode (Subfeed) and global free-text fallback.
+    void onResolved(const core::GameResolve& g, const core::BrowseResult& mods);
+    // Run a free-text GLOBAL mod search for `query`/`page` (off-thread).
+    void runGlobalSearch();
+    // Run an in-game (Subfeed) search for `query` within the resolved gameId.
+    void runGameSearch(const std::string& query);
     // Build the result rows on the UI thread from a browse result.
     void populate(const core::BrowseResult& result);
 
@@ -39,6 +45,8 @@ class ModBrowserActivity : public brls::Activity
     std::string query;
     int page = 1;
     core::SearchPage lastPage;
+    // 0 = unresolved => global free-text mode; nonzero = resolved game => Subfeed.
+    std::uint64_t gameId = 0;
 
     // Set false in the destructor so an in-flight async UI callback bails.
     std::shared_ptr<std::atomic_bool> alive = std::make_shared<std::atomic_bool>(true);
