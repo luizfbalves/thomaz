@@ -46,7 +46,7 @@ void FeedActivity::loadFirstPage()
             if (!alive->load()) return;
             this->getView("feedSpinner")->setVisibility(brls::Visibility::GONE);
 
-            bool transportFail = page.posts.empty() && !page.hasMore && page.nextCursor.empty();
+            bool transportFail = !page.ok; // empty-but-ok feed shows the empty state, not an error
             size_t before = this->posts.size();
             this->hasMore = feed::merge_feed_page(this->posts, page);
             this->nextCursor = page.nextCursor;

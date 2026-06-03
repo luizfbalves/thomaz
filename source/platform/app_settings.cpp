@@ -31,8 +31,8 @@ std::string api_url_file() {
 
 std::string default_api_base_url() {
 #ifdef __SWITCH__
-    // Production host (placeholder until the API is deployed). Override in Settings.
-    return "https://thomaz-api.fly.dev";
+    // Production host on Lightsail. Override in Settings if you self-host.
+    return "https://api.thomaz.baseup.cc";
 #else
     return "http://localhost:3000";
 #endif

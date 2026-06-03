@@ -118,7 +118,9 @@ feed::FeedPage HttpFeedClient::fetchFeed(const std::string& cursor)
             req.headers.push_back({ "Authorization", "Bearer " + session.token });
     }
     HttpResponse resp = http->request(req); // read: do not refresh on 401
-    return feed::parse_feed_page(resp.body);
+    feed::FeedPage page = feed::parse_feed_page(resp.body);
+    page.ok = resp.ok(); // distinguish a real failure from a successful empty feed
+    return page;
 }
 
 ActionResult HttpFeedClient::createPost(const std::string& /*token (vestigial)*/,

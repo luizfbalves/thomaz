@@ -34,6 +34,8 @@ struct FeedPage {
     std::vector<Post> posts;
     std::string       nextCursor; // passar de volta em fetchFeed; vazio = fim
     bool              hasMore = false;
+    bool              ok      = false; // transport succeeded? (false = load failed,
+                                       // distinct from a successful but empty feed)
 };
 
 struct Session {
