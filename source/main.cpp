@@ -24,6 +24,7 @@
 #include "platform/self_update.hpp"
 #include "platform/feed/http_feed_client.hpp"
 #include "platform/feed/auth_store.hpp"
+#include "platform/saves/http_cloud_save_client.hpp"
 
 using namespace brls::literals; // for ""_i18n
 
@@ -97,6 +98,11 @@ int main(int argc, char* argv[])
         [](const thomaz::feed::Session& s) { thomaz::save_session(s); },
         []() { thomaz::clear_session(); });
 
+    // Cloud saves: real HTTP client against the same thomaz-api base URL. The
+    // access token is read from auth_store per call by the Save Detail screen.
+    auto cloudSaveClient = std::make_unique<thomaz::HttpCloudSaveClient>(
+        httpClient.get(), apiBaseUrl);
+
 #ifdef __SWITCH__
     auto albumSource = std::make_unique<thomaz::SwitchAlbumSource>();
     albumSource->init();
@@ -109,7 +115,7 @@ int main(int argc, char* argv[])
 
     brls::Application::pushActivity(
         new thomaz::HomeActivity(titleService.get(), httpClient.get(), saveService.get(),
-                                 feedClient.get(), albumSource.get()));
+                                 feedClient.get(), albumSource.get(), cloudSaveClient.get()));
 
     while (brls::Application::mainLoop())
         ;
