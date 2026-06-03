@@ -1,0 +1,10 @@
+{
+  "$schema": "https://swc.rs/schema.json",
+  "jsc": {
+    "parser": { "syntax": "typescript", "decorators": false },
+    "target": "es2022",
+    "loose": false
+  },
+  "module": { "type": "es6" },
+  "sourceMaps": true
+}

@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
+    "build": "swc src -d dist --strip-leading-paths",
+    "typecheck": "tsc --noEmit",
+    "start": "node --env-file=.env dist/index.js",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
@@ -28,6 +29,8 @@
     "zod": "^3.25.28"
   },
   "devDependencies": {
+    "@swc/cli": "^0.4.0",
+    "@swc/core": "^1.15.40",
     "@types/node": "^22.15.21",
     "form-data": "^4.0.5",
     "prisma": "^6.8.2",
