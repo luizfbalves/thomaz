@@ -27,7 +27,8 @@
                       axis="column" grow="1.55" marginRight="18"
                       padding="34" cornerRadius="22"
                       backgroundColor="@theme/thomaz/tile_cheats"
-                      focusable="true" highlightCornerRadius="22">
+                      focusable="true" highlightCornerRadius="22"
+                      hideHighlightBackground="true">
 
                 <brls:Box width="64" height="64" cornerRadius="18"
                           backgroundColor="#FFFFFF29"
@@ -53,7 +54,8 @@
                           axis="row" alignItems="center" grow="1.0" marginBottom="14"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
                           backgroundColor="@theme/thomaz/tile_settings"
-                          focusable="true" highlightCornerRadius="16">
+                          focusable="true" highlightCornerRadius="16"
+                          hideHighlightBackground="true">
                     <brls:Box width="44" height="44" cornerRadius="12"
                               backgroundColor="#FFFFFF29"
                               justifyContent="center" alignItems="center" marginRight="16">
