@@ -98,8 +98,9 @@ void SettingsActivity::onContentAvailable()
             save_api_base_url(v);
             brls::Application::notify("thomaz/settings/saved"_i18n);
         },
-        "thomaz/settings/api_url_hint"_i18n,
-        "", 128);
+        "",                                    // placeholder (field prefilled, unused)
+        "thomaz/settings/api_url_hint"_i18n,   // hint sub-label (always visible)
+        128);
     apiCell->addGestureRecognizer(new brls::TapGestureRecognizer(apiCell));
     listBox->addView(apiCell);
 
