@@ -54,8 +54,11 @@ std::vector<AlbumEntry> SwitchAlbumSource::list()
 
         std::vector<CapsAlbumEntry> entries(count);
         u64 got = 0;
+        // 4º arg de capsaGetAlbumFileList é a CONTAGEM de entradas do buffer,
+        // não o tamanho em bytes. (Verificar na build do Switch contra o
+        // capsa.h do libnx instalado.)
         if (R_FAILED(capsaGetAlbumFileList(storage, &got, entries.data(),
-                                           entries.size() * sizeof(CapsAlbumEntry))))
+                                           entries.size())))
             continue;
 
         for (u64 i = 0; i < got; ++i) {
