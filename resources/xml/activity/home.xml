@@ -83,6 +83,23 @@
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
                 </brls:Box>
 
+                <!-- Save Manager (active) -->
+                <brls:Box id="savesCard"
+                          axis="row" alignItems="center" grow="1.0" marginBottom="14"
+                          paddingLeft="22" paddingRight="22" cornerRadius="16"
+                          backgroundColor="@theme/thomaz/tile_saves"
+                          focusable="true" highlightCornerRadius="16"
+                          hideHighlightBackground="true">
+                    <brls:Box width="44" height="44" cornerRadius="12"
+                              backgroundColor="#FFFFFF29"
+                              justifyContent="center" alignItems="center" marginRight="16">
+                        <brls:Label text="@i18n/thomaz/icon/saves"
+                                    fontSize="24" textColor="#FFFFFF"/>
+                    </brls:Box>
+                    <brls:Label text="@i18n/thomaz/module/saves/title"
+                                fontSize="17" textColor="#FFFFFF" grow="1.0"/>
+                </brls:Box>
+
                 <!-- Mods (coming soon) -->
                 <brls:Box axis="row" alignItems="center" grow="1.0"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"

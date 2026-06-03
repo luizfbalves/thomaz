@@ -8,13 +8,14 @@
 #include <borealis.hpp>
 #include "platform/http_client.hpp"
 #include "platform/title.hpp"
+#include "platform/save_service.hpp"
 
 namespace thomaz {
 
 class HomeActivity : public brls::Activity
 {
   public:
-    HomeActivity(ITitleService* titleService, IHttpClient* http);
+    HomeActivity(ITitleService* titleService, IHttpClient* http, ISaveService* saveService);
 
     CONTENT_FROM_XML_RES("activity/home.xml");
 
@@ -23,6 +24,7 @@ class HomeActivity : public brls::Activity
   private:
     ITitleService* titleService;
     IHttpClient* http;
+    ISaveService* saveService;
 };
 
 } // namespace thomaz

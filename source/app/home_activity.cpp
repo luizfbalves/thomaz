@@ -5,13 +5,14 @@
 #include "app/home_activity.hpp"
 #include "app/game_list_activity.hpp"
 #include "app/settings_activity.hpp"
+#include "app/save_manager_activity.hpp"
 
 #include <borealis.hpp>
 
 namespace thomaz {
 
-HomeActivity::HomeActivity(ITitleService* titleService, IHttpClient* http)
-    : titleService(titleService), http(http)
+HomeActivity::HomeActivity(ITitleService* titleService, IHttpClient* http, ISaveService* saveService)
+    : titleService(titleService), http(http), saveService(saveService)
 {
 }
 
@@ -35,6 +36,15 @@ void HomeActivity::onContentAvailable()
             return true;
         });
         settings->addGestureRecognizer(new brls::TapGestureRecognizer(settings));
+    }
+
+    if (brls::View* saves = this->getView("savesCard")) {
+        saves->registerClickAction([this](brls::View*) {
+            brls::Application::pushActivity(
+                new SaveManagerActivity(this->titleService, this->saveService));
+            return true;
+        });
+        saves->addGestureRecognizer(new brls::TapGestureRecognizer(saves));
     }
 }
 
