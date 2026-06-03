@@ -1,5 +1,6 @@
 #pragma once
 #include <optional>
+#include <string>
 #include "core/feed/feed_types.hpp"
 
 namespace thomaz {
