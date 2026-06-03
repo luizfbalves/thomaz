@@ -11,6 +11,7 @@
 #include <memory>
 
 #include <borealis.hpp>
+#include "platform/http_client.hpp"
 #include "platform/title.hpp"
 
 namespace thomaz {
@@ -18,7 +19,7 @@ namespace thomaz {
 class ModManagerActivity : public brls::Activity
 {
   public:
-    explicit ModManagerActivity(InstalledTitle title);
+    ModManagerActivity(InstalledTitle title, IHttpClient* http);
     ~ModManagerActivity() override;
 
     CONTENT_FROM_XML_RES("activity/mod_manager.xml");
@@ -34,6 +35,7 @@ class ModManagerActivity : public brls::Activity
     void doImport(const std::string& archive_path, const std::string& mod_name);
 
     InstalledTitle title;
+    IHttpClient* http;
 
     // Set false in the destructor so an in-flight UI callback bails.
     std::shared_ptr<std::atomic_bool> alive = std::make_shared<std::atomic_bool>(true);
