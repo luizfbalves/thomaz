@@ -39,15 +39,21 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    // Register theme colors and force dark mode.
+    // Create the window/video context BEFORE touching the theme. On Switch with
+    // deko3d, registerThomazTheme() calls setThemeVariant(), which immediately
+    // does videoContext->recordStaticCommands() — but the videoContext only
+    // exists after createWindow(). Registering the theme first dereferences a
+    // null videoContext → Data Abort (null deref) on hardware. (Desktop's
+    // setThemeVariant is a different impl, so this only crashed on the console.)
+    brls::Application::createWindow("thomaz/title"_i18n);
+
+    // Register theme colors and force dark mode (safe now: videoContext exists).
     thomaz::registerThomazTheme();
 
     // Smoother screen transitions: soften the activity cross-fade (default is a
     // quick 200ms) and the focus highlight. Eased (quadraticOut) by Borealis.
     brls::Application::getStyle().addMetric("brls/animations/show", 340.0f);
     brls::Application::getStyle().addMetric("brls/animations/highlight", 130.0f);
-
-    brls::Application::createWindow("thomaz/title"_i18n);
 
     // Select the title service for the current platform.
 #ifdef __SWITCH__
