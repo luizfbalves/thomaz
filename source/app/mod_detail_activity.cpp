@@ -36,10 +36,11 @@ std::string human_size(std::uint64_t bytes)
 }
 
 // filename without its final extension ("Mod.v2.zip" -> "Mod.v2").
+// Leading-dot names (e.g. ".zip") are returned unchanged.
 std::string strip_extension(const std::string& name)
 {
     std::string::size_type dot = name.find_last_of('.');
-    if (dot == std::string::npos)
+    if (dot == std::string::npos || dot == 0)
         return name;
     return name.substr(0, dot);
 }
@@ -167,9 +168,10 @@ void ModDetailActivity::startDownload(const core::ModFile& file)
 
     brls::Application::notify("mods/downloading"_i18n);
 
-    auto alive = this->alive;
+    std::uint64_t tid = this->title.title_id; // copy before async — avoids UAF if activity is popped
+    auto alive        = this->alive;
 
-    brls::async([this, alive, f, dest, mod_name]() {
+    brls::async([alive, f, dest, mod_name, tid]() {
         std::string err;
         // progress nullptr is safe — download_file guards `if(progress)`.
         // A live progress bar is a future refinement.
@@ -178,7 +180,7 @@ void ModDetailActivity::startDownload(const core::ModFile& file)
         std::string msg;
         if (ok)
         {
-            ModActionResult ir = import_archive(this->title.title_id, mod_name, dest, nullptr);
+            ModActionResult ir = import_archive(tid, mod_name, dest, nullptr);
             done_ok            = ir.ok;
             msg = ir.ok ? "mods/installed_ok"_i18n
                         : ("mods/download_failed"_i18n + std::string(": ") + ir.error);
@@ -188,7 +190,7 @@ void ModDetailActivity::startDownload(const core::ModFile& file)
             msg = "mods/download_failed"_i18n + std::string(": ") + err;
         }
 
-        brls::sync([this, alive, msg, done_ok]() {
+        brls::sync([alive, msg, done_ok]() {
             if (!alive->load())
                 return;
             brls::Application::notify(msg);
