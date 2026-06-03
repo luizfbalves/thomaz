@@ -45,13 +45,18 @@ if (PLATFORM_SWITCH)
     # switch-curl + switch-mbedtls + switch-zlib ship in the devkitpro/devkita64
     # image's switch-portlibs meta-package (no dkp-pacman step needed). Headers
     # and libs live under $DEVKITPRO/portlibs/switch. Link order matters for
-    # the static GNU linker: curl -> mbedtls -> z.
+    # the static GNU linker: curl -> mbedtls -> z, then archive before all of its
+    # decompression filter deps (bz2, lzma, zstd, lz4) and zlib last. switch-libarchive
+    # is built with zstd+lz4 support, so those portlibs MUST be on the link line or
+    # the zip/7zip/zstd/lz4 filters fail with undefined ZSTD_*/LZ4_* references.
     list(APPEND APP_PLATFORM_INCLUDE $ENV{DEVKITPRO}/portlibs/switch/include)
     link_directories($ENV{DEVKITPRO}/portlibs/switch/lib)
-    list(APPEND APP_PLATFORM_LIB curl mbedtls mbedx509 mbedcrypto z)
+    list(APPEND APP_PLATFORM_LIB curl mbedtls mbedx509 mbedcrypto
+                                 archive bz2 lzma zstd lz4 z)
 elseif (PLATFORM_DESKTOP)
     find_package(CURL REQUIRED)
-    list(APPEND APP_PLATFORM_LIB CURL::libcurl)
+    find_package(LibArchive REQUIRED)
+    list(APPEND APP_PLATFORM_LIB CURL::libcurl LibArchive::LibArchive)
 endif ()
 
 # Our sources: app entry + pure-logic core. core/*.hpp resolved via -Isource,

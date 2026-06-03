@@ -1,0 +1,20 @@
+{
+    "title": "Mods",
+    "loading": "Carregando…",
+    "empty": "Nenhum mod instalado para este jogo.",
+    "import": "Importar da SD",
+    "import_hint": "Coloque arquivos .zip/.7z em sd:/switch/thomaz/mods/_incoming/",
+    "no_incoming": "Nenhum arquivo em _incoming para importar.",
+    "pick_archive": "Escolha um arquivo",
+    "importing": "Importando…",
+    "imported": "Mod importado.",
+    "import_failed": "Falha ao importar",
+    "uninstall": "Desinstalar",
+    "uninstall_confirm": "Remover este mod?",
+    "uninstall_button": "Remover",
+    "cancel": "Cancelar",
+    "enable_failed": "Falha ao ativar o mod",
+    "disable_failed": "Falha ao desativar o mod",
+    "uninstall_failed": "Falha ao desinstalar o mod",
+    "active": "Ativo"
+}

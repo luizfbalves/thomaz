@@ -1,0 +1,20 @@
+{
+    "title": "Mods",
+    "loading": "Loading…",
+    "empty": "No mods installed for this game.",
+    "import": "Import from SD",
+    "import_hint": "Drop .zip/.7z files in sd:/switch/thomaz/mods/_incoming/",
+    "no_incoming": "No files in _incoming to import.",
+    "pick_archive": "Pick an archive",
+    "importing": "Importing…",
+    "imported": "Mod imported.",
+    "import_failed": "Import failed",
+    "uninstall": "Uninstall",
+    "uninstall_confirm": "Remove this mod?",
+    "uninstall_button": "Remove",
+    "cancel": "Cancel",
+    "enable_failed": "Failed to enable the mod",
+    "disable_failed": "Failed to disable the mod",
+    "uninstall_failed": "Failed to uninstall the mod",
+    "active": "Active"
+}
