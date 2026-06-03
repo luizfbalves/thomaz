@@ -22,7 +22,8 @@
 #include "platform/app_settings.hpp"
 #include "platform/http_client_curl.hpp"
 #include "platform/self_update.hpp"
-#include "platform/feed/fake_feed_client.hpp"
+#include "platform/feed/http_feed_client.hpp"
+#include "platform/feed/auth_store.hpp"
 
 using namespace brls::literals; // for ""_i18n
 
@@ -83,9 +84,18 @@ int main(int argc, char* argv[])
     // HTTP client for downloading cheats (libcurl; libnx sockets on Switch).
     auto httpClient = std::make_unique<thomaz::CurlHttpClient>();
 
-    // Community feed: FakeFeedClient for now (the real API is future work) on
-    // both platforms. Album source: real caps:a on Switch, fake on desktop.
-    auto feedClient = std::make_unique<thomaz::FakeFeedClient>();
+    // Community feed: real HTTP client against the thomaz-api. Base URL has a
+    // compiled default (localhost on desktop, prod host on Switch) plus a
+    // Settings override. The client owns the session and persists it via
+    // auth_store on login/refresh; on refresh failure it clears the session.
+    std::string apiBaseUrl = thomaz::load_api_base_url();
+    auto restoredSession   = thomaz::load_session();
+    auto feedClient = std::make_unique<thomaz::HttpFeedClient>(
+        httpClient.get(),
+        apiBaseUrl,
+        restoredSession,
+        [](const thomaz::feed::Session& s) { thomaz::save_session(s); },
+        []() { thomaz::clear_session(); });
 
 #ifdef __SWITCH__
     auto albumSource = std::make_unique<thomaz::SwitchAlbumSource>();
