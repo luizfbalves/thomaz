@@ -34,4 +34,20 @@ std::string build_manifest(const ManifestInfo& info);
 // Parse a manifest.json body; nullopt if malformed.
 std::optional<ManifestInfo> parse_manifest(const std::string& body);
 
+// Root directory holding all backups. Platform-specific:
+//   Switch  -> "/switch/thomaz/saves"
+//   desktop -> "thomaz-saves" (relative to the working dir)
+std::string saves_root();
+
+// <root>/<titleIdLowerHex>  — all backups of one title live here.
+std::string title_backups_dir(const std::string& root, std::uint64_t title_id);
+
+// <root>/<titleIdLowerHex>/<timestamp>  — one specific backup.
+std::string backup_dir(const std::string& root, std::uint64_t title_id,
+                       const std::string& timestamp);
+
+// "2026-06-03_14-20-00" -> "03/06 14:20" for display. Returns the input
+// unchanged if it does not match the expected shape.
+std::string format_timestamp_label(const std::string& timestamp);
+
 } // namespace thomaz::core

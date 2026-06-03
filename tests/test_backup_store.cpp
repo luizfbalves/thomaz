@@ -36,3 +36,15 @@ TEST_CASE("parse_manifest returns nullopt on garbage") {
     CHECK_FALSE(parse_manifest("not json").has_value());
     CHECK_FALSE(parse_manifest("{}").has_value());
 }
+
+TEST_CASE("path builders compose root + lowercase title id + timestamp") {
+    std::uint64_t tid = 0x0100000000010000ULL;
+    CHECK(title_backups_dir("/sd/saves", tid) == "/sd/saves/0100000000010000");
+    CHECK(backup_dir("/sd/saves", tid, "2026-06-03_14-20-00")
+          == "/sd/saves/0100000000010000/2026-06-03_14-20-00");
+}
+
+TEST_CASE("format_timestamp_label renders dd/mm hh:mm") {
+    CHECK(format_timestamp_label("2026-06-03_14-20-00") == "03/06 14:20");
+    CHECK(format_timestamp_label("garbage") == "garbage");
+}
