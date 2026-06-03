@@ -15,6 +15,7 @@ class FakeFeedClient : public IFeedClient {
     AuthResult registerUser(const std::string& user, const std::string& pass) override;
     AuthResult login(const std::string& user, const std::string& pass) override;
     feed::FeedPage fetchFeed(const std::string& cursor) override;
+    std::vector<std::uint8_t> fetchImage(const std::string& url) override;
     ActionResult createPost(const std::string& token,
                             const std::vector<std::uint8_t>& jpeg,
                             const std::string& caption,

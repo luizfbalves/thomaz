@@ -12,13 +12,13 @@
             </brls:Box>
         </AnimatedBox>
 
-        <AnimatedBox axis="row" grow="1.0" entranceDelay="80">
-            <brls:ScrollingFrame width="auto" height="auto" grow="1.4" marginRight="14">
+        <AnimatedBox id="feedSplit" axis="row" grow="1.0" entranceDelay="80" visibility="gone">
+            <brls:ScrollingFrame width="auto" height="auto" grow="2" marginRight="14">
                 <brls:Box id="feedListBox" width="auto" height="auto" axis="column"/>
             </brls:ScrollingFrame>
-            <brls:Box id="detailPane" axis="column" grow="1.0"
+            <brls:Box id="detailPane" axis="column" grow="3"
                       cornerRadius="14" padding="16"
-                      backgroundColor="@theme/thomaz/tile_saves"/>
+                      backgroundColor="#16181E"/>
         </AnimatedBox>
 
         <brls:ProgressSpinner id="feedSpinner" width="44" height="44"

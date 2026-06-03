@@ -123,6 +123,17 @@ feed::FeedPage HttpFeedClient::fetchFeed(const std::string& cursor)
     return page;
 }
 
+std::vector<std::uint8_t> HttpFeedClient::fetchImage(const std::string& imageUrl)
+{
+    if (imageUrl.empty()) return {};
+    HttpRequest req;
+    req.method = HttpMethod::Get;
+    req.url    = imageUrl; // imageUrl já é absoluta (a API devolve a URL completa)
+    HttpResponse resp = http->request(req);
+    if (!resp.ok()) return {};
+    return std::vector<std::uint8_t>(resp.body.begin(), resp.body.end());
+}
+
 ActionResult HttpFeedClient::createPost(const std::string& /*token (vestigial)*/,
                                         const std::vector<std::uint8_t>& jpeg,
                                         const std::string& caption,

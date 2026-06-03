@@ -26,6 +26,10 @@ class IFeedClient {
     // Feed (cursor vazio = primeira página)
     virtual feed::FeedPage fetchFeed(const std::string& cursor) = 0;
 
+    // Baixa os bytes brutos de uma imagem (JPEG/PNG) a partir da imageUrl do post.
+    // Chamado de um worker thread. Vetor vazio = falha (UI mantém o placeholder).
+    virtual std::vector<std::uint8_t> fetchImage(const std::string& url) = 0;
+
     // Postar (bytes JPEG vindos do IAlbumSource + jogo já resolvido)
     virtual ActionResult createPost(const std::string& token,
                                     const std::vector<std::uint8_t>& jpeg,

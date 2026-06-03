@@ -62,6 +62,11 @@ feed::FeedPage FakeFeedClient::fetchFeed(const std::string& cursor)
     return page;
 }
 
+std::vector<std::uint8_t> FakeFeedClient::fetchImage(const std::string&)
+{
+    return {}; // o fake não tem bytes reais; a UI fica com o placeholder
+}
+
 ActionResult FakeFeedClient::createPost(const std::string&,
                                         const std::vector<std::uint8_t>&,
                                         const std::string& caption,

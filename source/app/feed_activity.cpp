@@ -1,4 +1,5 @@
 #include "app/feed_activity.hpp"
+#include "app/app_header.hpp"
 #include "app/composer_activity.hpp"
 #include "app/auth_activity.hpp"
 #include <borealis/core/i18n.hpp>
@@ -17,6 +18,8 @@ FeedActivity::~FeedActivity() { *this->alive = false; }
 
 void FeedActivity::onContentAvailable()
 {
+    install_header_username(this);
+
     auto* compose = this->getView("composeBtn");
     compose->registerClickAction([this](brls::View*) { this->onComposePressed(); return true; });
     compose->addGestureRecognizer(new brls::TapGestureRecognizer(compose));
@@ -35,6 +38,7 @@ void FeedActivity::loadFirstPage()
     if (auto* box = (brls::Box*)this->getView("feedListBox")) box->clearViews();
     this->getView("feedError")->setVisibility(brls::Visibility::GONE);
     this->getView("feedEmpty")->setVisibility(brls::Visibility::GONE);
+    this->getView("feedSplit")->setVisibility(brls::Visibility::GONE);
     this->getView("feedSpinner")->setVisibility(brls::Visibility::VISIBLE);
 
     IFeedClient* c = this->client;
@@ -58,6 +62,7 @@ void FeedActivity::loadFirstPage()
                     this->getView("feedEmpty")->setVisibility(brls::Visibility::VISIBLE);
                 return;
             }
+            this->getView("feedSplit")->setVisibility(brls::Visibility::VISIBLE);
             this->renderNewRows(before);
             this->showDetail(this->posts.front().id);
         });
@@ -117,8 +122,10 @@ void FeedActivity::renderNewRows(size_t fromIndex)
         }
 
         auto* meta = new brls::Label();
+        //  = ícone "comment" do Material Icons (carregado como fallback);
+        // o emoji 💬 (U+1F4AC) não existe nessa fonte e renderiza como caixa quebrada.
         meta->setText("♥ " + std::to_string(post.likeCount) +
-                      "   \U0001F4AC " + std::to_string(post.commentCount));
+                      "    " + std::to_string(post.commentCount));
         meta->setFontSize(13.0f);
         meta->setTextColor(nvgRGB(0x8b, 0x8d, 0x98));
         meta->setMarginTop(6.0f);
@@ -147,26 +154,57 @@ void FeedActivity::showDetail(const std::string& postId)
     feed::Post* post = feed::find_post(this->posts, postId);
     if (!post) return;
 
+    // The detail content (image + caption + comments) is usually taller than the
+    // pane, so it lives in a ScrollingFrame — otherwise yoga compresses the flex
+    // children to fit and the header labels visually overlap.
+    auto* scroll = new brls::ScrollingFrame();
+    scroll->setGrow(1.0f);
+    auto* content = new brls::Box(brls::Axis::COLUMN);
+    scroll->setContentView(content);
+    pane->addView(scroll);
+
     auto* user = new brls::Label();
     user->setText("@" + post->author.username);
     user->setFontSize(18.0f);
-    pane->addView(user);
+    content->addView(user);
 
     if (post->gameTitleId != 0 && !post->gameName.empty()) {
         auto* game = new brls::Label();
         game->setText("thomaz/feed/game_tag"_i18n + post->gameName);
         game->setFontSize(13.0f);
         game->setTextColor(nvgRGB(0x92, 0x77, 0xFF));
-        game->setMarginTop(4.0f);
-        pane->addView(game);
+        game->setMarginTop(6.0f);
+        content->addView(game);
+    }
+
+    if (!post->imageUrl.empty()) {
+        auto* img = new brls::Image();
+        img->setHeight(300.0f);
+        img->setMarginTop(14.0f);
+        img->setCornerRadius(12.0f);
+        img->setScalingType(brls::ImageScalingType::FIT);
+        content->addView(img);
+
+        std::string imageUrl = post->imageUrl;
+        IFeedClient* ic = this->client; auto ialive = this->alive;
+        brls::async([this, ic, ialive, imageUrl, postId, img]() {
+            std::vector<std::uint8_t> bytes = ic->fetchImage(imageUrl);
+            brls::sync([this, ialive, bytes, postId, img]() {
+                if (!ialive->load()) return;
+                // Só toca em `img` se este post ainda é o exibido: trocar de
+                // detalhe chama clearViews() e libera `img` (use-after-free).
+                if (this->selectedId != postId || bytes.empty()) return;
+                img->setImageFromMem(bytes.data(), (int)bytes.size());
+            });
+        });
     }
 
     if (!post->caption.empty()) {
         auto* cap = new brls::Label();
         cap->setText(post->caption);
         cap->setFontSize(15.0f);
-        cap->setMarginTop(10.0f);
-        pane->addView(cap);
+        cap->setMarginTop(14.0f);
+        content->addView(cap);
     }
 
     auto* likeBtn = new brls::Box(brls::Axis::ROW);
@@ -209,11 +247,11 @@ void FeedActivity::showDetail(const std::string& postId)
         return true;
     });
     likeBtn->addGestureRecognizer(new brls::TapGestureRecognizer(likeBtn));
-    pane->addView(likeBtn);
+    content->addView(likeBtn);
 
     auto* commentsBox = new brls::Box(brls::Axis::COLUMN);
-    commentsBox->setMarginTop(14.0f);
-    pane->addView(commentsBox);
+    commentsBox->setMarginTop(16.0f);
+    content->addView(commentsBox);
 
     IFeedClient* c = this->client; auto alive = this->alive;
     brls::async([this, c, alive, postId, commentsBox]() {
@@ -262,7 +300,7 @@ void FeedActivity::showDetail(const std::string& postId)
         return true;
     });
     addBtn->addGestureRecognizer(new brls::TapGestureRecognizer(addBtn));
-    pane->addView(addBtn);
+    content->addView(addBtn);
 }
 
 bool FeedActivity::requireSession()
