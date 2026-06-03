@@ -59,5 +59,29 @@ jobs:
       - name: Apply migrations
         run: npx prisma migrate deploy
 
+      - name: Type-check
+        run: npm run typecheck
+
       - name: Run tests
         run: npm test
+
+  deploy:
+    name: Deploy to Lightsail
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          script_stop: true
+          command_timeout: "20m"
+          script: |
+            set -euo pipefail
+            cd ~/apps/thomaz
+            git fetch origin main
+            git reset --hard origin/main
+            bash api/scripts/deploy.sh
