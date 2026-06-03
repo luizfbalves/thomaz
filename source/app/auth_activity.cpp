@@ -90,7 +90,6 @@ void AuthActivity::submit()
                 status->setText(r.error.empty() ? "thomaz/auth/err_failed"_i18n : r.error);
                 return;
             }
-            save_session(feed::Session{ r.token, r.refreshToken, u });
             auto cb = this->onAuthed;
             brls::Application::popActivity(brls::TransitionAnimation::NONE,
                                            [cb]() { if (cb) cb(); });

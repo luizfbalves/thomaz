@@ -104,6 +104,7 @@ std::string auth_error_message(const json& j, long status)
     if (status == 0)   return "Sem conexão com o servidor.";
     if (status == 401) return "Usuário ou senha inválidos.";
     if (status == 409) return "Esse nome de usuário já existe.";
+    if (status == 400) return "Verifique o usuário (3–32, letras/números/_) e a senha (mín. 6).";
     if (j.is_object() && j.contains("error") && j.at("error").is_string())
         return j.at("error").get<std::string>();
     return "Falha ao autenticar. Tente novamente.";

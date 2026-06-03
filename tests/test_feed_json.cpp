@@ -164,3 +164,11 @@ TEST_CASE("parsers do not throw on type-mismatched fields (defensive)") {
     CHECK(p->id == "p9");
     CHECK(p->createdAt == 0);
 }
+
+TEST_CASE("parse_auth_response 400 -> actionable validation message") {
+    auto r = parse_auth_response(R"({"ok":false,"error":"invalid_credentials"})", 400);
+    CHECK_FALSE(r.ok);
+    CHECK_FALSE(r.error.empty());
+    // 400 maps to the format-guidance message, not the raw API key.
+    CHECK(r.error.find("senha") != std::string::npos);
+}
