@@ -27,3 +27,12 @@ TEST_CASE("empty/garbage session is rejected") {
     CHECK_FALSE(parse_session("").has_value());
     CHECK_FALSE(parse_session("\n\n").has_value());
 }
+
+TEST_CASE("3-line session with empty refreshToken parses (logged in pre-refresh)") {
+    Session s{ "acc-tok", "", "luiz" };
+    auto parsed = parse_session(serialize_session(s));
+    REQUIRE(parsed.has_value());
+    CHECK(parsed->token == "acc-tok");
+    CHECK(parsed->refreshToken.empty());
+    CHECK(parsed->username == "luiz");
+}
