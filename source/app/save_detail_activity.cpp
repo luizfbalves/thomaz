@@ -121,6 +121,8 @@ void SaveDetailActivity::doBackup()
 void SaveDetailActivity::doRestore(const core::BackupEntry& entry)
 {
     auto doIt = [this, entry]() {
+        if (!this->alive->load())
+            return; // activity gone before the user confirmed
         if (auto* spinner = this->getView("spinner"))
             spinner->setVisibility(brls::Visibility::VISIBLE);
         ISaveService* svc   = this->saveService;

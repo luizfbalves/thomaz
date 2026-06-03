@@ -45,6 +45,7 @@ void SaveManagerActivity::populate(const std::vector<InstalledTitle>& titles)
 
     if (titles.empty()) {
         if (emptyLabel) emptyLabel->setVisibility(brls::Visibility::VISIBLE);
+        if (listBox)    listBox->setVisibility(brls::Visibility::GONE);
         return;
     }
     if (!listBox)
