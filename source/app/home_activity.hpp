@@ -10,13 +10,16 @@
 #include "platform/http_client.hpp"
 #include "platform/title.hpp"
 #include "platform/save_service.hpp"
+#include "platform/feed/feed_client.hpp"
+#include "platform/feed/album_source.hpp"
 
 namespace thomaz {
 
 class HomeActivity : public brls::Activity
 {
   public:
-    HomeActivity(ITitleService* titleService, IHttpClient* http, ISaveService* saveService);
+    HomeActivity(ITitleService* titleService, IHttpClient* http, ISaveService* saveService,
+                 IFeedClient* feed, IAlbumSource* album);
 
     CONTENT_FROM_XML_RES("activity/home.xml");
 
@@ -26,6 +29,8 @@ class HomeActivity : public brls::Activity
     ITitleService* titleService;
     IHttpClient* http;
     ISaveService* saveService;
+    IFeedClient* feed;
+    IAlbumSource* album;
 };
 
 } // namespace thomaz

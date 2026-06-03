@@ -8,9 +8,11 @@
 #include <switch.h>
 #include "platform/title_service_switch.hpp"
 #include "platform/save_service_switch.hpp"
+#include "platform/feed/switch_album_source.hpp"
 #else
 #include "platform/title_service_fake.hpp"
 #include "platform/save_service_fake.hpp"
+#include "platform/feed/fake_album_source.hpp"
 #endif
 
 #include <borealis.hpp>
@@ -20,6 +22,7 @@
 #include "platform/app_settings.hpp"
 #include "platform/http_client_curl.hpp"
 #include "platform/self_update.hpp"
+#include "platform/feed/fake_feed_client.hpp"
 
 using namespace brls::literals; // for ""_i18n
 
@@ -80,16 +83,29 @@ int main(int argc, char* argv[])
     // HTTP client for downloading cheats (libcurl; libnx sockets on Switch).
     auto httpClient = std::make_unique<thomaz::CurlHttpClient>();
 
+    // Community feed: FakeFeedClient for now (the real API is future work) on
+    // both platforms. Album source: real caps:a on Switch, fake on desktop.
+    auto feedClient = std::make_unique<thomaz::FakeFeedClient>();
+
+#ifdef __SWITCH__
+    auto albumSource = std::make_unique<thomaz::SwitchAlbumSource>();
+    albumSource->init();
+#else
+    auto albumSource = std::make_unique<thomaz::FakeAlbumSource>();
+#endif
+
     // Quit the app with the + (START) button from any activity.
     brls::Application::setGlobalQuit(true);
 
     brls::Application::pushActivity(
-        new thomaz::HomeActivity(titleService.get(), httpClient.get(), saveService.get()));
+        new thomaz::HomeActivity(titleService.get(), httpClient.get(), saveService.get(),
+                                 feedClient.get(), albumSource.get()));
 
     while (brls::Application::mainLoop())
         ;
 
 #ifdef __SWITCH__
+    albumSource->exit();
     titleService->exit();
 #endif
 
