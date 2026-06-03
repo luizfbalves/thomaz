@@ -42,7 +42,6 @@ class SaveDetailActivity : public brls::Activity
     void setCloudStatusText(const std::string& text);
     std::string cloudErrorText(const std::string& apiError) const;
 
-    int  cloudRevision = 0;
     bool cloudBusy     = false; // guards against concurrent upload/download (doUpload/doDownload)
 
     InstalledTitle title;

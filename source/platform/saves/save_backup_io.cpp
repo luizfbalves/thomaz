@@ -34,6 +34,7 @@ std::string first_segment(const std::string& path) {
     auto slash = path.find('/');
     return slash == std::string::npos ? std::string() : path.substr(0, slash);
 }
+} // namespace
 
 // Reject absolute paths and any ".." traversal segment. Blobs may come from the
 // network, so a save file must never escape its backup directory.
@@ -52,6 +53,7 @@ bool is_safe_relpath(const std::string& path) {
     return true;
 }
 
+namespace {
 // Recursively delete a directory tree (POSIX), mirroring the cleanup that
 // NsSaveService::backup() does so a failed import never leaves a stale,
 // manifest-less directory under saves_root().

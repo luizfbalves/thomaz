@@ -333,7 +333,6 @@ void SaveDetailActivity::doDownload() {
                 return;
             }
             save_synced_revision(tid, p.revision);
-            this->cloudRevision = p.revision;
             brls::Application::notify("thomaz/saves/cloud_download_ok"_i18n);
             this->refreshHistory();      // the new backup now shows in the list
             this->refreshCloudStatus();  // now in sync
@@ -413,7 +412,6 @@ void SaveDetailActivity::refreshCloudStatus() {
                 this->setCloudStatusText(this->cloudErrorText(s.error));
                 return;
             }
-            this->cloudRevision = s.revision;
             int synced = load_synced_revision(tid);
             core::SyncSituation sit = core::classify(s.exists, s.revision, synced);
             std::string text;
