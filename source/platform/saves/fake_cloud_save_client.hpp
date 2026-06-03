@@ -19,9 +19,10 @@ class FakeCloudSaveClient : public ICloudSaveClient {
 
   private:
     struct Slot {
-        int                       revision = 0;
+        int                       revision  = 0;
         std::string               label;
         std::vector<std::uint8_t> blob;
+        std::int64_t              updatedAt = 0;
     };
     std::map<std::uint64_t, Slot> slots;
 };

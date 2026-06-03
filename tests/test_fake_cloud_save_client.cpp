@@ -14,6 +14,14 @@ TEST_CASE("status is empty before any push") {
     CHECK_FALSE(s.exists);
 }
 
+TEST_CASE("pull on a missing slot is ok but empty") {
+    FakeCloudSaveClient c;
+    auto d = c.pull("tok", 0x999ULL);
+    CHECK(d.ok);
+    CHECK_FALSE(d.exists);
+    CHECK(d.blob.empty());
+}
+
 TEST_CASE("push then status/pull reflect the upload") {
     FakeCloudSaveClient c;
     auto p = c.push("tok", 0x100ULL, bytes("save-bytes"), "Zelda", 0);
