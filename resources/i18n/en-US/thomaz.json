@@ -7,6 +7,10 @@
         "mods": "Mods"
     },
     "module": {
+        "feed": {
+            "title": "Community",
+            "subtitle": "Share your Switch screenshots"
+        },
         "cheats": {
             "title": "Cheats",
             "subtitle": "Manage your games' cheats"
@@ -14,6 +18,40 @@
         "settings": {
             "title": "Settings"
         }
+    },
+    "feed": {
+        "title": "Community",
+        "compose": "+ Post",
+        "empty": "No posts yet.",
+        "error": "Couldn't load the feed.",
+        "retry": "Try again",
+        "loading_more": "Loading…",
+        "like": "Like",
+        "comments": "Comments",
+        "add_comment": "Write a comment…",
+        "send": "Send",
+        "game_tag": "From: ",
+        "login_required": "Log in to interact."
+    },
+    "auth": {
+        "login_tab": "Log in",
+        "register_tab": "Create account",
+        "username": "Username",
+        "password": "Password",
+        "submit_login": "Log in",
+        "submit_register": "Create account",
+        "logout": "Log out",
+        "err_empty": "Fill in username and password.",
+        "err_failed": "Couldn't sign you in."
+    },
+    "composer": {
+        "title": "New post",
+        "pick": "Pick a capture",
+        "album_empty": "Your album is empty.",
+        "caption": "Write a caption…",
+        "post": "Post",
+        "posting": "Posting…",
+        "post_failed": "Couldn't post — your caption was kept."
     },
     "settings": {
         "title": "Settings",
@@ -78,16 +116,16 @@
         "save_failed": "Couldn't write to the SD card."
     },
     "icon": {
-        "cheats": "",
-        "settings": "",
-        "lock": "",
-        "save": "",
-        "mods": "",
-        "update": "",
-        "database": "",
-        "info": "",
-        "language": "",
-        "check": "",
-        "clear": ""
+        "cheats": "",
+        "settings": "",
+        "lock": "",
+        "save": "",
+        "mods": "",
+        "update": "",
+        "database": "",
+        "info": "",
+        "language": "",
+        "check": "",
+        "clear": ""
     }
 }
