@@ -13,8 +13,9 @@
 namespace thomaz {
 
 HomeActivity::HomeActivity(ITitleService* titleService, IHttpClient* http, ISaveService* saveService,
-                           IFeedClient* feed, IAlbumSource* album)
-    : titleService(titleService), http(http), saveService(saveService), feed(feed), album(album)
+                           IFeedClient* feed, IAlbumSource* album, ICloudSaveClient* cloudSaves)
+    : titleService(titleService), http(http), saveService(saveService), feed(feed), album(album),
+      cloudSaves(cloudSaves)
 {
 }
 
@@ -56,7 +57,8 @@ void HomeActivity::onContentAvailable()
     if (brls::View* saves = this->getView("savesCard")) {
         saves->registerClickAction([this](brls::View*) {
             brls::Application::pushActivity(
-                new SaveManagerActivity(this->titleService, this->saveService));
+                new SaveManagerActivity(this->titleService, this->saveService,
+                                        this->cloudSaves, this->feed));
             return true;
         });
         saves->addGestureRecognizer(new brls::TapGestureRecognizer(saves));

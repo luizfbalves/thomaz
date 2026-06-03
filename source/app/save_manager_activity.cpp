@@ -11,8 +11,9 @@ using namespace brls::literals;
 
 namespace thomaz {
 
-SaveManagerActivity::SaveManagerActivity(ITitleService* titleService, ISaveService* saveService)
-    : titleService(titleService), saveService(saveService)
+SaveManagerActivity::SaveManagerActivity(ITitleService* titleService, ISaveService* saveService,
+                                         ICloudSaveClient* cloudSaves, IFeedClient* feed)
+    : titleService(titleService), saveService(saveService), cloudSaves(cloudSaves), feed(feed)
 {
 }
 
@@ -51,8 +52,10 @@ void SaveManagerActivity::populate(const std::vector<InstalledTitle>& titles)
     if (!listBox)
         return;
 
-    std::string root   = core::saves_root();
-    ISaveService* save = this->saveService;
+    std::string root          = core::saves_root();
+    ISaveService* save        = this->saveService;
+    ICloudSaveClient* cloud   = this->cloudSaves;
+    IFeedClient* feedClient   = this->feed;
 
     for (const auto& title : titles) {
         brls::Box* row = new brls::Box(brls::Axis::ROW);
@@ -107,8 +110,8 @@ void SaveManagerActivity::populate(const std::vector<InstalledTitle>& titles)
         row->addView(textCol);
 
         InstalledTitle rowTitle = title;
-        row->registerClickAction([rowTitle, save](brls::View*) {
-            brls::Application::pushActivity(new SaveDetailActivity(rowTitle, save));
+        row->registerClickAction([rowTitle, save, cloud, feedClient](brls::View*) {
+            brls::Application::pushActivity(new SaveDetailActivity(rowTitle, save, cloud, feedClient));
             return true;
         });
         row->addGestureRecognizer(new brls::TapGestureRecognizer(row));
