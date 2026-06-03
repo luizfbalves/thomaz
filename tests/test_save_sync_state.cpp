@@ -8,7 +8,7 @@ TEST_CASE("serialize then parse round-trips entries") {
     state[0x0100000000010000ULL] = 3;
     state[0x010000000E5EE000ULL] = 1;
     auto parsed = parse_sync_state(serialize_sync_state(state));
-    CHECK(parsed.size() == 2);
+    REQUIRE(parsed.size() == 2);
     CHECK(synced_revision(parsed, 0x0100000000010000ULL) == 3);
     CHECK(synced_revision(parsed, 0x010000000E5EE000ULL) == 1);
 }

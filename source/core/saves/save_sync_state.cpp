@@ -1,4 +1,5 @@
 #include "core/saves/save_sync_state.hpp"
+#include <climits>
 #include <cstdio>
 #include <sstream>
 
@@ -10,10 +11,11 @@ std::map<std::uint64_t, int> parse_sync_state(const std::string& body) {
     std::string line;
     while (std::getline(in, line)) {
         unsigned long long id = 0;
-        int rev = 0;
-        // Expect exactly "<hex> <int>"; sscanf returns the count of matches.
-        if (std::sscanf(line.c_str(), "%llx %d", &id, &rev) == 2)
-            state[(std::uint64_t)id] = rev;
+        long long rev = 0;
+        // Expect "<hex> <int>"; require both fields and a revision that fits int.
+        if (std::sscanf(line.c_str(), "%llx %lld", &id, &rev) == 2 &&
+            rev >= 0 && rev <= INT_MAX)
+            state[(std::uint64_t)id] = (int)rev;
     }
     return state;
 }
