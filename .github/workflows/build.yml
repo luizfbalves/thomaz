@@ -8,11 +8,20 @@ name: build
 
 on:
   push:
-    # Skip tags (v*): the release workflow already builds and publishes the .nro
-    # for tagged versions, so building here too would be a redundant duplicate run.
-    tags-ignore:
-      - 'v*'
+    # Run on branch pushes only. Tags (v*) are intentionally excluded — release.yml
+    # builds and publishes the .nro for tagged versions, so building here would be a
+    # redundant duplicate run. Listing only `branches` already excludes all tags.
+    branches:
+      - '**'
+    # Don't rebuild the Switch NRO for changes that don't touch the app: the API
+    # (api/**, deployed by api.yml) and planning docs (docs/**) never affect it.
+    paths-ignore:
+      - 'api/**'
+      - 'docs/**'
   pull_request:
+    paths-ignore:
+      - 'api/**'
+      - 'docs/**'
   workflow_dispatch:
 
 jobs:
