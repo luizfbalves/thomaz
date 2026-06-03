@@ -20,13 +20,30 @@ ModActionResult import_archive(std::uint64_t title_id, const std::string& mod_na
     std::vector<core::ArchiveEntry> entries = list_archive_entries(archive_path);
     core::InstallPlan plan = core::plan_install(entries);
     if (!plan.ok()) {
-        res.error = "not a valid romfs mod archive";
+        switch (plan.error) {
+            case core::InstallError::Empty:
+                res.error = "archive is empty or unreadable";
+                break;
+            case core::InstallError::UnsafePath:
+                res.error = "archive contains unsafe paths";
+                break;
+            case core::InstallError::NotRomfs:
+                res.error = "archive has no romfs folder";
+                break;
+            case core::InstallError::Ambiguous:
+                res.error = "archive has more than one romfs root";
+                break;
+            default:
+                res.error = "not a valid romfs mod archive";
+                break;
+        }
         return res;
     }
 
     std::string dest = mod_staging_dir(title_id, mod_name);
     ExtractResult ex = extract_archive(archive_path, dest, plan.strip_prefix, progress);
     if (!ex.ok) {
+        remove_tree(dest); // remove the partially-extracted staging dir
         res.error = ex.error;
         return res;
     }
@@ -51,6 +68,8 @@ ModActionResult enable_mod(std::uint64_t title_id, const std::string& mod_name) 
     ModActionResult res;
 
     // Disable whatever is currently applied so contents/<tid>/romfs is clean.
+    // Fail-safe: if the copy below fails, the game is left with NO mod applied
+    // rather than a half-merged romfs.
     ModActionResult dis = disable_mod(title_id);
     if (!dis.ok) {
         res.error = dis.error;
