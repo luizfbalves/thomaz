@@ -70,13 +70,18 @@ bool copy_tree(const std::string& src, const std::string& dst) {
         } else {
             FILE* in = std::fopen(s.c_str(), "rb");
             FILE* out = std::fopen(t.c_str(), "wb");
-            if (!in || !out) { ok = false; }
+            if (!in || !out) {
+                if (in) std::fclose(in);
+                if (out) { std::fclose(out); ::remove(t.c_str()); } // no ghost file
+                ok = false;
+                break;
+            }
             char buf[8192];
             size_t n;
-            while (ok && (n = std::fread(buf, 1, sizeof(buf), in)) > 0)
-                if (std::fwrite(buf, 1, n, out) != n) ok = false;
-            if (in) std::fclose(in);
-            if (out) std::fclose(out);
+            while ((n = std::fread(buf, 1, sizeof(buf), in)) > 0)
+                if (std::fwrite(buf, 1, n, out) != n) { ok = false; break; }
+            std::fclose(in);
+            std::fclose(out);
         }
     }
     ::closedir(d);
@@ -181,6 +186,7 @@ bool NsSaveService::backup(const InstalledTitle& title, std::string* outError) {
     m.timestamp = ts;
     m.profiles  = savedProfiles;
     if (!write_text_file(dir + "/manifest.json", core::build_manifest(m))) {
+        clear_tree(dir); ::rmdir(dir.c_str()); // don't leave a manifest-less backup on SD
         if (outError) *outError = "could not write manifest";
         return false;
     }
