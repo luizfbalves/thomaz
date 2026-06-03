@@ -196,11 +196,14 @@ void FeedActivity::showDetail(const std::string& postId)
             ActionResult r = c->setLike(token, postId, target);
             brls::sync([this, alive, r, postId, target, likeLbl]() {
                 if (!alive->load()) return;
-                if (!r.ok) {
-                    feed::Post* p = feed::find_post(this->posts, postId);
-                    if (p) { p->likedByMe = !target; p->likeCount += target ? -1 : 1;
-                             likeLbl->setText((p->likedByMe ? "♥ " : "♡ ") + std::to_string(p->likeCount)); }
-                }
+                if (r.ok) return;
+                // Revert the model first (always safe — only touches this->posts).
+                feed::Post* p = feed::find_post(this->posts, postId);
+                if (p) { p->likedByMe = !target; p->likeCount += target ? -1 : 1; }
+                // Only touch likeLbl if this post is still the one on screen: a
+                // detail switch calls clearViews() and frees likeLbl (use-after-free).
+                if (p && this->selectedId == postId)
+                    likeLbl->setText((p->likedByMe ? "♥ " : "♡ ") + std::to_string(p->likeCount));
             });
         });
         return true;

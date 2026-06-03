@@ -98,11 +98,13 @@ void ComposerActivity::selectEntry(const AlbumEntry& entry)
             ? "" : ("thomaz/feed/game_tag"_i18n + this->selectedGameName));
     }
 
+    this->selectedFullBytes.clear();
     brls::async([this, a, alive, id]() {
         auto bytes = a->loadFull(id);
         brls::sync([this, alive, id, bytes]() {
             if (!alive->load()) return;
             if (this->selectedEntryId != id) return;
+            this->selectedFullBytes = bytes; // reused by doPost (avoids a 2nd load)
             if (auto* img = (brls::Image*)this->getView("previewImage"))
                 if (!bytes.empty())
                     img->setImageFromMem((unsigned char*)bytes.data(), (int)bytes.size());
@@ -133,9 +135,12 @@ void ComposerActivity::doPost()
     std::string cap = this->caption;
     std::uint64_t tid = this->selectedTitleId;
     std::string game  = this->selectedGameName;
+    std::vector<std::uint8_t> cached = this->selectedFullBytes; // copied on UI thread
 
-    brls::async([this, c, a, alive, token, id, cap, tid, game, status]() {
-        std::vector<std::uint8_t> jpeg = a->loadFull(id);
+    brls::async([this, c, a, alive, token, id, cap, tid, game, cached, status]() {
+        // Reuse the bytes loaded for the preview; only hit the album again if the
+        // cache is empty (e.g. preview load hadn't finished when Post was tapped).
+        std::vector<std::uint8_t> jpeg = !cached.empty() ? cached : a->loadFull(id);
         ActionResult r = c->createPost(token, jpeg, cap, tid, game);
         brls::sync([this, alive, r, status]() {
             if (!alive->load()) return;

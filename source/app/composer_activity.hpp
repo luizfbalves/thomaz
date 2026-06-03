@@ -37,6 +37,7 @@ class ComposerActivity : public brls::Activity {
     std::string selectedEntryId;
     std::uint64_t selectedTitleId = 0;
     std::string selectedGameName;
+    std::vector<std::uint8_t> selectedFullBytes; // cached by selectEntry, reused by doPost
     std::string caption;
     bool busy = false;
 
