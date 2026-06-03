@@ -3,6 +3,7 @@
 */
 
 #include "app/clear_cheats_activity.hpp"
+#include "app/app_header.hpp"
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
@@ -28,6 +29,8 @@ ClearCheatsActivity::~ClearCheatsActivity()
 
 void ClearCheatsActivity::onContentAvailable()
 {
+    install_header_username(this);
+
     // listInstalled() reads control data off the NAND (slow). Run it on a worker
     // thread with the spinner up so the screen transition stays smooth.
     ITitleService* svc = this->titleService;

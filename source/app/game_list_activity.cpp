@@ -3,6 +3,7 @@
 */
 
 #include "app/game_list_activity.hpp"
+#include "app/app_header.hpp"
 #include "app/cheat_detail_activity.hpp"
 #include "app/clear_cheats_activity.hpp"
 
@@ -55,6 +56,8 @@ GameListActivity::~GameListActivity()
 
 void GameListActivity::onContentAvailable()
 {
+    install_header_username(this);
+
     // Reading each installed title's control data (name + 128KB icon) off the
     // NAND is slow enough to freeze the push animation if done inline. Do it on
     // a worker thread while the XML spinner shows, then build the rows on the UI

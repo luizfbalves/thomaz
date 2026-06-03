@@ -3,6 +3,7 @@
 */
 
 #include "app/home_activity.hpp"
+#include "app/app_header.hpp"
 #include "app/game_list_activity.hpp"
 #include "app/settings_activity.hpp"
 #include "app/save_manager_activity.hpp"
@@ -21,6 +22,8 @@ HomeActivity::HomeActivity(ITitleService* titleService, IHttpClient* http, ISave
 
 void HomeActivity::onContentAvailable()
 {
+    install_header_username(this);
+
     // Feed hero → community feed.
     if (brls::View* feedCard = this->getView("feedCard"))
     {

@@ -1,4 +1,5 @@
 #include "app/composer_activity.hpp"
+#include "app/app_header.hpp"
 #include <borealis/core/i18n.hpp>
 #include <borealis/core/thread.hpp>
 #include "platform/feed/auth_store.hpp"
@@ -15,6 +16,8 @@ ComposerActivity::~ComposerActivity() { *this->alive = false; }
 
 void ComposerActivity::onContentAvailable()
 {
+    install_header_username(this);
+
     auto* captionCell = (brls::InputCell*)this->getView("captionCell");
     captionCell->init("thomaz/composer/caption"_i18n, "",
                       [this](std::string v){ this->caption = v; },

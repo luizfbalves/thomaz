@@ -3,6 +3,7 @@
 */
 
 #include "app/settings_activity.hpp"
+#include "app/app_header.hpp"
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
@@ -59,6 +60,8 @@ SettingsActivity::~SettingsActivity()
 
 void SettingsActivity::onContentAvailable()
 {
+    install_header_username(this);
+
     auto* listBox = (brls::Box*)this->getView("settingsListBox");
     if (!listBox)
         return;

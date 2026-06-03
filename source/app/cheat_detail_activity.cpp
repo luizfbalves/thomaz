@@ -3,6 +3,7 @@
 */
 
 #include "app/cheat_detail_activity.hpp"
+#include "app/app_header.hpp"
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
@@ -29,6 +30,8 @@ CheatDetailActivity::~CheatDetailActivity()
 
 void CheatDetailActivity::onContentAvailable()
 {
+    install_header_username(this);
+
     if (auto* gameTitle = (brls::Label*)this->getView("gameTitle"))
         gameTitle->setText(this->title.name);
 

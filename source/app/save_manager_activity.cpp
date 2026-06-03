@@ -1,4 +1,5 @@
 #include "app/save_manager_activity.hpp"
+#include "app/app_header.hpp"
 #include "app/save_detail_activity.hpp"
 
 #include <borealis.hpp>
@@ -24,6 +25,8 @@ SaveManagerActivity::~SaveManagerActivity()
 
 void SaveManagerActivity::onContentAvailable()
 {
+    install_header_username(this);
+
     ITitleService* svc = this->titleService;
     auto alive         = this->alive;
 
