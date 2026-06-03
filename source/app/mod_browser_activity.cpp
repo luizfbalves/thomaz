@@ -99,7 +99,8 @@ void ModBrowserActivity::onResolved(const core::GameResolve& g, const core::Brow
             emptyLabel->setVisibility(brls::Visibility::VISIBLE);
         }
         brls::Application::getPlatform()->getImeManager()->openForText(
-            [this](std::string q) {
+            [this, alive = this->alive](std::string q) {
+                if (!alive->load()) return;
                 if (q.empty())
                     return;
                 this->query = q;
@@ -221,7 +222,8 @@ void ModBrowserActivity::populate(const core::BrowseResult& result)
             // happens later inside the IME callback (UI thread), but wrap the
             // list rebuild in brls::sync to be safe (M2 lesson).
             brls::Application::getPlatform()->getImeManager()->openForText(
-                [this](std::string q) {
+                [this, alive = this->alive](std::string q) {
+                    if (!alive->load()) return;
                     if (q.empty())
                         return;
                     this->query = q;
