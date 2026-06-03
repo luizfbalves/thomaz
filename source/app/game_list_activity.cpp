@@ -55,10 +55,30 @@ GameListActivity::~GameListActivity()
 
 void GameListActivity::onContentAvailable()
 {
+    // Reading each installed title's control data (name + 128KB icon) off the
+    // NAND is slow enough to freeze the push animation if done inline. Do it on
+    // a worker thread while the XML spinner shows, then build the rows on the UI
+    // thread. Mirrors the async pattern already used for the cheats-db index.
+    ITitleService* svc = this->titleService;
+    auto alive         = this->alive;
+
+    brls::async([this, svc, alive]() {
+        auto titles = svc->listInstalled();
+        brls::sync([this, alive, titles]() {
+            if (!alive->load())
+                return; // activity was popped while we were loading
+            this->populate(titles);
+        });
+    });
+}
+
+void GameListActivity::populate(const std::vector<InstalledTitle>& titles)
+{
     brls::Box* listBox = (brls::Box*)this->getView("gameListBox");
     brls::Label* emptyLabel = (brls::Label*)this->getView("emptyLabel");
 
-    auto titles = this->titleService->listInstalled();
+    if (auto* spinner = this->getView("spinner"))
+        spinner->setVisibility(brls::Visibility::GONE); // load finished
 
     if (titles.empty())
     {

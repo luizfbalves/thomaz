@@ -16,11 +16,20 @@
             paddingRight="60"
             paddingBottom="20">
 
-            <!-- Empty state: no game has active cheats to clear -->
+            <!-- Loading spinner while listInstalled() runs off-thread. -->
+            <brls:ProgressSpinner
+                id="spinner"
+                width="44" height="44"
+                marginTop="24"
+                alignSelf="center" />
+
+            <!-- Empty state: no game has active cheats to clear. Hidden until
+                 the load finishes so it doesn't flash first. -->
             <brls:Label
                 id="emptyLabel"
                 width="auto"
                 height="auto"
+                visibility="gone"
                 text="@i18n/thomaz/clear/empty"
                 fontSize="18"
                 horizontalAlign="center" />

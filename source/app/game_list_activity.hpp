@@ -30,6 +30,10 @@ class GameListActivity : public brls::Activity
     void onContentAvailable() override;
 
   private:
+    // Build the game rows on the UI thread once listInstalled() returns from the
+    // worker thread (hides the spinner; shows the empty state if there are none).
+    void populate(const std::vector<InstalledTitle>& titles);
+
     // Download/parse the db index off-thread, then reveal the "has cheats"
     // badges for covered titles (guarded by `alive`).
     void loadCheatIndexAsync();
