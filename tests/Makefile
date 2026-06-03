@@ -12,3 +12,4 @@ test: $(BIN)
 
 clean:
 	rm -f $(BIN)
+	rm -rf test-saves-tmp

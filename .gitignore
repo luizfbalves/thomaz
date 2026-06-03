@@ -42,3 +42,7 @@ thomaz-cache/
 
 # Brainstorming visual companion (mockups)
 .superpowers/
+
+# Desktop fake save backups + unit-test scratch dir
+thomaz-saves/
+tests/test-saves-tmp/
