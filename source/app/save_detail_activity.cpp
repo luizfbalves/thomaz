@@ -4,6 +4,8 @@
 #include <borealis/core/i18n.hpp>
 #include <borealis/core/thread.hpp>
 
+#include <set>
+
 #include "core/backup_store.hpp"
 #include "app/auth_activity.hpp"
 #include "platform/feed/auth_store.hpp"
@@ -143,6 +145,7 @@ void SaveDetailActivity::doBackup()
 
 void SaveDetailActivity::performRestore(const core::BackupEntry& entry)
 {
+    if (!this->alive->load()) return;
     if (auto* spinner = this->getView("spinner"))
         spinner->setVisibility(brls::Visibility::VISIBLE);
     ISaveService* svc   = this->saveService;
@@ -290,10 +293,28 @@ void SaveDetailActivity::doDownload() {
         CloudPull p = c->pull(token, tid);
         std::string importErr;
         bool imported = false;
-        if (p.ok && p.exists)
+        core::BackupEntry newEntry;   // the backup the import created
+        bool haveNew = false;
+        if (p.ok && p.exists) {
+            // Snapshot existing backups so we can pin EXACTLY the one the import
+            // creates — robust even if the system clock was set back (newest-by-
+            // timestamp could otherwise resolve to an older, future-dated backup).
+            std::set<std::string> beforeTs;
+            for (const auto& b : core::list_backups(core::saves_root(), tid))
+                beforeTs.insert(b.timestamp);
             imported = svc->importPackageAsBackup(tid, p.blob, &importErr);
+            if (imported) {
+                for (const auto& b : core::list_backups(core::saves_root(), tid)) {
+                    if (beforeTs.find(b.timestamp) == beforeTs.end()) {
+                        newEntry = b;
+                        haveNew  = true;
+                        break;
+                    }
+                }
+            }
+        }
 
-        brls::sync([this, alive, p, imported, importErr, tid]() {
+        brls::sync([this, alive, p, imported, importErr, tid, newEntry, haveNew]() {
             if (!alive->load()) return;
             this->cloudBusy = false;
             if (!p.ok) {
@@ -317,15 +338,15 @@ void SaveDetailActivity::doDownload() {
             this->refreshHistory();      // the new backup now shows in the list
             this->refreshCloudStatus();  // now in sync
 
-            // The cloud copy was saved as a local backup. cloud_restore_q is the
-            // confirmation, so restore directly (no second confirm dialog).
-            auto entries = core::list_backups(core::saves_root(), tid);
-            if (!entries.empty()) {
-                core::BackupEntry newest = entries.front(); // list_backups is newest-first
+            // Offer to restore the backup we just imported (pinned above). If we
+            // couldn't identify it, skip the prompt rather than risk restoring the
+            // wrong save — the user can still restore manually from the history.
+            if (haveNew) {
+                core::BackupEntry entry = newEntry;
                 brls::Dialog* dlg = new brls::Dialog("thomaz/saves/cloud_restore_q"_i18n);
-                dlg->addButton("thomaz/saves/action_restore"_i18n, [this, alive, newest]() {
+                dlg->addButton("thomaz/saves/action_restore"_i18n, [this, alive, entry]() {
                     if (!alive->load()) return;
-                    this->performRestore(newest);
+                    this->performRestore(entry);
                 });
                 dlg->addButton("brls/hints/back"_i18n, []() {});
                 dlg->open();
