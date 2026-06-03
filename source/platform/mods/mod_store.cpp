@@ -82,21 +82,25 @@ bool remove_tree(const std::string& dir) {
         return ::stat(dir.c_str(), &st) != 0;
     }
 
+    bool ok = true;
     while (struct dirent* e = ::readdir(d)) {
         std::string name = e->d_name;
         if (name == "." || name == "..")
             continue;
         std::string child = dir + "/" + name;
-        if (is_dir(child))
-            remove_tree(child);
-        else
-            ::remove(child.c_str());
+        if (is_dir(child)) {
+            if (!remove_tree(child))
+                ok = false; // best-effort: keep going, report failure
+        } else if (::remove(child.c_str()) != 0) {
+            ok = false;
+        }
     }
     ::closedir(d);
     ::rmdir(dir.c_str());
 
     struct stat st;
-    return ::stat(dir.c_str(), &st) != 0;
+    bool gone = ::stat(dir.c_str(), &st) != 0;
+    return ok && gone;
 }
 
 std::vector<std::string> list_subdirs(const std::string& dir) {

@@ -61,6 +61,26 @@ TEST_CASE("list_subdirs returns immediate child directory names") {
     remove_tree(TMP);
 }
 
+TEST_CASE("remove_tree on a nonexistent path reports success") {
+    remove_tree(TMP);
+    CHECK(remove_tree(TMP + "/does-not-exist"));
+}
+
+TEST_CASE("copy_tree overwrites an existing destination file") {
+    remove_tree(TMP);
+    ::mkdir(TMP.c_str(), 0777);
+    ::mkdir((TMP + "/src").c_str(), 0777);
+    write_file(TMP + "/src/a.bin", "NEW");
+    ::mkdir((TMP + "/dst").c_str(), 0777);
+    write_file(TMP + "/dst/a.bin", "OLD");
+
+    std::string err;
+    REQUIRE(copy_tree(TMP + "/src", TMP + "/dst", &err));
+    CHECK(read_file(TMP + "/dst/a.bin") == "NEW");
+
+    remove_tree(TMP);
+}
+
 TEST_CASE("markers round-trip and clear") {
     remove_tree(TMP);
     ::mkdir(TMP.c_str(), 0777);
