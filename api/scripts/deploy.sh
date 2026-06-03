@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
-# Build + migrate + (re)start thomaz-api under PM2. Run from the api/ directory on the VM.
+# Build + migrate + (re)start thomaz-api under PM2.
 # Non-disruptive: does NOT touch n8n / zapi / loop / postgres.
 set -euo pipefail
+
+# Run from the api/ directory regardless of the caller's cwd. The CI deploy job
+# invokes this as `bash api/scripts/deploy.sh` from the repo root, so we cannot
+# assume cwd is already api/.
+cd "$(dirname "$0")/.."
 
 # Node/PM2 are not on the non-interactive PATH; make them available.
 export PATH="/opt/bitnami/node/bin:$HOME/.npm-global/bin:$PATH"
