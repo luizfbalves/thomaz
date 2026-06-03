@@ -1,4 +1,5 @@
 #include "core/saves/save_package.hpp"
+#include <algorithm>
 
 namespace thomaz::core {
 
@@ -42,18 +43,20 @@ std::optional<SavePackage> unpack_save_package(const std::vector<std::uint8_t>& 
     if (!read_u32(blob, pos, count)) return std::nullopt;
 
     SavePackage pkg;
-    pkg.files.reserve(count);
+    // Cap the reserve by the smallest possible entry size — never trust `count`
+    // from an untrusted (network) blob, or a malformed value would over-allocate.
+    pkg.files.reserve(std::min<std::size_t>(count, blob.size() / 8));
     for (std::uint32_t i = 0; i < count; ++i) {
         std::uint32_t pathLen = 0;
         if (!read_u32(blob, pos, pathLen)) return std::nullopt;
-        if (pos + pathLen > blob.size()) return std::nullopt;
+        if (pathLen > blob.size() - pos) return std::nullopt;
         SaveFileEntry e;
         e.path.assign((const char*)&blob[pos], pathLen);
         pos += pathLen;
 
         std::uint32_t dataLen = 0;
         if (!read_u32(blob, pos, dataLen)) return std::nullopt;
-        if (pos + dataLen > blob.size()) return std::nullopt;
+        if (dataLen > blob.size() - pos) return std::nullopt;
         e.bytes.assign(blob.begin() + pos, blob.begin() + pos + dataLen);
         pos += dataLen;
 
