@@ -6,16 +6,11 @@
 
 namespace thomaz {
 
-struct AuthResult {
-    bool        ok = false;
-    std::string token;   // preenchido quando ok
-    std::string error;   // mensagem quando !ok (ex.: "username já existe")
-};
-
-struct ActionResult {
-    bool        ok = false;
-    std::string error;
-};
+// AuthResult/ActionResult now live in core/feed/feed_types.hpp (so pure core
+// code can produce them). Re-expose them unqualified in this namespace for the
+// existing call sites (UI activities, FakeFeedClient).
+using feed::ActionResult;
+using feed::AuthResult;
 
 // Contrato de rede do feed (auth + feed juntos). FakeFeedClient roda no desktop
 // hoje; HttpFeedClient (futuro) pluga a API real sem tocar na UI. Todos os

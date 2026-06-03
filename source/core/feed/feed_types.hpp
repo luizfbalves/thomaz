@@ -37,8 +37,23 @@ struct FeedPage {
 };
 
 struct Session {
-    std::string token;
+    std::string token;        // short-lived access token
+    std::string refreshToken; // long-lived, rotates on each /auth/refresh
     std::string username;
+};
+
+// Network call results (moved here from feed_client.hpp so pure core code can
+// produce them without depending on the platform layer).
+struct AuthResult {
+    bool        ok = false;
+    std::string token;        // access token when ok
+    std::string error;        // human/i18n message when !ok
+    std::string refreshToken; // refresh token when ok (appended last on purpose)
+};
+
+struct ActionResult {
+    bool        ok = false;
+    std::string error;
 };
 
 } // namespace thomaz::feed
