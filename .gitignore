@@ -3,6 +3,8 @@ build/
 build.nx/
 build_switch/
 build_desktop/
+build-switch/
+build-desktop/
 *.nro
 *.nacp
 *.map
