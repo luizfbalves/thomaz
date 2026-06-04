@@ -7,13 +7,11 @@
 
 namespace thomaz {
 
-namespace {
-std::string part_filename(const thomaz::core::ThemePart& p, int index) {
+std::string nxtheme_filename(const thomaz::core::ThemePart& p, int index) {
     std::string base = p.target.empty() ? ("theme" + std::to_string(index)) : p.target;
     // targets are enum-safe ASCII already; keep simple.
     return base + ".nxtheme";
 }
-} // namespace
 
 ThemeDownloadResult download_theme(const thomaz::core::ThemeDetail& detail) {
     ThemeDownloadResult res;
@@ -28,7 +26,7 @@ ThemeDownloadResult download_theme(const thomaz::core::ThemeDetail& detail) {
 
     int index = 0;
     for (const auto& part : detail.parts) {
-        std::string dest = folder + "/" + part_filename(part, index++);
+        std::string dest = folder + "/" + nxtheme_filename(part, index++);
         std::string err;
         if (!download_file(part.download_url, dest, nullptr, &err)) {
             remove_tree(folder); // no half-written theme left behind
