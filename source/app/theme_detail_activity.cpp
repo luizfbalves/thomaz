@@ -109,6 +109,8 @@ void ThemeDetailActivity::onResolved(const core::ThemeDetail& d, bool ok) {
                 auto* row = new brls::Label();
                 row->setText(std::string("- ") + (p.name.empty() ? p.target : p.name));
                 row->setFontSize(14.0f);
+                row->setLineHeight(1.3f);
+                row->setMarginBottom(6.0f);
                 row->setTextColor(nvgRGB(0xC8, 0xC8, 0xD0));
                 box->addView(row);
             }

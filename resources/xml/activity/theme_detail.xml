@@ -13,8 +13,8 @@
         <!-- ===== LEFT: preview + identity + parts ===== -->
         <brls:Box axis="column" width="460" marginRight="28">
             <brls:Image id="detailPreview" width="460" height="259" cornerRadius="12" marginBottom="14"/>
-            <brls:Label id="detailName" fontSize="24" textColor="#FFFFFF"/>
-            <brls:Label id="detailAuthor" fontSize="15" textColor="@theme/thomaz/text_dim" marginBottom="12"/>
+            <brls:Label id="detailName" fontSize="24" lineHeight="1.2" textColor="#FFFFFF" marginBottom="4"/>
+            <brls:Label id="detailAuthor" fontSize="15" textColor="@theme/thomaz/text_dim" marginBottom="14"/>
             <brls:Label id="partsLabel" fontSize="15" textColor="@theme/thomaz/text_dim"
                         visibility="gone" marginBottom="6"/>
             <brls:Box id="partsBox" axis="column"/>
@@ -25,7 +25,8 @@
             <brls:ProgressSpinner id="spinner" width="40" height="40"
                                   alignSelf="center" marginTop="20" visibility="gone"/>
             <brls:ScrollingFrame grow="1.0" marginBottom="14">
-                <brls:Label id="detailDesc" fontSize="15" textColor="@theme/thomaz/text_dim"/>
+                <brls:Label id="detailDesc" width="100%" fontSize="15" lineHeight="1.45"
+                            verticalAlign="top" textColor="@theme/thomaz/text_dim"/>
             </brls:ScrollingFrame>
             <brls:Box id="downloadButton" axis="row" height="56" cornerRadius="10"
                       justifyContent="center" alignItems="center" focusable="true"

@@ -167,8 +167,9 @@ void ThemeBrowserActivity::populate(const core::BrowsePage& pg) {
         auto* name = new brls::Label();
         name->setText(e.name);
         name->setFontSize(15.0f);
+        name->setLineHeight(1.2f);          // names wrap to 2 lines — give them room
         name->setTextColor(nvgRGB(0xFF, 0xFF, 0xFF));
-        name->setMarginTop(6.0f);
+        name->setMarginTop(8.0f);
         card->addView(name);
 
         // Plain text only — the Switch font has no glyph for arrow/check
@@ -183,6 +184,7 @@ void ThemeBrowserActivity::populate(const core::BrowsePage& pg) {
         }
         meta->setText(m);
         meta->setFontSize(12.0f);
+        meta->setMarginTop(4.0f);
         meta->setTextColor(nvgRGB(0x92, 0x77, 0xFF));
         card->addView(meta);
 
