@@ -37,6 +37,7 @@ tests/run
 !/resources/i18n/pt-BR/mods.json
 !/resources/img/
 !/resources/img/icon.jpg
+!/resources/cacert.pem
 !/resources/xml/
 !/resources/xml/activity/
 !/resources/xml/activity/home.xml

@@ -1,6 +1,7 @@
 #include "platform/http_client_curl.hpp"
 
 #include <curl/curl.h>
+#include "platform/curl_tls.hpp"
 
 namespace thomaz {
 
@@ -50,10 +51,8 @@ HttpResponse CurlHttpClient::request(const HttpRequest& req) {
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToString);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response.body);
-    // v1: skip TLS verification to avoid shipping a CA bundle. We only fetch
-    // public, non-sensitive cheat text. TODO: ship cacert.pem in romfs + CAINFO.
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    // TLS certificate verification via the bundled CA (romfs) / system store.
+    apply_curl_tls(curl);
 
     switch (req.method) {
         case HttpMethod::Get:    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L); break;
