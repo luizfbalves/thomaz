@@ -58,4 +58,8 @@ std::vector<BackupEntry> list_backups(const std::string& root, std::uint64_t tit
 std::optional<std::string> last_backup_timestamp(const std::string& root,
                                                  std::uint64_t title_id);
 
+// Permanently delete one backup directory (manifest + save files inside it).
+// Returns true if the directory is gone afterwards. No-op (false) on empty path.
+bool delete_backup(const BackupEntry& entry);
+
 } // namespace thomaz::core

@@ -6,6 +6,7 @@
 #include <borealis/core/i18n.hpp>
 #include <borealis/core/thread.hpp>
 
+#include <functional>
 #include <set>
 
 #include "core/backup_store.hpp"
@@ -89,11 +90,32 @@ void SaveDetailActivity::refreshHistory()
         return;
     box->clearViews();
 
+    // A small focusable "text button" (controller A + touch) for a row action.
+    auto makeActionButton = [](const std::string& text, NVGcolor color,
+                               std::function<void()> onTap) -> brls::Box* {
+        auto* btn = new brls::Box(brls::Axis::ROW);
+        btn->setFocusable(true);
+        btn->setMarginLeft(16.0f);
+        btn->setPadding(6.0f, 12.0f, 6.0f, 12.0f);
+        btn->setCornerRadius(8.0f);
+        btn->setAlignItems(brls::AlignItems::CENTER);
+        btn->setHideHighlightBackground(true);
+
+        auto* lbl = new brls::Label();
+        lbl->setText(text);
+        lbl->setFontSize(14.0f);
+        lbl->setTextColor(color);
+        btn->addView(lbl);
+
+        btn->registerClickAction([onTap](brls::View*) { onTap(); return true; });
+        btn->addGestureRecognizer(new brls::TapGestureRecognizer(btn));
+        return btn;
+    };
+
     auto entries = core::list_backups(root, this->title.title_id);
     for (const auto& entry : entries) {
         brls::Box* row = new brls::Box(brls::Axis::ROW);
         row->setHeight(52.0f);
-        row->setFocusable(true);
         row->setMarginBottom(4.0f);
         row->setPadding(8.0f, 16.0f, 8.0f, 16.0f);
         row->setCornerRadius(10.0f);
@@ -106,18 +128,13 @@ void SaveDetailActivity::refreshHistory()
         ts->setGrow(1.0f);
         row->addView(ts);
 
-        brls::Label* action = new brls::Label();
-        action->setText("thomaz/saves/action_restore"_i18n);
-        action->setFontSize(14.0f);
-        action->setTextColor(nvgRGB(0x92, 0x77, 0xFF));
-        row->addView(action);
-
         core::BackupEntry captured = entry;
-        row->registerClickAction([this, captured](brls::View*) {
-            this->doRestore(captured);
-            return true;
-        });
-        row->addGestureRecognizer(new brls::TapGestureRecognizer(row));
+        row->addView(makeActionButton("thomaz/saves/action_restore"_i18n,
+                                      nvgRGB(0x92, 0x77, 0xFF),
+                                      [this, captured]() { this->doRestore(captured); }));
+        row->addView(makeActionButton("thomaz/saves/action_delete"_i18n,
+                                      nvgRGB(0xE0, 0x57, 0x57),
+                                      [this, captured]() { this->doDelete(captured); }));
         box->addView(row);
     }
 }
@@ -182,6 +199,25 @@ void SaveDetailActivity::doRestore(const core::BackupEntry& entry)
         if (!alive->load())
             return; // activity gone before the user confirmed
         this->performRestore(e);
+    });
+    dialog->addButton("brls/hints/back"_i18n, []() {});
+    dialog->open();
+}
+
+void SaveDetailActivity::doDelete(const core::BackupEntry& entry)
+{
+    auto alive          = this->alive;
+    core::BackupEntry e = entry;
+    // Destructive + irreversible — confirm first.
+    brls::Dialog* dialog = new brls::Dialog("thomaz/saves/confirm_delete_body"_i18n);
+    dialog->addButton("thomaz/saves/action_delete"_i18n, [this, alive, e]() {
+        if (!alive->load())
+            return; // activity gone before the user confirmed
+        bool ok = core::delete_backup(e);
+        brls::Application::notify(ok ? "thomaz/saves/delete_ok"_i18n
+                                     : "thomaz/saves/delete_fail"_i18n);
+        if (ok)
+            this->refreshHistory();
     });
     dialog->addButton("brls/hints/back"_i18n, []() {});
     dialog->open();

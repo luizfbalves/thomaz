@@ -95,7 +95,12 @@
     "cloud_conflict_body": "A nuvem mudou em outro lugar. Manter o da nuvem ou enviar o seu?",
     "cloud_keep_cloud": "Manter da nuvem",
     "cloud_send_mine": "Enviar o meu",
-    "cloud_restore_q": "Baixado. Restaurar no jogo agora?"
+    "cloud_restore_q": "Baixado. Restaurar no jogo agora?",
+    "action_delete": "Apagar",
+    "confirm_delete_title": "Apagar este backup?",
+    "confirm_delete_body": "Isso remove este backup do cartão SD permanentemente. Não dá pra desfazer.",
+    "delete_ok": "Backup apagado",
+    "delete_fail": "Falha ao apagar o backup"
   },
   "games": {
     "title": "Meus Jogos",

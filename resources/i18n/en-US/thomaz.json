@@ -95,7 +95,12 @@
     "cloud_conflict_body": "The cloud changed elsewhere. Keep the cloud copy or send yours?",
     "cloud_keep_cloud": "Keep cloud",
     "cloud_send_mine": "Send mine",
-    "cloud_restore_q": "Downloaded. Restore it into the game now?"
+    "cloud_restore_q": "Downloaded. Restore it into the game now?",
+    "action_delete": "Delete",
+    "confirm_delete_title": "Delete this backup?",
+    "confirm_delete_body": "This permanently removes this backup from the SD card. It cannot be undone.",
+    "delete_ok": "Backup deleted",
+    "delete_fail": "Failed to delete backup"
   },
   "games": {
     "title": "My Games",
