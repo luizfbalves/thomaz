@@ -67,12 +67,23 @@
 
                 <!-- Mods (active) -->
                 <AnimatedBox id="modsCard" entranceDelay="330"
-                          axis="row" alignItems="center" grow="1.0"
+                          axis="row" alignItems="center" grow="1.0" marginBottom="14"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
                           backgroundColor="@theme/thomaz/tile_mods"
                           focusable="true" highlightCornerRadius="16"
                           hideHighlightBackground="true">
                     <brls:Label text="@i18n/thomaz/home/mods"
+                                fontSize="17" textColor="#FFFFFF" grow="1.0"/>
+                </AnimatedBox>
+
+                <!-- Sistema (active) -->
+                <AnimatedBox id="systemCard" entranceDelay="360"
+                          axis="row" alignItems="center" grow="1.0"
+                          paddingLeft="22" paddingRight="22" cornerRadius="16"
+                          backgroundColor="@theme/thomaz/tile_settings"
+                          focusable="true" highlightCornerRadius="16"
+                          hideHighlightBackground="true">
+                    <brls:Label text="@i18n/system/home"
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
                 </AnimatedBox>
 

@@ -8,8 +8,14 @@
 #include "app/settings_activity.hpp"
 #include "app/save_manager_activity.hpp"
 #include "app/theme_browser_activity.hpp"
+#include "app/system_activity.hpp"
+#include "platform/sysmod/sysmod_store.hpp"
+#ifndef __SWITCH__
+#include "platform/sysmod/sysmod_store_fake.hpp"
+#endif
 
 #include <borealis.hpp>
+#include <memory>
 
 namespace thomaz {
 
@@ -77,6 +83,22 @@ void HomeActivity::onContentAvailable()
             return true;
         });
         saves->addGestureRecognizer(new brls::TapGestureRecognizer(saves));
+    }
+
+    // Sistema card → sysmodules manager.
+    if (brls::View* system = this->getView("systemCard"))
+    {
+        system->registerClickAction([this](brls::View*) {
+#ifdef __SWITCH__
+            auto store = std::make_shared<SysmoduleStore>();
+#else
+            auto store = std::make_shared<FakeSysmoduleStore>();
+#endif
+            brls::Application::pushActivity(new SystemActivity(store),
+                                            brls::TransitionAnimation::NONE);
+            return true;
+        });
+        system->addGestureRecognizer(new brls::TapGestureRecognizer(system));
     }
 }
 
