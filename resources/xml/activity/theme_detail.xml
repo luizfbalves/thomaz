@@ -21,13 +21,16 @@
         </brls:Box>
 
         <!-- ===== RIGHT: description + download ===== -->
+        <!-- No ScrollingFrame: it gives its child the content's natural width
+             (for h-scroll), which defeats the Label's width-based wrapping. A
+             plain width-constrained Label wraps; a grow spacer anchors the
+             button at the bottom. -->
         <brls:Box axis="column" grow="1.0">
             <brls:ProgressSpinner id="spinner" width="40" height="40"
                                   alignSelf="center" marginTop="20" visibility="gone"/>
-            <brls:ScrollingFrame grow="1.0" marginBottom="14">
-                <brls:Label id="detailDesc" width="690" fontSize="15" lineHeight="1.45"
-                            verticalAlign="top" textColor="@theme/thomaz/text_dim"/>
-            </brls:ScrollingFrame>
+            <brls:Label id="detailDesc" width="690" fontSize="15" lineHeight="1.45"
+                        verticalAlign="top" textColor="@theme/thomaz/text_dim"/>
+            <brls:Box grow="1.0"/>
             <brls:Box id="downloadButton" axis="row" height="56" cornerRadius="10"
                       justifyContent="center" alignItems="center" focusable="true"
                       hideHighlightBackground="true" backgroundColor="@theme/thomaz/accent_bright">
