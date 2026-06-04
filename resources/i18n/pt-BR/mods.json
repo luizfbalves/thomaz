@@ -29,5 +29,8 @@
     "downloading": "Baixando…",
     "download_failed": "Falha no download",
     "search_error": "Falha na busca. Verifique a conexão.",
-    "installed_ok": "Mod baixado e instalado."
+    "installed_ok": "Mod baixado e instalado.",
+    "resolving": "Procurando este jogo no GameBanana…",
+    "game_not_found": "Este jogo não está no GameBanana. Busque manualmente:",
+    "game_search": "Buscar neste jogo"
 }

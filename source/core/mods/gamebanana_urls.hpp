@@ -14,4 +14,11 @@ std::string gb_search_url(const std::string& query, std::uint64_t game_id, int p
 // apiv11 per-mod fetch of just the file list (download URLs live here).
 std::string gb_mod_files_url(std::uint64_t mod_id);
 
+// apiv11 game search by name to resolve a game_id (best_match ordering).
+std::string gb_game_search_url(const std::string& query, int page);
+
+// apiv11 per-game mod listing (Subfeed), filtered to the Mod model, 50/page.
+// query empty => no _sName (full listing); non-empty => in-game text search.
+std::string gb_subfeed_url(std::uint64_t game_id, const std::string& query, int page);
+
 } // namespace thomaz::core
