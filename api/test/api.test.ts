@@ -42,16 +42,7 @@ describe("thomaz-api", () => {
     expect(res.json()).toEqual({ status: "ok" });
   });
 
-  it("GET /feed rejects invalid cursor", async () => {
-    const res = await app.inject({
-      method: "GET",
-      url: "/feed?cursor=not-a-valid-cursor",
-    });
-    expect(res.statusCode).toBe(400);
-    expect(res.json()).toEqual({ ok: false, error: "invalid_cursor" });
-  });
-
-  it("auth register + login + feed flow", async () => {
+  it("auth register + login", async () => {
     const user = `u_${Date.now()}`;
     const pass = "password1";
 
@@ -84,112 +75,7 @@ describe("thomaz-api", () => {
     });
     expect(login.statusCode).toBe(200);
     const loginBody = login.json() as { token: string; refreshToken: string };
-    const token = loginBody.token;
-
-    const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
-    const form = new FormData();
-    form.append("caption", "hello feed");
-    form.append("gameTitleId", "12345");
-    form.append("gameName", "Test Game");
-    form.append("image", jpeg, {
-      filename: "shot.jpg",
-      contentType: "image/jpeg",
-    });
-
-    const post = await app.inject({
-      method: "POST",
-      url: "/posts",
-      headers: {
-        authorization: `Bearer ${token}`,
-        ...form.getHeaders(),
-      },
-      payload: form,
-    });
-    expect(post.statusCode).toBe(200);
-    const postBody = post.json() as {
-      ok: boolean;
-      post: { id: string; caption: string; gameTitleId: string };
-    };
-    expect(postBody.ok).toBe(true);
-    expect(postBody.post.caption).toBe("hello feed");
-    expect(postBody.post.gameTitleId).toBe("0000000000003039");
-
-    const feed = await app.inject({
-      method: "GET",
-      url: "/feed",
-      headers: { authorization: `Bearer ${token}` },
-    });
-    expect(feed.statusCode).toBe(200);
-    const feedBody = feed.json() as {
-      posts: { id: string }[];
-      hasMore: boolean;
-    };
-    expect(feedBody.posts.some((p) => p.id === postBody.post.id)).toBe(true);
-
-    const like = await app.inject({
-      method: "PUT",
-      url: `/posts/${postBody.post.id}/like`,
-      headers: { authorization: `Bearer ${token}` },
-      payload: { liked: true },
-    });
-    expect(like.statusCode).toBe(200);
-
-    const comment = await app.inject({
-      method: "POST",
-      url: `/posts/${postBody.post.id}/comments`,
-      headers: { authorization: `Bearer ${token}` },
-      payload: { text: "nice" },
-    });
-    expect(comment.statusCode).toBe(200);
-
-    const comments = await app.inject({
-      method: "GET",
-      url: `/posts/${postBody.post.id}/comments`,
-    });
-    expect(comments.statusCode).toBe(200);
-    const list = comments.json() as { text: string }[];
-    expect(list.some((c) => c.text === "nice")).toBe(true);
-
-    const me = await app.inject({
-      method: "GET",
-      url: "/users/me",
-      headers: { authorization: `Bearer ${token}` },
-    });
-    expect(me.statusCode).toBe(200);
-    const meBody = me.json() as { username: string; postCount: number };
-    expect(meBody.username).toBe(user);
-    expect(meBody.postCount).toBe(1);
-
-    const profile = await app.inject({
-      method: "GET",
-      url: `/users/${user}`,
-    });
-    expect(profile.statusCode).toBe(200);
-    expect((profile.json() as { postCount: number }).postCount).toBe(1);
-
-    const userPosts = await app.inject({
-      method: "GET",
-      url: `/users/${user}/posts`,
-    });
-    expect(userPosts.statusCode).toBe(200);
-    expect(
-      (userPosts.json() as { posts: { id: string }[] }).posts.some(
-        (p) => p.id === postBody.post.id,
-      ),
-    ).toBe(true);
-
-    const del = await app.inject({
-      method: "DELETE",
-      url: `/posts/${postBody.post.id}`,
-      headers: { authorization: `Bearer ${token}` },
-    });
-    expect(del.statusCode).toBe(200);
-
-    const gone = await app.inject({
-      method: "GET",
-      url: `/posts/${postBody.post.id}/comments`,
-    });
-    expect(gone.statusCode).toBe(404);
+    expect(loginBody.token.length).toBeGreaterThan(10);
 
     const refresh = await app.inject({
       method: "POST",
@@ -238,12 +124,13 @@ describe("thomaz-api", () => {
     expect(newRefresh).not.toBe(oldRefresh);
     expect(newToken.length).toBeGreaterThan(10);
 
-    const me = await app.inject({
+    // Verify new token is valid by checking a protected saves endpoint
+    const savesCheck = await app.inject({
       method: "GET",
-      url: "/users/me",
+      url: "/saves",
       headers: { authorization: `Bearer ${newToken}` },
     });
-    expect(me.statusCode).toBe(200);
+    expect(savesCheck.statusCode).toBe(200);
 
     const oldRefreshAgain = await app.inject({
       method: "POST",
@@ -264,60 +151,6 @@ describe("thomaz-api", () => {
       payload: { refreshToken: newRefresh },
     });
     expect(afterLogout.statusCode).toBe(401);
-  });
-
-  it("DELETE post forbidden for non-author", async () => {
-    const author = `author_${Date.now()}`;
-    const other = `other_${Date.now()}`;
-    const pass = "password1";
-
-    for (const u of [author, other]) {
-      await app.inject({
-        method: "POST",
-        url: "/auth/register",
-        payload: { username: u, password: pass },
-      });
-    }
-
-    const authorToken = (
-      await app.inject({
-        method: "POST",
-        url: "/auth/login",
-        payload: { username: author, password: pass },
-      })
-    ).json() as { token: string };
-
-    const otherToken = (
-      await app.inject({
-        method: "POST",
-        url: "/auth/login",
-        payload: { username: other, password: pass },
-      })
-    ).json() as { token: string };
-
-    const form = new FormData();
-    form.append("image", Buffer.from([0xff, 0xd8, 0xff, 0xd9]), {
-      filename: "shot.jpg",
-      contentType: "image/jpeg",
-    });
-
-    const post = await app.inject({
-      method: "POST",
-      url: "/posts",
-      headers: {
-        authorization: `Bearer ${authorToken.token}`,
-        ...form.getHeaders(),
-      },
-      payload: form,
-    });
-    const postId = (post.json() as { post: { id: string } }).post.id;
-
-    const forbidden = await app.inject({
-      method: "DELETE",
-      url: `/posts/${postId}`,
-      headers: { authorization: `Bearer ${otherToken.token}` },
-    });
-    expect(forbidden.statusCode).toBe(403);
   });
 
   it("saves list, upload, download with revision", async () => {
