@@ -1,6 +1,7 @@
 #include "platform/self_update.hpp"
 #include "platform/mods/mod_download.hpp"
 #include <cstdio>
+#include <sys/stat.h>
 
 namespace thomaz {
 
@@ -29,6 +30,14 @@ bool apply_downloaded_update(const std::string& url, const std::string& target,
     const std::string tmp = target + ".tmp";
     if (!download_file(url, tmp, nullptr, err)) {
         std::remove(tmp.c_str()); // download_file already cleans up; belt-and-suspenders
+        return false;
+    }
+    // Reject a zero-byte "success" (empty 200 body / truncated asset) — renaming
+    // it over the running .nro would brick the app.
+    struct stat st;
+    if (::stat(tmp.c_str(), &st) != 0 || st.st_size == 0) {
+        if (err) *err = "downloaded update is empty";
+        std::remove(tmp.c_str());
         return false;
     }
     // Atomic swap: tmp and target are in the same directory (same filesystem),
