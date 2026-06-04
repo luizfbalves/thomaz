@@ -8,11 +8,14 @@ name: build
 
 on:
   push:
-    # Run on branch pushes only. Tags (v*) are intentionally excluded — release.yml
-    # builds and publishes the .nro for tagged versions, so building here would be a
-    # redundant duplicate run. Listing only `branches` already excludes all tags.
+    # Run on branch pushes only. Tags (v*) are excluded (release.yml builds the
+    # .nro for tagged versions). `main` is also excluded: a merge to main would
+    # otherwise rebuild the same commit the PR check already built — and on a
+    # release that doubles up with release.yml on the tag. PRs (below) validate
+    # before merge; the release tag validates after.
     branches:
       - '**'
+      - '!main'
     # Don't rebuild the Switch NRO for changes that don't touch the app: the API
     # (api/**, deployed by api.yml) and planning docs (docs/**) never affect it.
     paths-ignore:

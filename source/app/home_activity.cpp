@@ -27,7 +27,8 @@ void HomeActivity::onContentAvailable()
     if (brls::View* cheats = this->getView("cheatsCard"))
     {
         cheats->registerClickAction([this](brls::View*) {
-            brls::Application::pushActivity(new GameListActivity(this->titleService, this->http));
+            brls::Application::pushActivity(new GameListActivity(this->titleService, this->http),
+                                            brls::TransitionAnimation::NONE);
             return true;
         });
         // Respond to touch (Switch) and mouse (desktop), not just the A button.
@@ -39,7 +40,8 @@ void HomeActivity::onContentAvailable()
     {
         mods->registerClickAction([this](brls::View*) {
             brls::Application::pushActivity(
-                new GameListActivity(this->titleService, this->http, GameListActivity::Target::Mods));
+                new GameListActivity(this->titleService, this->http, GameListActivity::Target::Mods),
+                brls::TransitionAnimation::NONE);
             return true;
         });
         mods->addGestureRecognizer(new brls::TapGestureRecognizer(mods));
@@ -49,7 +51,8 @@ void HomeActivity::onContentAvailable()
     if (brls::View* settings = this->getView("settingsCard"))
     {
         settings->registerClickAction([this](brls::View*) {
-            brls::Application::pushActivity(new SettingsActivity(this->http));
+            brls::Application::pushActivity(new SettingsActivity(this->http),
+                                            brls::TransitionAnimation::NONE);
             return true;
         });
         settings->addGestureRecognizer(new brls::TapGestureRecognizer(settings));
@@ -59,7 +62,8 @@ void HomeActivity::onContentAvailable()
         saves->registerClickAction([this](brls::View*) {
             brls::Application::pushActivity(
                 new SaveManagerActivity(this->titleService, this->saveService,
-                                        this->cloudSaves, this->feed));
+                                        this->cloudSaves, this->feed),
+                brls::TransitionAnimation::NONE);
             return true;
         });
         saves->addGestureRecognizer(new brls::TapGestureRecognizer(saves));

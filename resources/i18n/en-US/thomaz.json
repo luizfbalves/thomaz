@@ -32,9 +32,7 @@
         "language": "Language",
         "lang_auto": "Automatic (system)",
         "saved": "Language saved — restart the app to apply.",
-        "restart_hint": "Language changes apply when you restart the app.",
-        "api_url": "API URL",
-        "api_url_hint": "Server address (restart to apply)"
+        "restart_hint": "Language changes apply when you restart the app."
     },
     "update": {
         "check": "Check for updates",
