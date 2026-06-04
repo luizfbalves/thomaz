@@ -1,144 +1,154 @@
 {
-    "title": "thomaz",
-    "home": {
-        "greeting": "O que vamos fazer hoje?",
-        "eyebrow": "Bem-vindo de volta",
-        "saves": "Gerenciador de saves",
-        "mods": "Mods"
-    },
-    "module": {
-        "cheats": {
-            "title": "Trapaças",
-            "subtitle": "Gerencie os cheats dos seus jogos"
-        },
-        "settings": {
-            "title": "Configurações"
-        }
-    },
-    "auth": {
-        "login_tab": "Entrar",
-        "register_tab": "Criar conta",
-        "username": "Usuário",
-        "password": "Senha",
-        "submit_login": "Entrar",
-        "submit_register": "Criar conta",
-        "logout": "Sair",
-        "err_empty": "Preencha usuário e senha.",
-        "err_failed": "Não foi possível entrar.",
-        "err_username": "Usuário: 3–32 caracteres, apenas letras e números."
+  "title": "thomaz",
+  "home": {
+    "greeting": "O que vamos fazer hoje?",
+    "eyebrow": "Bem-vindo de volta",
+    "saves": "Gerenciador de saves",
+    "mods": "Mods"
+  },
+  "module": {
+    "cheats": {
+      "title": "Trapaças",
+      "subtitle": "Gerencie os cheats dos seus jogos"
     },
     "settings": {
-        "title": "Configurações",
-        "language": "Idioma",
-        "lang_auto": "Automático (sistema)",
-        "saved": "Idioma salvo — reinicie o app para aplicar.",
-        "restart_hint": "A mudança de idioma é aplicada ao reiniciar o app."
-    },
-    "update": {
-        "check": "Buscar atualizações",
-        "current_version": "Versão atual: v",
-        "checking": "Verificando atualizações…",
-        "up_to_date": "Você já está na versão mais recente.",
-        "none": "Nenhuma release encontrada.",
-        "error": "Falha ao verificar — verifique a conexão.",
-        "confirm_pre": "Nova versão ",
-        "confirm_post": " disponível. Atualizar agora?",
-        "confirm_yes": "Atualizar",
-        "confirm_no": "Agora não",
-        "downloading": "Baixando atualização…",
-        "done": "Atualizado! Reinicie o app para usar a nova versão.",
-        "failed": "Falha ao atualizar."
-    },
-    "db": {
-        "refresh": "Atualizar base de cheats",
-        "refreshing": "Atualizando base…",
-        "refresh_done": "Base de cheats atualizada.",
-        "refresh_failed": "Falha ao atualizar a base — verifique a conexão."
-    },
-    "common": {
-        "coming_soon": "Em breve"
-    },
-    "saves": {
-        "title": "Gerenciador de Saves",
-        "subtitle": "Faça backup e restaure os saves dos seus jogos",
-        "last_backup": "Último backup: {{when}}",
-        "never": "Nunca foi feito backup",
-        "action_backup": "Fazer backup agora",
-        "action_restore": "Restaurar",
-        "history": "Backups",
-        "confirm_restore_title": "Restaurar este backup?",
-        "confirm_restore_body": "Isso sobrescreve o save atual deste jogo.",
-        "backing_up": "Fazendo backup…",
-        "restoring": "Restaurando…",
-        "backup_ok": "Backup concluído",
-        "backup_none": "Nenhum save para backup",
-        "backup_fail": "Falha no backup",
-        "restore_ok": "Restauração concluída",
-        "restore_fail": "Falha na restauração",
-        "empty": "Nenhum jogo instalado",
-        "cloud_section": "Nuvem",
-        "cloud_upload": "Enviar pra nuvem",
-        "cloud_download": "Baixar da nuvem",
-        "cloud_login": "Faça login pra usar a nuvem",
-        "cloud_status_none": "Nada na nuvem ainda",
-        "cloud_status_synced": "Nuvem: rev {{n}}",
-        "cloud_status_ahead": "Nuvem mais nova que o local (rev {{n}})",
-        "cloud_status_loading": "Consultando a nuvem…",
-        "cloud_uploading": "Enviando…",
-        "cloud_downloading": "Baixando…",
-        "cloud_upload_ok": "Enviado pra nuvem",
-        "cloud_download_ok": "Baixado da nuvem",
-        "cloud_err_auth": "Sessão expirada — faça login de novo",
-        "cloud_err_toobig": "Save grande demais pra nuvem",
-        "cloud_err_network": "Sem conexão com a nuvem",
-        "cloud_err_generic": "Falha na nuvem, tente de novo",
-        "cloud_conflict_body": "A nuvem mudou em outro lugar. Manter o da nuvem ou enviar o seu?",
-        "cloud_keep_cloud": "Manter da nuvem",
-        "cloud_send_mine": "Enviar o meu",
-        "cloud_restore_q": "Baixado. Restaurar no jogo agora?"
-    },
-    "games": {
-        "title": "Meus Jogos",
-        "empty": "Nenhum jogo encontrado — rode no Switch para ver seus jogos.",
-        "coming_soon": "Cheats: em breve",
-        "badge_has_cheats": "Tem cheat",
-        "badge_active": "Ativado"
-    },
-    "clear": {
-        "entry": "Limpar trapaças",
-        "title": "Limpar trapaças",
-        "empty": "Nenhum jogo encontrado.",
-        "active_suffix": "  • ativo",
-        "select_all": "Marcar / desmarcar todos",
-        "clear_selected": "Limpar selecionados",
-        "none_selected": "Selecione ao menos um jogo.",
-        "confirm_pre": "Limpar trapaças de ",
-        "confirm_post": " jogo(s)? Os arquivos de cheat serão removidos da SD.",
-        "confirm_button": "Limpar",
-        "cancel": "Cancelar",
-        "done": "Trapaças removidas."
-    },
-    "cheats": {
-        "title": "Trapaças",
-        "loading": "Buscando trapaças…",
-        "none": "Nenhuma trapaça disponível para este jogo.",
-        "error_network": "Falha ao baixar — verifique a conexão e tente de novo.",
-        "fallback": "Sem trapaças para esta versão; usando as da versão anterior.",
-        "save": "Salvar e aplicar",
-        "saved": "Trapaças salvas — aplicam no próximo boot do jogo.",
-        "save_failed": "Não foi possível salvar na SD."
-    },
-    "icon": {
-        "cheats": "",
-        "settings": "",
-        "lock": "",
-        "save": "",
-        "mods": "",
-        "update": "",
-        "database": "",
-        "info": "",
-        "language": "",
-        "check": "",
-        "clear": ""
+      "title": "Configurações"
     }
+  },
+  "auth": {
+    "login_tab": "Entrar",
+    "register_tab": "Criar conta",
+    "username": "Usuário",
+    "password": "Senha",
+    "submit_login": "Entrar",
+    "submit_register": "Criar conta",
+    "logout": "Sair",
+    "err_empty": "Preencha usuário e senha.",
+    "err_failed": "Não foi possível entrar.",
+    "err_username": "Usuário: 3–32 caracteres, apenas letras e números."
+  },
+  "settings": {
+    "title": "Configurações",
+    "language": "Idioma",
+    "lang_auto": "Automático (sistema)",
+    "saved": "Idioma salvo — reinicie o app para aplicar.",
+    "restart_hint": "A mudança de idioma é aplicada ao reiniciar o app."
+  },
+  "update": {
+    "check": "Buscar atualizações",
+    "current_version": "Versão atual: v",
+    "checking": "Verificando atualizações…",
+    "up_to_date": "Você já está na versão mais recente.",
+    "none": "Nenhuma release encontrada.",
+    "error": "Falha ao verificar — verifique a conexão.",
+    "confirm_pre": "Nova versão ",
+    "confirm_post": " disponível. Atualizar agora?",
+    "confirm_yes": "Atualizar",
+    "confirm_no": "Agora não",
+    "downloading": "Baixando atualização…",
+    "done": "Atualizado! Reinicie o app para usar a nova versão.",
+    "failed": "Falha ao atualizar."
+  },
+  "db": {
+    "refresh": "Atualizar base de cheats",
+    "refreshing": "Atualizando base…",
+    "refresh_done": "Base de cheats atualizada.",
+    "refresh_failed": "Falha ao atualizar a base — verifique a conexão."
+  },
+  "common": {
+    "coming_soon": "Em breve"
+  },
+  "saves": {
+    "title": "Gerenciador de Saves",
+    "subtitle": "Faça backup e restaure os saves dos seus jogos",
+    "last_backup": "Último backup: {{when}}",
+    "never": "Nunca foi feito backup",
+    "action_backup": "Fazer backup agora",
+    "action_restore": "Restaurar",
+    "history": "Backups",
+    "confirm_restore_title": "Restaurar este backup?",
+    "confirm_restore_body": "Isso sobrescreve o save atual deste jogo.",
+    "backing_up": "Fazendo backup…",
+    "restoring": "Restaurando…",
+    "backup_ok": "Backup concluído",
+    "backup_none": "Nenhum save para backup",
+    "backup_fail": "Falha no backup",
+    "restore_ok": "Restauração concluída",
+    "restore_fail": "Falha na restauração",
+    "empty": "Nenhum jogo instalado",
+    "cloud_section": "Nuvem",
+    "cloud_upload": "Enviar pra nuvem",
+    "cloud_download": "Baixar da nuvem",
+    "cloud_login": "Faça login pra usar a nuvem",
+    "cloud_status_none": "Nada na nuvem ainda",
+    "cloud_status_synced": "Nuvem: rev {{n}}",
+    "cloud_status_ahead": "Nuvem mais nova que o local (rev {{n}})",
+    "cloud_status_loading": "Consultando a nuvem…",
+    "cloud_uploading": "Enviando…",
+    "cloud_downloading": "Baixando…",
+    "cloud_upload_ok": "Enviado pra nuvem",
+    "cloud_download_ok": "Baixado da nuvem",
+    "cloud_err_auth": "Sessão expirada — faça login de novo",
+    "cloud_err_toobig": "Save grande demais pra nuvem",
+    "cloud_err_network": "Sem conexão com a nuvem",
+    "cloud_err_generic": "Falha na nuvem, tente de novo",
+    "cloud_conflict_body": "A nuvem mudou em outro lugar. Manter o da nuvem ou enviar o seu?",
+    "cloud_keep_cloud": "Manter da nuvem",
+    "cloud_send_mine": "Enviar o meu",
+    "cloud_restore_q": "Baixado. Restaurar no jogo agora?"
+  },
+  "games": {
+    "title": "Meus Jogos",
+    "empty": "Nenhum jogo encontrado — rode no Switch para ver seus jogos.",
+    "coming_soon": "Cheats: em breve",
+    "badge_has_cheats": "Tem cheat",
+    "badge_active": "Ativado"
+  },
+  "clear": {
+    "entry": "Limpar trapaças",
+    "title": "Limpar trapaças",
+    "empty": "Nenhum jogo encontrado.",
+    "active_suffix": "  • ativo",
+    "select_all": "Marcar / desmarcar todos",
+    "clear_selected": "Limpar selecionados",
+    "none_selected": "Selecione ao menos um jogo.",
+    "confirm_pre": "Limpar trapaças de ",
+    "confirm_post": " jogo(s)? Os arquivos de cheat serão removidos da SD.",
+    "confirm_button": "Limpar",
+    "cancel": "Cancelar",
+    "done": "Trapaças removidas."
+  },
+  "cheats": {
+    "title": "Trapaças",
+    "loading": "Buscando trapaças…",
+    "none": "Nenhuma trapaça disponível para este jogo.",
+    "error_network": "Falha ao baixar — verifique a conexão e tente de novo.",
+    "fallback": "Sem trapaças para esta versão; usando as da versão anterior.",
+    "save": "Salvar e aplicar",
+    "saved": "Trapaças salvas — aplicam no próximo boot do jogo.",
+    "save_failed": "Não foi possível salvar na SD."
+  },
+  "icon": {
+    "cheats": "",
+    "settings": "",
+    "lock": "",
+    "save": "",
+    "mods": "",
+    "update": "",
+    "database": "",
+    "info": "",
+    "language": "",
+    "check": "",
+    "clear": ""
+  },
+  "gameinfo": {
+    "publisher": "Publicadora",
+    "version": "Versão",
+    "save_size": "Tamanho do save",
+    "title_id": "Title ID",
+    "playtime": "Tempo de jogo",
+    "last_played": "Jogado por último",
+    "never_played": "Nunca jogado",
+    "unknown": "—"
+  }
 }

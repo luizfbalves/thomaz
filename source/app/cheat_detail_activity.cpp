@@ -4,6 +4,7 @@
 
 #include "app/cheat_detail_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/game_panel.hpp"
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
@@ -32,8 +33,7 @@ void CheatDetailActivity::onContentAvailable()
 {
     install_header_username(this);
 
-    if (auto* gameTitle = (brls::Label*)this->getView("gameTitle"))
-        gameTitle->setText(this->title.name);
+    populate_game_panel(this, this->title);
 
     // Kick the (blocking) download onto a worker thread; the spinner + "loading"
     // status from the XML stay visible until the result comes back.

@@ -4,6 +4,7 @@
 
 #include "app/mod_manager_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/game_panel.hpp"
 #include "app/mod_browser_activity.hpp"
 
 #include <borealis.hpp>
@@ -63,8 +64,7 @@ void ModManagerActivity::onContentAvailable()
 {
     install_header_username(this);
 
-    if (auto* gameTitle = (brls::Label*)this->getView("gameTitle"))
-        gameTitle->setText(this->title.name);
+    populate_game_panel(this, this->title);
 
     // installed_mods() is a fast local SD dir read, so build inline.
     this->refreshList();
