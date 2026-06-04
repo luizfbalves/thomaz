@@ -3,10 +3,16 @@
     <brls:Box axis="column" grow="1.0"
               paddingTop="32" paddingBottom="28" paddingLeft="48" paddingRight="48">
 
-        <AnimatedBox axis="column" entranceDelay="0">
-            <brls:Label id="gameName" text="" fontSize="26" textColor="@theme/thomaz/text"/>
+        <!-- rounded game-name banner -->
+        <AnimatedBox axis="row" alignItems="center" entranceDelay="0"
+                  padding="20" cornerRadius="16"
+                  backgroundColor="@theme/thomaz/accent_bright" marginBottom="12">
+            <brls:Label id="gameName" width="auto" height="auto" grow="1.0"
+                        text="" fontSize="26" textColor="#FFFFFF"/>
+        </AnimatedBox>
+        <AnimatedBox axis="column" entranceDelay="40">
             <brls:Label id="lastBackup" text="" fontSize="15"
-                        textColor="@theme/thomaz/text_dim" marginTop="4" marginBottom="18"/>
+                        textColor="@theme/thomaz/text_dim" marginBottom="18"/>
         </AnimatedBox>
 
         <AnimatedBox id="backupButton" axis="row" alignItems="center" justifyContent="center"

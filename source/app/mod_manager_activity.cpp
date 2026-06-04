@@ -63,6 +63,9 @@ void ModManagerActivity::onContentAvailable()
 {
     install_header_username(this);
 
+    if (auto* gameTitle = (brls::Label*)this->getView("gameTitle"))
+        gameTitle->setText(this->title.name);
+
     // installed_mods() is a fast local SD dir read, so build inline.
     this->refreshList();
 }

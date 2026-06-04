@@ -14,22 +14,14 @@
         <brls:Box width="auto" height="auto" axis="column"
                   paddingTop="32" paddingLeft="48" paddingRight="48" paddingBottom="28">
 
-            <!-- hero -->
+            <!-- hero: rounded game-name banner (solid bg so cornerRadius rounds) -->
             <AnimatedBox axis="row" alignItems="center" entranceDelay="0"
-                      padding="16" cornerRadius="16"
-                      background="vertical_linear"
-                      backgroundStartColor="@theme/thomaz/accent_bright"
-                      backgroundEndColor="@theme/thomaz/accent_deep"
+                      padding="20" cornerRadius="16"
+                      backgroundColor="@theme/thomaz/accent_bright"
                       marginBottom="18">
-                <brls:Box width="56" height="56" cornerRadius="14"
-                          backgroundColor="#FFFFFF29"
-                          justifyContent="center" alignItems="center" marginRight="18">
-                    <brls:Label text="@i18n/thomaz/icon/cheats"
-                                fontSize="30" textColor="#FFFFFF"/>
-                </brls:Box>
                 <brls:Label id="gameTitle"
                             width="auto" height="auto" grow="1.0"
-                            fontSize="24" textColor="#FFFFFF"/>
+                            fontSize="26" textColor="#FFFFFF"/>
             </AnimatedBox>
 
             <!-- loading / fallback / empty / error -->

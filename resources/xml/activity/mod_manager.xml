@@ -1,6 +1,13 @@
 <brls:AppletFrame id="modFrame" title="@i18n/mods/title" iconInterpolation="linear">
     <brls:ScrollingFrame width="auto" height="auto" grow="1.0">
         <brls:Box width="auto" height="auto" axis="column" paddingTop="32" paddingLeft="48" paddingRight="48" paddingBottom="28">
+            <!-- rounded game-name banner -->
+            <AnimatedBox axis="row" alignItems="center" entranceDelay="0"
+                      padding="20" cornerRadius="16"
+                      backgroundColor="@theme/thomaz/accent_bright" marginBottom="18">
+                <brls:Label id="gameTitle" width="auto" height="auto" grow="1.0"
+                            fontSize="26" textColor="#FFFFFF"/>
+            </AnimatedBox>
             <brls:ProgressSpinner id="spinner" width="44" height="44" marginTop="24" alignSelf="center" />
             <brls:Label id="emptyLabel" width="auto" height="auto" visibility="gone" text="@i18n/mods/empty" fontSize="18" horizontalAlign="center" />
             <AnimatedBox id="modListBox" width="auto" height="auto" entranceDelay="60" axis="column" />
