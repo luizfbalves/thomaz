@@ -76,6 +76,17 @@
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
                 </AnimatedBox>
 
+                <!-- Themes (active) -->
+                <AnimatedBox id="themesCard" entranceDelay="390"
+                          axis="row" alignItems="center" grow="1.0" marginTop="14"
+                          paddingLeft="22" paddingRight="22" cornerRadius="16"
+                          backgroundColor="@theme/thomaz/tile_mods"
+                          focusable="true" highlightCornerRadius="16"
+                          hideHighlightBackground="true">
+                    <brls:Label text="@i18n/themes/home"
+                                fontSize="17" textColor="#FFFFFF" grow="1.0"/>
+                </AnimatedBox>
+
             </brls:Box>
         </brls:Box>
     </brls:Box>

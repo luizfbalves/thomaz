@@ -7,6 +7,7 @@
 #include "app/game_list_activity.hpp"
 #include "app/settings_activity.hpp"
 #include "app/save_manager_activity.hpp"
+#include "app/theme_browser_activity.hpp"
 
 #include <borealis.hpp>
 
@@ -45,6 +46,15 @@ void HomeActivity::onContentAvailable()
             return true;
         });
         mods->addGestureRecognizer(new brls::TapGestureRecognizer(mods));
+    }
+
+    if (brls::View* themes = this->getView("themesCard")) {
+        themes->registerClickAction([this](brls::View*) {
+            brls::Application::pushActivity(new ThemeBrowserActivity(this->http),
+                                            brls::TransitionAnimation::NONE);
+            return true;
+        });
+        themes->addGestureRecognizer(new brls::TapGestureRecognizer(themes));
     }
 
     // Settings card.
