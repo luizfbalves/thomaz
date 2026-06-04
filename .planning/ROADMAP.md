@@ -24,16 +24,21 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Depends on**: Nothing (first phase)
 **Requirements**: RM-01, RM-02, RM-03, RM-04
 **Success Criteria** (what must be TRUE):
-  1. `routes/posts.ts`, `routes/feed.ts`, community parts of `routes/users.ts`, and `@fastify/multipart` are gone from the API; `auth.ts`, `saves.ts`, and all account-only endpoints respond normally
+  1. `routes/posts.ts`, `routes/feed.ts`, `routes/users.ts`, and `@fastify/multipart` are gone from the API; `auth.ts`, `saves.ts`, and all account-only endpoints respond normally
   2. `@fastify/static` serving is removed; the `Post`, `Like`, and `Comment` Prisma models are dropped via a clean migration; `User`, `RefreshToken`, and `SaveSlot` remain intact
-  3. Client feed code (`core/feed/feed_json`, `core/feed/feed_types`, `platform/feed/http_feed_client`, `fake_feed_client`, `feed_client.hpp`) is deleted; `core/feed/session_codec` and `platform/feed/auth_store` still exist and compile
+  3. Client feed code (`core/feed/feed_json`, `core/feed/feed_types`, `platform/feed/http_feed_client`, `fake_feed_client`, `feed_client.hpp`) is deleted; `core/feed/session_codec` and `platform/feed/auth_store` still exist and compile; `IFeedClient` is replaced by `IAuthClient` in all activities
   4. The API Vitest suite passes (auth and cloud-saves tests green, no dead references to removed feed/post code); a clean desktop build with `-DUSE_SDL2=ON` succeeds
-**Plans**: TBD
+**Plans**: 3 plans
 
-**Planning flags:**
-- **`/users/me` endpoint:** Confirm whether the client uses `/users/me` (account endpoint) before deciding its fate — preserve it if it is the account-only endpoint; remove only the public profile/feed pages (`/users/:username`).
-- **session_codec + auth_store:** These MUST NOT be removed. They live under `core/feed/` and `platform/feed/` but are auth/session infrastructure shared with cloud saves — treat as preserved-in-place when deleting feed code.
-- **Migration cleanliness:** Drop `Post`/`Like`/`Comment` in a single Prisma migration; verify `User`/`RefreshToken`/`SaveSlot` foreign keys are unaffected before running `prisma migrate deploy` on the live instance.
+Plans:
+- [ ] 01-01-PLAN.md — Delete community API routes (posts.ts, feed.ts, users.ts, feed-page.ts); remove @fastify/multipart and @fastify/static from app.ts; clean serializers.ts and test suite (Wave 1)
+- [ ] 01-02-PLAN.md — Replace IFeedClient with IAuthClient in C++ activities; migrate Session/AuthResult to session_codec.hpp; delete 8 community feed client files; verify desktop build (Wave 1, parallel)
+- [ ] 01-03-PLAN.md — [BLOCKING] Drop Post/Like/Comment from schema.prisma and apply Prisma migration; run Vitest suite and final grep sweep (Wave 2)
+
+**Planning decisions resolved:**
+- `/users/me` endpoint: C++ client does NOT call `/users/me` (grep confirmed zero matches in source/). Entire users.ts deleted per D-06.
+- `IFeedClient` → `IAuthClient`: The interface is renamed and moved to `source/platform/auth_client.hpp`; Session/AuthResult types move into `session_codec.hpp` (which is preserved).
+- session_codec + auth_store: Preserved in place per D-09.
 
 ### Phase 2: API Security + Regression Tests
 **Goal**: The live API has no remaining HIGH-severity security issues: save blobs require authentication, tokens can be revoked on logout, production logging is enabled, and regression tests guard these fixes
@@ -94,7 +99,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Remove Community Feature | 0/? | Not started | - |
+| 1. Remove Community Feature | 0/3 | Not started | - |
 | 2. API Security + Regression Tests | 0/? | Not started | - |
 | 3. C++ Platform Hardening | 0/? | Not started | - |
 | 4. C++ Activity Hardening | 0/? | Not started | - |
