@@ -12,7 +12,7 @@ This milestone resolves every issue surfaced by the codebase audit without addin
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Remove Community Feature** - Strip posts/feed/comments/likes from API and client; preserve auth/session infrastructure shared with cloud saves
+- [x] **Phase 1: Remove Community Feature** - Strip posts/feed/comments/likes from API and client; preserve auth/session infrastructure shared with cloud saves (completed 2026-06-04)
 - [ ] **Phase 2: API Security + Regression Tests** - Harden the live API against the remaining HIGH-severity security issues and co-ship regression tests
 - [ ] **Phase 3: C++ Platform Hardening** - Fix isolated C++ platform-layer issues (fs_util extraction, TLS warning, cloudBusy atomicity) and their host tests
 - [ ] **Phase 4: C++ Activity Hardening** - Refactor all activities to the runAsync base-class pattern, replace unsafe casts, add curl cancellation, and cover the conflict path
@@ -33,7 +33,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 01-01-PLAN.md — Delete community API routes (posts.ts, feed.ts, users.ts, feed-page.ts); remove @fastify/multipart and @fastify/static from app.ts; clean serializers.ts and test suite (Wave 1)
 - [x] 01-02-PLAN.md — Replace IFeedClient with IAuthClient in C++ activities; migrate Session/AuthResult to session_codec.hpp; delete 8 community feed client files; verify desktop build (Wave 1, parallel)
-- [ ] 01-03-PLAN.md — [BLOCKING] Drop Post/Like/Comment from schema.prisma and apply Prisma migration; run Vitest suite and final grep sweep (Wave 2)
+- [x] 01-03-PLAN.md — [BLOCKING] Drop Post/Like/Comment from schema.prisma and apply Prisma migration; run Vitest suite and final grep sweep (Wave 2)
 
 **Planning decisions resolved:**
 - `/users/me` endpoint: C++ client does NOT call `/users/me` (grep confirmed zero matches in source/). Entire users.ts deleted per D-06.
@@ -99,7 +99,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Remove Community Feature | 2/3 | In Progress|  |
+| 1. Remove Community Feature | 3/3 | Complete   | 2026-06-04 |
 | 2. API Security + Regression Tests | 0/? | Not started | - |
 | 3. C++ Platform Hardening | 0/? | Not started | - |
 | 4. C++ Activity Hardening | 0/? | Not started | - |
