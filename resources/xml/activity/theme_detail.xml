@@ -34,7 +34,7 @@
             <brls:Box id="downloadButton" axis="row" height="56" cornerRadius="10"
                       justifyContent="center" alignItems="center" focusable="true"
                       hideHighlightBackground="true" backgroundColor="@theme/thomaz/accent_bright">
-                <brls:Label text="@i18n/themes/download" fontSize="18" textColor="#FFFFFF"/>
+                <brls:Label id="downloadButtonLabel" text="@i18n/themes/download" fontSize="18" textColor="#FFFFFF"/>
             </brls:Box>
             <brls:Label id="downloadNote" fontSize="13" textColor="@theme/thomaz/text_dim" marginTop="10"/>
         </brls:Box>
