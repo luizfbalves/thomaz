@@ -13,7 +13,7 @@ using namespace brls::literals;
 namespace thomaz {
 
 SaveManagerActivity::SaveManagerActivity(ITitleService* titleService, ISaveService* saveService,
-                                         ICloudSaveClient* cloudSaves, IFeedClient* feed)
+                                         ICloudSaveClient* cloudSaves, IAuthClient* feed)
     : titleService(titleService), saveService(saveService), cloudSaves(cloudSaves), feed(feed)
 {
 }
@@ -59,7 +59,7 @@ void SaveManagerActivity::populate(const std::vector<InstalledTitle>& titles)
     std::string root          = core::saves_root();
     ISaveService* save        = this->saveService;
     ICloudSaveClient* cloud   = this->cloudSaves;
-    IFeedClient* feedClient   = this->feed;
+    IAuthClient* feedClient   = this->feed;
 
     for (const auto& title : titles) {
         brls::Box* row = new brls::Box(brls::Axis::ROW);

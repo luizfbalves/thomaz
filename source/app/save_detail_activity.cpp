@@ -36,7 +36,7 @@ std::string lastBackupText(const std::optional<std::string>& last) {
 } // namespace
 
 SaveDetailActivity::SaveDetailActivity(InstalledTitle title, ISaveService* saveService,
-                                       ICloudSaveClient* cloudSaves, IFeedClient* feed)
+                                       ICloudSaveClient* cloudSaves, IAuthClient* feed)
     : title(std::move(title)), saveService(saveService), cloudSaves(cloudSaves), feed(feed)
 {
 }

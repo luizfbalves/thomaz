@@ -21,7 +21,7 @@
 #include "platform/app_settings.hpp"
 #include "platform/http_client_curl.hpp"
 #include "platform/self_update.hpp"
-#include "platform/feed/http_feed_client.hpp"
+#include "platform/http_auth_client.hpp"
 #include "platform/feed/auth_store.hpp"
 #include "platform/saves/http_cloud_save_client.hpp"
 
@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
     // access token from auth_store per call.
     std::string apiBaseUrl = thomaz::load_api_base_url();
     auto restoredSession   = thomaz::load_session();
-    auto feedClient = std::make_unique<thomaz::HttpFeedClient>(
+    auto feedClient = std::make_unique<thomaz::HttpAuthClient>(
         httpClient.get(),
         apiBaseUrl,
         restoredSession,

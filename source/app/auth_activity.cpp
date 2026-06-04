@@ -9,7 +9,7 @@ using namespace brls::literals;
 
 namespace thomaz {
 
-AuthActivity::AuthActivity(IFeedClient* client, std::function<void()> onAuthed)
+AuthActivity::AuthActivity(IAuthClient* client, std::function<void()> onAuthed)
     : client(client), onAuthed(std::move(onAuthed)) {}
 
 AuthActivity::~AuthActivity() { *this->alive = false; }
@@ -90,7 +90,7 @@ void AuthActivity::submit()
     this->busy = true;
     status->setText("…");
 
-    IFeedClient* c = this->client;
+    IAuthClient* c = this->client;
     auto alive     = this->alive;
     std::string u = this->username, p = this->password;
     bool reg = this->registerMode;

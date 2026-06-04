@@ -3,16 +3,16 @@
 #include <functional>
 #include <memory>
 #include <borealis.hpp>
-#include "platform/feed/feed_client.hpp"
+#include "platform/auth_client.hpp"
 
 namespace thomaz {
 
-// Tela de login/cadastro. Recebe o IFeedClient e um callback chamado ao
+// Tela de login/cadastro. Recebe o IAuthClient e um callback chamado ao
 // autenticar com sucesso (a sessão já foi persistida) para a tela que pediu
 // login retomar sua ação.
 class AuthActivity : public brls::Activity {
   public:
-    AuthActivity(IFeedClient* client, std::function<void()> onAuthed);
+    AuthActivity(IAuthClient* client, std::function<void()> onAuthed);
     ~AuthActivity() override;
 
     CONTENT_FROM_XML_RES("activity/auth.xml");
@@ -22,7 +22,7 @@ class AuthActivity : public brls::Activity {
     void refreshMode();
     void submit();
 
-    IFeedClient* client;
+    IAuthClient* client;
     std::function<void()> onAuthed;
     bool registerMode = false;
     bool busy = false;

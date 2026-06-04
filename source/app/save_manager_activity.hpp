@@ -8,7 +8,7 @@
 #include "platform/save_service.hpp"
 #include "platform/title.hpp"
 #include "platform/saves/cloud_save_client.hpp"
-#include "platform/feed/feed_client.hpp"
+#include "platform/auth_client.hpp"
 
 namespace thomaz {
 
@@ -18,7 +18,7 @@ class SaveManagerActivity : public brls::Activity
 {
   public:
     SaveManagerActivity(ITitleService* titleService, ISaveService* saveService,
-                        ICloudSaveClient* cloudSaves, IFeedClient* feed);
+                        ICloudSaveClient* cloudSaves, IAuthClient* feed);
     ~SaveManagerActivity() override;
 
     CONTENT_FROM_XML_RES("activity/save_manager.xml");
@@ -31,7 +31,7 @@ class SaveManagerActivity : public brls::Activity
     ITitleService* titleService;
     ISaveService* saveService;
     ICloudSaveClient* cloudSaves;
-    IFeedClient* feed;
+    IAuthClient* feed;
     std::shared_ptr<std::atomic<bool>> alive = std::make_shared<std::atomic<bool>>(true);
 };
 

@@ -20,7 +20,7 @@
 namespace thomaz {
 
 HomeActivity::HomeActivity(ITitleService* titleService, IHttpClient* http, ISaveService* saveService,
-                           IFeedClient* feed, ICloudSaveClient* cloudSaves)
+                           IAuthClient* feed, ICloudSaveClient* cloudSaves)
     : titleService(titleService), http(http), saveService(saveService), feed(feed),
       cloudSaves(cloudSaves)
 {
