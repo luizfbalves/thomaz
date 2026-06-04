@@ -27,18 +27,9 @@
             <AnimatedBox id="cheatsCard" entranceDelay="80"
                       axis="column" grow="1.55" marginRight="18"
                       padding="34" cornerRadius="22"
-                      background="vertical_linear"
-                      backgroundStartColor="@theme/thomaz/accent_bright"
-                      backgroundEndColor="@theme/thomaz/accent_deep"
+                      backgroundColor="@theme/thomaz/accent_bright"
                       focusable="true" highlightCornerRadius="22"
                       hideHighlightBackground="true">
-
-                <brls:Box width="64" height="64" cornerRadius="18"
-                          backgroundColor="#FFFFFF29"
-                          justifyContent="center" alignItems="center">
-                    <brls:Label text="@i18n/thomaz/icon/cheats"
-                                fontSize="36" textColor="#FFFFFF"/>
-                </brls:Box>
 
                 <brls:Box grow="1.0"/>
 
@@ -59,12 +50,6 @@
                           backgroundColor="@theme/thomaz/tile_settings"
                           focusable="true" highlightCornerRadius="16"
                           hideHighlightBackground="true">
-                    <brls:Box width="44" height="44" cornerRadius="12"
-                              backgroundColor="#FFFFFF29"
-                              justifyContent="center" alignItems="center" marginRight="16">
-                        <brls:Label text="@i18n/thomaz/icon/settings"
-                                    fontSize="24" textColor="#FFFFFF"/>
-                    </brls:Box>
                     <brls:Label text="@i18n/thomaz/module/settings/title"
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
                 </AnimatedBox>
@@ -76,12 +61,6 @@
                           backgroundColor="@theme/thomaz/tile_backup"
                           focusable="true" highlightCornerRadius="16"
                           hideHighlightBackground="true">
-                    <brls:Box width="44" height="44" cornerRadius="12"
-                              backgroundColor="#FFFFFF29"
-                              justifyContent="center" alignItems="center" marginRight="16">
-                        <brls:Label text="@i18n/thomaz/icon/save"
-                                    fontSize="24" textColor="#FFFFFF"/>
-                    </brls:Box>
                     <brls:Label text="@i18n/thomaz/saves/title"
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
                 </AnimatedBox>
@@ -93,12 +72,6 @@
                           backgroundColor="@theme/thomaz/tile_mods"
                           focusable="true" highlightCornerRadius="16"
                           hideHighlightBackground="true">
-                    <brls:Box width="44" height="44" cornerRadius="12"
-                              backgroundColor="#FFFFFF29"
-                              justifyContent="center" alignItems="center" marginRight="16">
-                        <brls:Label text="@i18n/thomaz/icon/mods"
-                                    fontSize="24" textColor="#FFFFFF"/>
-                    </brls:Box>
                     <brls:Label text="@i18n/thomaz/home/mods"
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
                 </AnimatedBox>
