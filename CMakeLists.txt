@@ -63,8 +63,16 @@ endif ()
 # nlohmann/json via -Ilib/json.
 list(APPEND APP_PLATFORM_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/source
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/json)
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/json
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/switchthemes
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/switchthemes/third_party)
 file(GLOB_RECURSE MAIN_SRC ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
+
+# Vendored exelix theme engine (GPLv2). Behind switchthemes::apply_nxtheme.
+file(GLOB_RECURSE ENGINE_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/switchthemes/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/switchthemes/*.c)
+list(APPEND MAIN_SRC ${ENGINE_SRC})
 
 if (PLATFORM_SWITCH)
     list(APPEND MAIN_SRC ${BOREALIS_LIBRARY}/lib/platforms/switch/switch_wrapper.c)
@@ -72,7 +80,9 @@ endif ()
 
 # Build target
 program_target(${PROJECT_NAME} "${MAIN_SRC}")
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
+# C++20: the vendored exelix theme engine (lib/switchthemes) uses std::span,
+# operator<=>, and std::format. C++20 is backward compatible with the C++17 app.
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 
 # Package per platform
 if (PLATFORM_DESKTOP)

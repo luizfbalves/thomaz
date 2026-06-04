@@ -163,4 +163,7 @@ thomaz é uma ferramenta para uso pessoal em jogos que você possui. Cheats pode
 
 ## 📄 Licença
 
-Distribuído sob a licença **MIT** — veja [`LICENSE`](LICENSE).
+Distribuído sob a **GNU GPL v2** — veja [`LICENSE`](LICENSE) e
+[`THIRD_PARTY.md`](THIRD_PARTY.md). Este projeto era MIT até a v0.4; passou a
+GPLv2 ao incorporar a engine de temas do
+[exelix11/SwitchThemeInjector](https://github.com/exelix11/SwitchThemeInjector).

@@ -10,6 +10,10 @@
 
 #include "core/themes/themezer_browse.hpp"
 #include "platform/themes/theme_download.hpp"
+#include "platform/themes/theme_paths.hpp"
+#include "platform/themes/active_theme_store.hpp"
+#include "platform/themes/theme_install.hpp"
+#include "platform/system/reboot.hpp"
 
 using namespace brls::literals;
 
@@ -80,7 +84,11 @@ void ThemeDetailActivity::onContentAvailable() {
 
     if (auto* btn = this->getView("downloadButton")) {
         btn->registerClickAction([this](brls::View*) {
-            brls::sync([this]() { this->startDownload(); });
+            brls::sync([this]() {
+                if (this->applied)         this->doRemove();
+                else if (this->downloaded) this->doApply();
+                else                       this->startDownload();
+            });
             return true;
         });
         btn->addGestureRecognizer(new brls::TapGestureRecognizer(btn));
@@ -116,6 +124,10 @@ void ThemeDetailActivity::onResolved(const core::ThemeDetail& d, bool ok) {
             }
         }
     }
+
+    this->downloaded = theme_already_downloaded(this->entry);
+    this->applied    = is_active_theme(this->entry);
+    this->refreshActionButton();
 }
 
 void ThemeDetailActivity::startDownload() {
@@ -124,17 +136,96 @@ void ThemeDetailActivity::startDownload() {
 
     core::ThemeDetail d = this->detail;
     auto alive = this->alive;
-    brls::async([alive, d]() {
+    brls::async([this, alive, d]() {
         ThemeDownloadResult r = download_theme(d);
         std::string msg = r.ok ? "themes/download_ok"_i18n
                                : ("themes/download_fail"_i18n + std::string(": ") + r.error);
         bool ok = r.ok;
-        brls::sync([alive, msg, ok]() {
+        brls::sync([this, alive, msg, ok]() {
             if (!alive->load()) return;
             brls::Application::notify(msg);
-            if (ok) brls::Application::popActivity();
+            if (ok) {
+                this->downloaded = true;
+                this->refreshActionButton();
+            }
         });
     });
+}
+
+void ThemeDetailActivity::refreshActionButton() {
+    auto* lbl = (brls::Label*)this->getView("downloadButtonLabel");
+    if (!lbl) return;
+    if (this->applied) {
+        lbl->setText("themes/remove"_i18n);
+    } else if (this->downloaded) {
+        bool pack = (this->entry.kind == core::ThemeKind::Pack);
+        lbl->setText(pack ? "themes/apply_pack"_i18n : "themes/apply"_i18n);
+    } else {
+        lbl->setText("themes/download"_i18n);
+    }
+}
+
+void ThemeDetailActivity::doApply() {
+    if (!this->resolved || this->busy) return;
+    if (!base_layouts_available(this->detail)) { this->showBaseMissingDialog(); return; }
+
+    this->busy = true;
+    brls::Application::notify("themes/applying"_i18n);
+
+    core::ThemeDetail d = this->detail;
+    auto alive = this->alive;
+    brls::async([this, d, alive]() {
+        InstallResult r = install_theme(d);
+        brls::sync([this, alive, r]() {
+            if (!alive->load()) return;
+            this->busy = false;
+            if (!r.ok) {
+                brls::Application::notify("themes/apply_fail"_i18n + std::string(": ") + r.error);
+                return;
+            }
+            if (!r.warnings.empty()) brls::Application::notify("themes/warn_parts_removed"_i18n);
+            brls::Application::notify("themes/apply_ok"_i18n);
+            this->applied = true;
+            this->refreshActionButton();
+            this->showRebootDialog();
+        });
+    });
+}
+
+void ThemeDetailActivity::doRemove() {
+    if (this->busy) return;
+    this->busy = true;
+    brls::Application::notify("themes/removing"_i18n);
+
+    auto alive = this->alive;
+    brls::async([this, alive]() {
+        InstallResult r = remove_active_theme();
+        brls::sync([this, alive, r]() {
+            if (!alive->load()) return;
+            this->busy = false;
+            if (!r.ok) {
+                brls::Application::notify("themes/remove_fail"_i18n + std::string(": ") + r.error);
+                return;
+            }
+            brls::Application::notify("themes/remove_ok"_i18n);
+            this->applied = false;
+            this->refreshActionButton();
+            this->showRebootDialog();
+        });
+    });
+}
+
+void ThemeDetailActivity::showBaseMissingDialog() {
+    auto* dialog = new brls::Dialog("themes/base_missing_help"_i18n);
+    dialog->addButton("themes/base_missing"_i18n, []() {});
+    dialog->open();
+}
+
+void ThemeDetailActivity::showRebootDialog() {
+    auto* dialog = new brls::Dialog("themes/reboot_prompt"_i18n);
+    dialog->addButton("themes/reboot_now"_i18n, []() { thomaz::reboot_to_payload(); });
+    dialog->addButton("themes/reboot_later"_i18n, []() {});
+    dialog->open();
 }
 
 } // namespace thomaz

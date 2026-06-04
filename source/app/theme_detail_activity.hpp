@@ -6,6 +6,7 @@
 
 #include "core/themes/themezer_types.hpp"
 #include "platform/http_client.hpp"
+#include "platform/themes/theme_install.hpp"
 
 namespace thomaz {
 
@@ -22,12 +23,21 @@ class ThemeDetailActivity : public brls::Activity {
   private:
     void onResolved(const thomaz::core::ThemeDetail& detail, bool ok);
     void startDownload();
+    void refreshActionButton();   // sets label + which action the button performs
+    void doApply();
+    void doRemove();
+    void showBaseMissingDialog();
+    void showRebootDialog();
 
     thomaz::core::ThemeEntry  entry;
     thomaz::core::ThemeDetail detail;
     bool                      resolved = false;
     IHttpClient*              http;
     std::shared_ptr<std::atomic_bool> alive = std::make_shared<std::atomic_bool>(true);
+
+    bool downloaded = false;
+    bool applied    = false;
+    bool busy       = false;      // guards against double-taps during async work
 };
 
 } // namespace thomaz
