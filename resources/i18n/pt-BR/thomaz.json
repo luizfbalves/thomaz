@@ -56,7 +56,8 @@
     "refresh_failed": "Falha ao atualizar a base — verifique a conexão."
   },
   "common": {
-    "coming_soon": "Em breve"
+    "coming_soon": "Em breve",
+    "cancel": "Cancelar"
   },
   "saves": {
     "title": "Gerenciador de Saves",

@@ -88,6 +88,20 @@ void SaveDetailActivity::refreshHistory()
     brls::Box* box = (brls::Box*)this->getView("historyBox");
     if (!box)
         return;
+
+    // If focus currently sits on a row we're about to destroy, move it to a
+    // stable view first — freeing the focused view dangles Borealis' focus
+    // pointer and crashes on the next focus/input event.
+    if (brls::View* f = brls::Application::getCurrentFocus()) {
+        for (brls::View* v = f; v; v = v->getParent()) {
+            if (v == box) {
+                if (auto* bb = this->getView("backupButton"))
+                    brls::Application::giveFocus(bb);
+                break;
+            }
+        }
+    }
+
     box->clearViews();
 
     // A small focusable "text button" (controller A + touch) for a row action.
@@ -200,7 +214,7 @@ void SaveDetailActivity::doRestore(const core::BackupEntry& entry)
             return; // activity gone before the user confirmed
         this->performRestore(e);
     });
-    dialog->addButton("brls/hints/back"_i18n, []() {});
+    dialog->addButton("thomaz/common/cancel"_i18n, []() {});
     dialog->open();
 }
 
@@ -213,13 +227,21 @@ void SaveDetailActivity::doDelete(const core::BackupEntry& entry)
     dialog->addButton("thomaz/saves/action_delete"_i18n, [this, alive, e]() {
         if (!alive->load())
             return; // activity gone before the user confirmed
-        bool ok = core::delete_backup(e);
-        brls::Application::notify(ok ? "thomaz/saves/delete_ok"_i18n
-                                     : "thomaz/saves/delete_fail"_i18n);
-        if (ok)
-            this->refreshHistory();
+        // Defer to the next frame: the Dialog restores focus to the "Delete"
+        // button (inside the row we're about to free) *after* this callback
+        // returns. Tearing the row down here would dangle that focus and crash.
+        // refreshHistory() moves focus to a stable view before clearing.
+        brls::sync([this, alive, e]() {
+            if (!alive->load())
+                return;
+            bool ok = core::delete_backup(e);
+            brls::Application::notify(ok ? "thomaz/saves/delete_ok"_i18n
+                                         : "thomaz/saves/delete_fail"_i18n);
+            if (ok)
+                this->refreshHistory();
+        });
     });
-    dialog->addButton("brls/hints/back"_i18n, []() {});
+    dialog->addButton("thomaz/common/cancel"_i18n, []() {});
     dialog->open();
 }
 

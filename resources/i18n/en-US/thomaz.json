@@ -56,7 +56,8 @@
     "refresh_failed": "Database update failed — check your connection."
   },
   "common": {
-    "coming_soon": "Coming soon"
+    "coming_soon": "Coming soon",
+    "cancel": "Cancel"
   },
   "saves": {
     "title": "Save Manager",
