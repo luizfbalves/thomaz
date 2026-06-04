@@ -27,5 +27,21 @@
     "downloading": "Downloading…",
     "download_ok": "Saved to sd:/themes/. Install it with NXThemes Installer.",
     "download_fail": "Download failed",
-    "error_network": "Couldn't reach Themezer. Check your connection."
+    "error_network": "Couldn't reach Themezer. Check your connection.",
+    "apply": "Apply Theme",
+    "apply_pack": "Apply Pack",
+    "applying": "Applying theme…",
+    "apply_ok": "Theme applied. Reboot to see the changes.",
+    "apply_fail": "Apply failed",
+    "remove": "Remove Theme",
+    "removing": "Removing theme…",
+    "remove_ok": "Theme removed. Reboot to restore the default.",
+    "remove_fail": "Remove failed",
+    "applied": "Applied",
+    "warn_parts_removed": "Some incompatible parts were removed automatically.",
+    "base_missing": "Base layouts not found",
+    "base_missing_help": "Extract the firmware layouts once (e.g. with NXThemes Installer) to sd:/themes/systemData before applying.",
+    "reboot_prompt": "Reboot the console now to apply?",
+    "reboot_now": "Reboot",
+    "reboot_later": "Later"
 }
