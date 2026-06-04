@@ -1,5 +1,6 @@
 #include "app/save_detail_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/game_panel.hpp"
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
@@ -48,8 +49,7 @@ void SaveDetailActivity::onContentAvailable()
 {
     install_header_username(this);
 
-    if (auto* name = (brls::Label*)this->getView("gameName"))
-        name->setText(this->title.name);
+    populate_game_panel(this, this->title);
 
     if (auto* btn = this->getView("backupButton")) {
         btn->registerClickAction([this](brls::View*) { this->doBackup(); return true; });

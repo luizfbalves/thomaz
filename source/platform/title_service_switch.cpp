@@ -77,6 +77,8 @@ std::vector<InstalledTitle> NsTitleService::listInstalled() {
                 char dv[sizeof(control->nacp.display_version) + 1] = {0};
                 std::memcpy(dv, control->nacp.display_version, sizeof(control->nacp.display_version));
                 t.display_version = dv;
+                // Configured user-account save-data size (bytes); 0 if the game has none.
+                t.save_data_size = control->nacp.user_account_save_data_size;
                 // The icon (JPEG) follows the nacp in the control data buffer.
                 size_t iconSize = (size_t)controlSize - sizeof(control->nacp);
                 if (iconSize > 0)
