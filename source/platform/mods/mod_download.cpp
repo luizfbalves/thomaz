@@ -1,6 +1,7 @@
 #include "platform/mods/mod_download.hpp"
 
 #include <curl/curl.h>
+#include "platform/curl_tls.hpp"
 #include <cstdio>
 #include <sys/stat.h>
 
@@ -62,8 +63,8 @@ bool download_file(const std::string& url, const std::string& dest_path,
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
     curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, xferInfo);
     curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &ctx);
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    // TLS certificate verification via the bundled CA (romfs) / system store.
+    apply_curl_tls(curl);
 
     CURLcode rc = curl_easy_perform(curl);
     long httpStatus = 0;
