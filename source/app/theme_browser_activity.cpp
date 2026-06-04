@@ -11,6 +11,7 @@
 #include <string>
 
 #include "core/themes/themezer_browse.hpp"
+#include "platform/themes/active_theme_store.hpp"
 #include "platform/themes/theme_paths.hpp"
 
 using namespace brls::literals;
@@ -180,6 +181,11 @@ void ThemeBrowserActivity::populate(const core::BrowsePage& pg) {
         if (theme_already_downloaded(e)) {
             m += "  [";
             m += "themes/downloaded"_i18n;
+            m += "]";
+        }
+        if (is_active_theme(e)) {
+            m += "  [";
+            m += "themes/applied"_i18n;
             m += "]";
         }
         meta->setText(m);
