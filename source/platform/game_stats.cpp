@@ -28,9 +28,9 @@ GameStats query_game_stats(std::uint64_t title_id)
         return g;
 
     g.valid        = true;
-    g.play_minutes = stats.playtimeMinutes;
-    g.launches     = stats.totalLaunches;
-    g.last_played  = stats.last_timestampUser;
+    g.play_minutes = (std::uint32_t)(stats.playtime / 60000000000ULL); // ns -> minutes
+    g.launches     = stats.total_launches;
+    g.last_played  = stats.last_timestamp_user;
     return g;
 }
 
