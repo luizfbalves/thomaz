@@ -59,7 +59,7 @@ ApplyOutput apply_nxtheme(const std::vector<unsigned char>& base_szs,
 
         bool patched = false;
 
-        // 3a. Background (BNTX) patch. GetMainImage always returns DDS bytes.
+        // 3a. Background (BNTX) patch. GetMainImage returns DDS bytes or an error string.
         if (theme.HasMainImage())
         {
             auto image = theme.GetMainImage();

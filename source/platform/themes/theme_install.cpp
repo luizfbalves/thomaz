@@ -56,8 +56,14 @@ InstallResult install_theme(const thomaz::core::ThemeDetail& detail) {
     if (!base_present_for(targets)) { res.error = "base layouts missing"; return res; }
 
     std::string folder = theme_folder(detail.entry);
-    std::vector<std::string> written;   // for rollback
+    std::vector<std::string> written;        // for rollback
+    std::vector<std::string> flags_written;  // flag files written, also rolled back on failure
     std::vector<std::string> applied_targets;
+
+    auto rollback = [&]() {
+        for (const auto& w : written)       ::remove(w.c_str());
+        for (const auto& f : flags_written) ::remove(f.c_str());
+    };
 
     int index = 0;
     for (const auto& part : detail.parts) {
@@ -70,12 +76,12 @@ InstallResult install_theme(const thomaz::core::ThemeDetail& detail) {
 
         std::vector<unsigned char> nx_bytes, base_bytes;
         if (!read_file(nx_path, nx_bytes)) {
-            for (const auto& w : written) ::remove(w.c_str());
+            rollback();
             res.error = "missing downloaded file: " + nx_path;
             return res;
         }
         if (!read_file(base, base_bytes)) {
-            for (const auto& w : written) ::remove(w.c_str());
+            rollback();
             res.error = "missing base layout: " + base;
             return res;
         }
@@ -84,14 +90,14 @@ InstallResult install_theme(const thomaz::core::ThemeDetail& detail) {
             switchthemes::apply_nxtheme(base_bytes, nx_bytes);
         for (const auto& w : ao.warnings) res.warnings.push_back(part.target + ": " + w);
         if (!ao.ok) {
-            for (const auto& w : written) ::remove(w.c_str());
+            rollback();
             res.error = "engine: " + ao.error;
             return res;
         }
 
         ensure_parent_dirs(out_path);
         if (!write_file(out_path, ao.szs)) {
-            for (const auto& w : written) ::remove(w.c_str());
+            rollback();
             res.error = "could not write " + out_path;
             return res;
         }
@@ -104,6 +110,7 @@ InstallResult install_theme(const thomaz::core::ThemeDetail& detail) {
             std::string flag = layeredfs_root() + "/" + m->title_id + "/fsmitm.flag";
             ensure_parent_dirs(flag);
             std::ofstream(flag).put('\0');
+            flags_written.push_back(flag);
         }
     }
 
