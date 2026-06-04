@@ -24,26 +24,9 @@ void AnimatedBox::willAppear(bool resetState)
 
 void AnimatedBox::runEntrance()
 {
-    // Start hidden and nudged down, then ease up into place.
-    this->entrance.reset(0.0f);
-    this->setAlpha(0.0f);
-    this->setTranslationY(this->entranceRise);
-
-    if (this->entranceDelay > 0.0f)
-        this->entrance.addStep(0.0f, (int32_t)this->entranceDelay, brls::EasingFunction::linear);
-    this->entrance.addStep(1.0f, (int32_t)this->entranceDuration, brls::EasingFunction::quadraticOut);
-
-    this->entrance.setTickCallback([this] {
-        float v = this->entrance.getValue();
-        this->setAlpha(v);
-        this->setTranslationY((1.0f - v) * this->entranceRise);
-    });
-    this->entrance.setEndCallback([this](bool) {
-        this->setAlpha(1.0f);
-        this->setTranslationY(0.0f);
-    });
-
-    this->entrance.start();
+    // Entrance animation disabled: render instantly, no fade/rise.
+    this->setAlpha(1.0f);
+    this->setTranslationY(0.0f);
 }
 
 brls::View* AnimatedBox::create()
