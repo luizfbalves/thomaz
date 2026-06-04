@@ -1,7 +1,7 @@
 #pragma once
 #include <optional>
 #include <string>
-#include "core/feed/feed_types.hpp"
+#include "core/feed/session_codec.hpp"
 
 namespace thomaz {
 
