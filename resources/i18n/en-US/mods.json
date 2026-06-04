@@ -32,5 +32,8 @@
     "installed_ok": "Mod downloaded and installed.",
     "resolving": "Finding this game on GameBanana…",
     "game_not_found": "This game isn't on GameBanana. Search manually:",
-    "game_search": "Search within this game"
+    "game_search": "Search within this game",
+    "showing_game": "Showing mods for: {{game}}",
+    "manual_search_label": "Manual search — mods aren't filtered to this game",
+    "confirm_install_body": "This mod will be installed for {{game}}. Continue?"
 }

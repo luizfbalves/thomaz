@@ -39,6 +39,8 @@ class ModBrowserActivity : public brls::Activity
     void runGameSearch(const std::string& query);
     // Build the result rows on the UI thread from a browse result.
     void populate(const core::BrowseResult& result);
+    // Update the "Showing mods for: X" / "Manual search" header label.
+    void setResolvedLabel(bool manual, const std::string& gameName);
 
     InstalledTitle title;
     IHttpClient* http;
