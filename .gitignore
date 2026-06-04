@@ -37,6 +37,8 @@ tests/run
 !/resources/i18n/pt-BR/mods.json
 !/resources/i18n/en-US/themes.json
 !/resources/i18n/pt-BR/themes.json
+!/resources/i18n/en-US/system.json
+!/resources/i18n/pt-BR/system.json
 !/resources/img/
 !/resources/img/icon.jpg
 !/resources/cacert.pem
@@ -57,6 +59,7 @@ tests/run
 !/resources/xml/activity/mod_detail.xml
 !/resources/xml/activity/theme_browser.xml
 !/resources/xml/activity/theme_detail.xml
+!/resources/xml/activity/system.xml
 
 # Desktop index cache (downloaded switch-cheats-db index)
 thomaz-cache/
