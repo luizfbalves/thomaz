@@ -11,10 +11,10 @@ Each requirement is a fix from `.planning/codebase/CONCERNS.md` (acceptance crit
 
 The posts/feed/comments/likes community feature is being removed entirely. Its image-upload path (`@fastify/static` + `@fastify/multipart`) is the root cause of the SEC-01 save-blob exposure, so removal resolves it at the source. Auth/session infrastructure that happens to live under `feed/` directories (`core/feed/session_codec`, `platform/feed/auth_store`) is shared with cloud saves and MUST be preserved.
 
-- [ ] **RM-01**: Community API endpoints are removed — `routes/posts.ts`, `routes/feed.ts`, the community parts of `routes/users.ts` (`/users/:username`, feed pages), and the `@fastify/multipart` plugin. `auth.ts`, `saves.ts`, and account-only endpoints remain. *(scope decision 2026-06-04)*
-- [ ] **RM-02**: `@fastify/static` serving is removed and the `Post`/`Like`/`Comment` Prisma models are dropped (with migration); no save blob resides in any publicly served path. `User`/`RefreshToken`/`SaveSlot` remain. *(resolves SEC-01 root cause)*
+- [x] **RM-01**: Community API endpoints are removed — `routes/posts.ts`, `routes/feed.ts`, the community parts of `routes/users.ts` (`/users/:username`, feed pages), and the `@fastify/multipart` plugin. `auth.ts`, `saves.ts`, and account-only endpoints remain. *(scope decision 2026-06-04)*
+- [x] **RM-02**: `@fastify/static` serving is removed and the `Post`/`Like`/`Comment` Prisma models are dropped (with migration); no save blob resides in any publicly served path. `User`/`RefreshToken`/`SaveSlot` remain. *(resolves SEC-01 root cause)*
 - [ ] **RM-03**: Client community-feed code is removed — `core/feed/feed_json`, `core/feed/feed_types`, `platform/feed/http_feed_client`, `fake_feed_client`, `feed_client.hpp` (IFeedClient) — while `core/feed/session_codec` and `platform/feed/auth_store` (auth/session, used by cloud saves) are preserved. *(scope decision 2026-06-04)*
-- [ ] **RM-04**: After removal, the API test suite and a clean desktop build (`-DUSE_SDL2=ON`) pass — auth, cloud saves, and the saves revision logic are intact (no dead references to removed feed/post code). *(regression guard)*
+- [x] **RM-04**: After removal, the API test suite and a clean desktop build (`-DUSE_SDL2=ON`) pass — auth, cloud saves, and the saves revision logic are intact (no dead references to removed feed/post code). *(regression guard)*
 
 ### Security
 
@@ -70,10 +70,10 @@ Explicitly excluded — see PROJECT.md and FEATURES.md anti-features.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RM-01 | Phase 1 | Pending |
-| RM-02 | Phase 1 | Pending |
+| RM-01 | Phase 1 | Complete |
+| RM-02 | Phase 1 | Complete |
 | RM-03 | Phase 1 | Pending |
-| RM-04 | Phase 1 | Pending |
+| RM-04 | Phase 1 | Complete |
 | SEC-01 | Phase 2 | Pending |
 | SEC-02 | Phase 2 | Pending |
 | DEBT-04 | Phase 2 | Pending |
