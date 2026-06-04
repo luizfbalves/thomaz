@@ -201,20 +201,18 @@ void SettingsActivity::installUpdate(const core::ReleaseInfo& release, brls::Lab
     this->busy = true;
     status->setText("thomaz/update/downloading"_i18n);
 
-    IHttpClient* client = this->http;
-    auto alive          = this->alive;
-    std::string url     = release.nro_url;
-    std::string target  = update_target_path();
+    auto alive         = this->alive;
+    std::string url    = release.nro_url;
+    std::string target = update_target_path();
 
-    brls::async([this, client, alive, status, url, target]() {
-        HttpResponse r = client->get(url);
-        bool wrote     = r.ok() && !r.body.empty() && write_text_file(target, r.body);
-
-        brls::sync([this, alive, status, wrote]() {
+    brls::async([this, alive, status, url, target]() {
+        std::string err;
+        bool ok = apply_downloaded_update(url, target, &err);
+        brls::sync([this, alive, status, ok]() {
             if (!alive->load())
                 return;
             this->busy = false;
-            status->setText(wrote ? "thomaz/update/done"_i18n : "thomaz/update/failed"_i18n);
+            status->setText(ok ? "thomaz/update/done"_i18n : "thomaz/update/failed"_i18n);
         });
     });
 }
