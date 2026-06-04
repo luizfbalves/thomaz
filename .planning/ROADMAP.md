@@ -38,15 +38,15 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. The desktop build stays green: the extraction entry point compiles and links via a `*_fake.cpp` no-op (no BIS/SPL/hactool symbols pulled into the desktop target).
   3. Running the spike in applet mode shows a clear "relaunch via title takeover" message and exits cleanly — no crash and no silent `fsOpenBisFileSystem` failure.
   4. The required title-takeover launch path (how to hold-`R` / override into Application mode) is written down in user-facing docs, and SPL key-source provenance is recorded against the firmware the spike ran on.
-**Plans**: TBD
+**Plans**: 5 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 01-01: Re-vendor the hactool fork + custom `libmbedtls.a` (`MBEDTLS_CMAC_C`); wire `LIBS`/`LIBDIRS`/`INCLUDES` and update `THIRD_PARTY.md` attribution
-- [ ] 01-02: Port `key_loader` (`__SWITCH__`) — pmdmnt/spl/splCrypto init, raw BIS System mount, `lr` title→NCA resolve, SPL header-key derivation from pinned public sources
-- [ ] 01-03: Port a minimal `hactool` in-memory NCA RomFS read with a `/lyt/*.szs` filename filter; dump ONE qlaunch szs to SD via a callback
-- [ ] 01-04: Add the `platform/themes` extraction entry point with a `*_switch.cpp` real impl + `*_fake.cpp` desktop no-op; detect applet-vs-Application at runtime and message on applet
-- [ ] 01-05: Document the title-takeover launch path and record firmware/key-source provenance from the on-hardware spike
+- [ ] 01-01-PLAN.md: Re-vendor the hactool fork + a CMAC-enabled `mbedtls` (`MBEDTLS_CMAC_C`, built from source); wire both as Switch-only CMake static libs (correct link order) and re-add `THIRD_PARTY.md` attribution — Wave 1
+- [ ] 01-02-PLAN.md: Port `key_loader` (`__SWITCH__`) — pmdmnt/spl/splCrypto init, raw BIS System mount, `lr` title→NCA resolve, SPL header-key derivation from pinned public sources (keyless, EXTRACT-04) — Wave 2
+- [ ] 01-03-PLAN.md: Port a minimal `hactool` facade — in-memory NCA RomFS read with a `/lyt/*.szs` filename filter, keyed by the SPL-derived header key — Wave 2
+- [ ] 01-04-PLAN.md: Add the `platform/themes` extraction entry point with a `*_switch.cpp` real impl + `*_fake.cpp` desktop no-op; applet-vs-Application gate (TAKEOVER-01) → compose key_loader + hactool → validate → write to canonical SD path; on-hardware spike run — Wave 3
+- [ ] 01-05-PLAN.md: Document the title-takeover launch path (TAKEOVER-02) and record firmware/key-source provenance from the on-hardware spike — Wave 4
 
 ### Phase 2: Full Extraction Engine
 **Goal**: Generalize the proven spike into the complete extraction engine: pull every required `.szs` from all three system titles (qlaunch ResidentMenu/Entrance/Flaunch/Set/Notification/common, Psl, MyPage) and write them into the exact flat `/themes/systemData/` layout `cfw_paths::base_layout_dir()` expects.
