@@ -12,9 +12,6 @@ model User {
   username      String         @unique
   passwordHash  String
   createdAt     DateTime       @default(now())
-  posts         Post[]
-  likes         Like[]
-  comments      Comment[]
   saveSlots     SaveSlot[]
   refreshTokens RefreshToken[]
 }
@@ -28,43 +25,6 @@ model RefreshToken {
   createdAt DateTime @default(now())
 
   @@index([userId])
-}
-
-model Post {
-  id           String    @id @default(cuid())
-  authorId     String
-  author       User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  caption      String    @default("")
-  gameTitleId  BigInt    @default(0)
-  gameName     String    @default("")
-  imageKey     String
-  createdAt    DateTime  @default(now())
-  likes        Like[]
-  comments     Comment[]
-
-  @@index([createdAt(sort: Desc), id(sort: Desc)])
-}
-
-model Like {
-  userId    String
-  postId    String
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post      Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@id([userId, postId])
-}
-
-model Comment {
-  id        String   @id @default(cuid())
-  postId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  text      String
-  createdAt DateTime @default(now())
-
-  @@index([postId, createdAt])
 }
 
 /// Cloud save sync metadata (opaque blob stored on disk; E2E encryption is client-side).
