@@ -2,7 +2,7 @@
 gsd_state_version: '1.0'
 status: planning
 progress:
-  total_phases: 3
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -16,14 +16,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-04)
 
 **Core value:** Every issue in CONCERNS.md resolved (or explicitly deferred) without regressing existing behavior — verified by host tests and a clean desktop build
-**Current focus:** Phase 1 — API Security + Regression Tests
+**Current focus:** Phase 1 — Remove Community Feature
 
 ## Current Position
 
-Phase: 1 of 3 (API Security + Regression Tests)
+Phase: 1 of 4 (Remove Community Feature)
 Plan: 0 of ? in current phase
 Status: Ready to plan
-Last activity: 2026-06-04 — Roadmap created; 16 requirements mapped to 3 phases
+Last activity: 2026-06-04 — Roadmap restructured to 4 phases; community removal inserted as Phase 1; all 18 requirements mapped
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -53,7 +53,9 @@ Progress: [░░░░░░░░░░] 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Roadmap: 3 coarse phases derived from research convergence; API security first (live service risk), C++ platform second (isolated), C++ activity refactor last (largest diff)
+- Roadmap: 4 coarse phases; community removal first (clears dead code + SEC-01 root cause), API security second (live service risk), C++ platform third (isolated), C++ activity refactor last (largest diff)
+- Logout revokes current token only; tokens without `jti` pass through blocklist check unblocked
+- `session_codec` + `auth_store` (under `feed/` dirs) are auth infrastructure — preserved in Phase 1
 - Intentional trade-offs preserved: 365-day JWT lifetime, TLS fail-safe behavior — safety nets only
 
 ### Pending Todos
@@ -62,9 +64,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 1: Save blob migration (FIX-A1) is MEDIUM risk on live Lightsail instance — use `cp -r` not `mv`; confirm rollback plan in Phase 1 PLAN.md
-- Phase 2: Second `copy_tree` location (`save_service_switch.cpp`) unconfirmed — verify at Phase 2 start
-- Phase 3: `brls::View::cast<T>()` existence in vendored Borealis unconfirmed — check `lib/borealis/library/include/borealis/core/view.hpp` before Phase 3
+- Phase 1: Confirm `/users/me` client usage before deciding endpoint fate; confirm which parts of `routes/users.ts` are community-only vs account-only
+- Phase 2: Save blob static exposure already fixed in Phase 1; Phase 2 adds TEST-01 as the regression guard
+- Phase 3: Second `copy_tree` location (`save_service_switch.cpp`) unconfirmed — verify at Phase 3 start
+- Phase 4: `brls::View::cast<T>()` existence in vendored Borealis unconfirmed — check `lib/borealis/library/include/borealis/core/view.hpp` before Phase 4
 
 ## Deferred Items
 
@@ -76,5 +79,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-06-04
-Stopped at: Roadmap created; ready to plan Phase 1
+Stopped at: Roadmap restructured to 4 phases; ready to plan Phase 1
 Resume file: None

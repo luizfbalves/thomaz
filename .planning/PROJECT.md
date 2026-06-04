@@ -25,14 +25,16 @@ Every issue documented in `CONCERNS.md` is resolved (or explicitly deferred with
 
 ### Active
 
-<!-- This milestone: fix everything mapped in CONCERNS.md, across four fronts. -->
+<!-- This milestone: remove the community feature, then fix everything mapped in CONCERNS.md. -->
+
+**Community feature removal** (decided 2026-06-04, runs first)
+- [ ] Remove posts/feed/comments/likes entirely — API routes, `@fastify/static` + `multipart`, `Post`/`Like`/`Comment` Prisma models, client feed code
+- [ ] Preserve shared auth/session that lives under `feed/` dirs (`session_codec`, `auth_store`) and all cloud-save functionality
 
 **Security**
-- [ ] Save blobs no longer publicly downloadable — require auth / move out of static root (HIGH)
-- [ ] Post `caption` length-capped via schema before DB write
-- [ ] Image uploads validated by magic bytes, not trusted `Content-Type`
+- [ ] Save blobs no longer publicly downloadable — achieved by removing static serving (above); verified by regression test (HIGH)
 - [ ] Visible on-screen warning when TLS verification is unavailable (CA bundle probe fails) — behavior unchanged, safety net only
-- [ ] Token revocation / blocklist on logout/compromise — JWT lifetime unchanged, safety net only
+- [ ] Token revocation / blocklist on logout/compromise — current token only; JWT lifetime unchanged, safety net only
 
 **Concurrency / crashes**
 - [ ] `cloudBusy` threading contract made safe/explicit (document invariant or `std::atomic<bool>`)
@@ -53,7 +55,9 @@ Every issue documented in `CONCERNS.md` is resolved (or explicitly deferred with
 
 ### Out of Scope
 
-- New features (cheats/mods/themes/saves/feed functionality) — this is a hardening milestone, not a feature milestone
+- Re-adding the community feature (posts/feed/comments/likes) — deliberately removed this milestone
+- Image-upload magic-byte validation and post caption length cap — target code (`posts.ts`) is being removed, so the vulnerabilities go with it
+- New features (cheats/mods/themes/saves functionality) — this is a hardening milestone, not a feature milestone
 - Changing the intentional TLS fail-safe behavior — keep fail-safe; only add a visible warning (per user decision)
 - Reducing the 365-day JWT lifetime / adding device auto-refresh — keep console-UX trade-off; only add revocation (per user decision)
 - Mandatory on-hardware verification gate — hardware testing tracked as a separate manual checklist, not a per-fix blocker (per user decision)
@@ -80,6 +84,9 @@ Every issue documented in `CONCERNS.md` is resolved (or explicitly deferred with
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | Treat CONCERNS.md as the backlog; no new hunting | Audit already surfaced concrete, prioritized issues | — Pending |
+| Remove the entire community feature (posts/feed) as the first phase | No longer wanted; its `@fastify/static`/`multipart` path is the root cause of the save-blob exposure (SEC-01) | — Pending |
+| Logout revokes only the current token (not all sessions); tokens without `jti` pass until relogin | Simplest safety net; no break for existing 365-day console tokens | — Pending |
+| Keep `session_codec` + `auth_store` (under `feed/` dirs) — they are auth, not community | Cloud saves depend on them | — Pending |
 | Fix all four fronts (security, concurrency, debt, tests) | User wants a thorough hardening pass | — Pending |
 | Intentional trade-offs get safety nets, not behavior changes | Preserve console UX; avoid regressions on a live service | — Pending |
 | Verify via host tests + clean desktop build; hardware separate | On-hardware testing is manual; can't gate every fix on it | — Pending |
