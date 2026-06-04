@@ -1,4 +1,4 @@
-<brls:AppletFrame title="@i18n/thomaz/games/title"
+<brls:AppletFrame id="gameListFrame" title="@i18n/thomaz/games/title"
     iconInterpolation="linear">
 
     <brls:ScrollingFrame
