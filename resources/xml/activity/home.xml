@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   Home — "What are we doing today?" (design "Signal").
-  Big violet hero (Cheats) + vertical rail (Settings, Saves, Mods).
-  Each block is an AnimatedBox so the menu cascades in on appear.
-  Footer hints come from registerAction() in HomeActivity.
+  Big hero (Cheats) + vertical rail (Settings, Saves, Mods).
+  Each card uses an image from resources/img/menus as a full-bleed background
+  (brls:Image positioned absolute behind the labels). Each block is an
+  AnimatedBox so the menu cascades in on appear.
   IDs cheatsCard / settingsCard / savesCard / modsCard wired in HomeActivity.
 -->
 <brls:AppletFrame title="thomaz" iconInterpolation="linear">
@@ -27,18 +28,13 @@
             <AnimatedBox id="cheatsCard" entranceDelay="80"
                       axis="column" grow="1.55" marginRight="18"
                       padding="34" cornerRadius="22"
-                      background="vertical_linear"
-                      backgroundStartColor="@theme/thomaz/accent_bright"
-                      backgroundEndColor="@theme/thomaz/accent_deep"
                       focusable="true" highlightCornerRadius="22"
                       hideHighlightBackground="true">
 
-                <brls:Box width="64" height="64" cornerRadius="18"
-                          backgroundColor="#FFFFFF29"
-                          justifyContent="center" alignItems="center">
-                    <brls:Label text="@i18n/thomaz/icon/cheats"
-                                fontSize="36" textColor="#FFFFFF"/>
-                </brls:Box>
+                <brls:Image positionType="absolute"
+                            positionTop="0" positionLeft="0" positionRight="0" positionBottom="0"
+                            image="@res/img/menus/game-cheat.png"
+                            scalingType="fill" cornerRadius="22"/>
 
                 <brls:Box grow="1.0"/>
 
@@ -52,53 +48,44 @@
             <!-- ===== RAIL ===== -->
             <brls:Box axis="column" grow="1.0">
 
-                <!-- Settings (active) -->
+                <!-- Settings -->
                 <AnimatedBox id="settingsCard" entranceDelay="150"
                           axis="row" alignItems="center" grow="1.0" marginBottom="14"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
-                          backgroundColor="@theme/thomaz/tile_settings"
                           focusable="true" highlightCornerRadius="16"
                           hideHighlightBackground="true">
-                    <brls:Box width="44" height="44" cornerRadius="12"
-                              backgroundColor="#FFFFFF29"
-                              justifyContent="center" alignItems="center" marginRight="16">
-                        <brls:Label text="@i18n/thomaz/icon/settings"
-                                    fontSize="24" textColor="#FFFFFF"/>
-                    </brls:Box>
+                    <brls:Image positionType="absolute"
+                                positionTop="0" positionLeft="0" positionRight="0" positionBottom="0"
+                                image="@res/img/menus/settings.png"
+                                scalingType="fill" cornerRadius="16"/>
                     <brls:Label text="@i18n/thomaz/module/settings/title"
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
                 </AnimatedBox>
 
-                <!-- Save Manager (active) -->
+                <!-- Save Manager -->
                 <AnimatedBox id="savesCard" entranceDelay="270"
                           axis="row" alignItems="center" grow="1.0" marginBottom="14"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
-                          backgroundColor="@theme/thomaz/tile_backup"
                           focusable="true" highlightCornerRadius="16"
                           hideHighlightBackground="true">
-                    <brls:Box width="44" height="44" cornerRadius="12"
-                              backgroundColor="#FFFFFF29"
-                              justifyContent="center" alignItems="center" marginRight="16">
-                        <brls:Label text="@i18n/thomaz/icon/save"
-                                    fontSize="24" textColor="#FFFFFF"/>
-                    </brls:Box>
+                    <brls:Image positionType="absolute"
+                                positionTop="0" positionLeft="0" positionRight="0" positionBottom="0"
+                                image="@res/img/menus/save-game.png"
+                                scalingType="fill" cornerRadius="16"/>
                     <brls:Label text="@i18n/thomaz/saves/title"
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
                 </AnimatedBox>
 
-                <!-- Mods (active) -->
+                <!-- Mods -->
                 <AnimatedBox id="modsCard" entranceDelay="330"
                           axis="row" alignItems="center" grow="1.0"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
-                          backgroundColor="@theme/thomaz/tile_mods"
                           focusable="true" highlightCornerRadius="16"
                           hideHighlightBackground="true">
-                    <brls:Box width="44" height="44" cornerRadius="12"
-                              backgroundColor="#FFFFFF29"
-                              justifyContent="center" alignItems="center" marginRight="16">
-                        <brls:Label text="@i18n/thomaz/icon/mods"
-                                    fontSize="24" textColor="#FFFFFF"/>
-                    </brls:Box>
+                    <brls:Image positionType="absolute"
+                                positionTop="0" positionLeft="0" positionRight="0" positionBottom="0"
+                                image="@res/img/menus/mod.png"
+                                scalingType="fill" cornerRadius="16"/>
                     <brls:Label text="@i18n/thomaz/home/mods"
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
                 </AnimatedBox>
