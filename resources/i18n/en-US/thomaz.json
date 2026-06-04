@@ -98,7 +98,6 @@
     "cloud_send_mine": "Send mine",
     "cloud_restore_q": "Downloaded. Restore it into the game now?",
     "action_delete": "Delete",
-    "confirm_delete_title": "Delete this backup?",
     "confirm_delete_body": "This permanently removes this backup from the SD card. It cannot be undone.",
     "delete_ok": "Backup deleted",
     "delete_fail": "Failed to delete backup"
@@ -160,7 +159,6 @@
   "help": {
     "hint": "Help",
     "close": "Got it",
-    "title": "How this screen works",
     "cheats": "Cheats for this game.\n\nThe list is downloaded from the cheats database for your exact game version. Tap a cheat to toggle it on or off, then press X to save. Enabled cheats are applied by Atmosphère the next time you launch the game (hold L while booting it to open the cheat menu).\n\nIf nothing shows up, there are no cheats for this game/version yet.",
     "mods": "Mods for this game.\n\nUse \"Import from SD\" to install a .zip/.7z/.rar you dropped in the mods _incoming folder, or \"Get mods\" to browse GameBanana. Only one mod can be active per game at a time — toggle the one you want. Uninstall removes a mod from the SD card.\n\nMods are applied via Atmosphère's LayeredFS the next time you launch the game.",
     "saves": "Save backups for this game.\n\nBack up copies your current in-game save to the SD card. Restore writes a chosen backup back over your save — the running game must be closed first. The history list shows every backup with its date. If you're signed in, saves can also sync to the cloud.",
