@@ -32,6 +32,7 @@ class SaveDetailActivity : public brls::Activity
     void doBackup();
     void doRestore(const core::BackupEntry& entry);
     void performRestore(const core::BackupEntry& entry);
+    void doDelete(const core::BackupEntry& entry);   // confirm, then remove the backup
 
     void doUpload();        // cloud upload flow (see pushAtRevision)
     void pushAtRevision(int revision);

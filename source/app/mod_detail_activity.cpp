@@ -47,8 +47,9 @@ std::string strip_extension(const std::string& name)
 
 } // namespace
 
-ModDetailActivity::ModDetailActivity(InstalledTitle title, std::uint64_t mod_id, IHttpClient* http)
-    : title(std::move(title)), modId(mod_id), http(http)
+ModDetailActivity::ModDetailActivity(InstalledTitle title, std::uint64_t mod_id, IHttpClient* http,
+                                     bool manual_search)
+    : title(std::move(title)), modId(mod_id), http(http), manualSearch(manual_search)
 {
 }
 
@@ -150,14 +151,43 @@ void ModDetailActivity::populate(const core::ResolveResult& result)
         row->addView(sizeLabel);
 
         row->registerClickAction([this, f](brls::View*) {
-            // Defer to avoid mutating views mid-event; startDownload only kicks an
-            // async job and notifies, but keep the M1 deferred-handler discipline.
-            brls::sync([this, f]() { this->startDownload(f); });
+            // Defer to avoid mutating views mid-event; confirmAndDownload may open
+            // a dialog, and startDownload kicks an async job. Keep the M1
+            // deferred-handler discipline.
+            brls::sync([this, f]() { this->confirmAndDownload(f); });
             return true;
         });
         row->addGestureRecognizer(new brls::TapGestureRecognizer(row));
         filesBox->addView(row);
     }
+}
+
+void ModDetailActivity::confirmAndDownload(const core::ModFile& file)
+{
+    // Auto-resolved game: the mod belongs to this game, install straight away.
+    if (!this->manualSearch)
+    {
+        this->startDownload(file);
+        return;
+    }
+
+    // Manual/global search: this mod may be for a different game, and it would
+    // be staged under the *current* game. Confirm the target first.
+    std::string body = "mods/confirm_install_body"_i18n; // "... {{game}}?"
+    auto        pos  = body.find("{{game}}");
+    if (pos != std::string::npos)
+        body.replace(pos, 8, this->title.name);
+
+    core::ModFile f      = file;
+    auto          alive  = this->alive;
+    brls::Dialog* dialog = new brls::Dialog(body);
+    dialog->addButton("mods/download"_i18n, [this, alive, f]() {
+        if (!alive->load())
+            return;
+        this->startDownload(f);
+    });
+    dialog->addButton("mods/cancel"_i18n, []() {});
+    dialog->open();
 }
 
 void ModDetailActivity::startDownload(const core::ModFile& file)

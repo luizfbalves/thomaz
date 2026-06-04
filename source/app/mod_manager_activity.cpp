@@ -63,6 +63,7 @@ ModManagerActivity::~ModManagerActivity()
 void ModManagerActivity::onContentAvailable()
 {
     install_header_username(this);
+    install_help_action(this, "modFrame", "thomaz/help/mods");
 
     populate_game_panel(this, this->title);
 

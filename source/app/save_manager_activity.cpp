@@ -26,6 +26,7 @@ SaveManagerActivity::~SaveManagerActivity()
 void SaveManagerActivity::onContentAvailable()
 {
     install_header_username(this);
+    install_help_action(this, "saveManagerFrame", "thomaz/help/saves_list");
 
     ITitleService* svc = this->titleService;
     auto alive         = this->alive;

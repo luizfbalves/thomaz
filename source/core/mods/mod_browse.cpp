@@ -27,12 +27,16 @@ std::string normalize_name(const std::string& s) {
     return out;
 }
 
-// True if the two normalized names match: equal, or one contains the other
-// (handles minor suffix/edition differences between NACP and GameBanana names).
+// True only if the two normalized names are exactly equal.
+//
+// Substring matching is deliberately NOT used: "resident evil 4" is a substring
+// of "resident evil 4 remake", which would silently resolve one game to another
+// game's GameBanana page — and downloads stage under the *current* title, so the
+// wrong game's mods end up in this game's folder. When the name isn't an exact
+// match we return false, letting resolve_game fall back to manual search rather
+// than guess wrong.
 bool names_match(const std::string& a, const std::string& b) {
-    if (a.empty() || b.empty()) return false;
-    if (a == b) return true;
-    return a.find(b) != std::string::npos || b.find(a) != std::string::npos;
+    return !a.empty() && !b.empty() && a == b;
 }
 
 } // anonymous namespace

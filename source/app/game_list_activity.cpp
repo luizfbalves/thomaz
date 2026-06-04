@@ -58,6 +58,9 @@ GameListActivity::~GameListActivity()
 void GameListActivity::onContentAvailable()
 {
     install_header_username(this);
+    install_help_action(this, "gameListFrame",
+                        this->target == Target::Mods ? "thomaz/help/mods_list"
+                                                      : "thomaz/help/cheats_list");
 
     // Reading each installed title's control data (name + 128KB icon) off the
     // NAND is slow enough to freeze the push animation if done inline. Do it on

@@ -1,6 +1,7 @@
 #include "core/backup_store.hpp"
 #include "core/db_paths.hpp"
-#include "platform/cheat_store.hpp" // read_text_file
+#include "platform/cheat_store.hpp"   // read_text_file
+#include "platform/mods/mod_store.hpp" // remove_tree
 
 #include <nlohmann/json.hpp>
 #include <algorithm>
@@ -114,6 +115,12 @@ std::optional<std::string> last_backup_timestamp(const std::string& root,
     if (list.empty())
         return std::nullopt;
     return list.front().timestamp;
+}
+
+bool delete_backup(const BackupEntry& entry) {
+    if (entry.path.empty())
+        return false;
+    return thomaz::remove_tree(entry.path);
 }
 
 } // namespace thomaz::core

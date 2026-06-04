@@ -93,6 +93,7 @@ void ModBrowserActivity::onResolved(const core::GameResolve& g, const core::Brow
         // the keyboard. The callback runs on the UI thread (not a view-click
         // handler), so runGlobalSearch() may be called directly.
         this->gameId = 0;
+        this->setResolvedLabel(true, "");
         if (auto* emptyLabel = (brls::Label*)this->getView("emptyLabel"))
         {
             emptyLabel->setText("mods/game_not_found"_i18n);
@@ -115,6 +116,7 @@ void ModBrowserActivity::onResolved(const core::GameResolve& g, const core::Brow
     this->gameId = g.game_id;
     this->query  = "";
     this->page   = 1;
+    this->setResolvedLabel(false, g.matched_name);
 
     if (mods.status != core::BrowseStatus::Ok)
     {
@@ -124,6 +126,28 @@ void ModBrowserActivity::onResolved(const core::GameResolve& g, const core::Brow
 
     this->lastPage = mods.page;
     this->populate(mods); // populate() prepends the in-game search row in game mode
+}
+
+void ModBrowserActivity::setResolvedLabel(bool manual, const std::string& gameName)
+{
+    auto* lbl = (brls::Label*)this->getView("resolvedLabel");
+    if (!lbl)
+        return;
+    if (manual)
+    {
+        lbl->setText("mods/manual_search_label"_i18n);
+    }
+    else
+    {
+        std::string s   = "mods/showing_game"_i18n; // "... {{game}}"
+        auto        pos = s.find("{{game}}");
+        if (pos != std::string::npos)
+            s.replace(pos, 8, gameName);
+        else
+            s += " " + gameName;
+        lbl->setText(s);
+    }
+    lbl->setVisibility(brls::Visibility::VISIBLE);
 }
 
 void ModBrowserActivity::runGameSearch(const std::string& query)
@@ -275,8 +299,10 @@ void ModBrowserActivity::populate(const core::BrowseResult& result)
         likesLabel->setMarginLeft(12.0f);
         row->addView(likesLabel);
 
-        row->registerClickAction([this, rec](brls::View*) {
-            brls::Application::pushActivity(new ModDetailActivity(this->title, rec.id, this->http));
+        bool manual = (this->gameId == 0); // global free-text search => confirm target
+        row->registerClickAction([this, rec, manual](brls::View*) {
+            brls::Application::pushActivity(
+                new ModDetailActivity(this->title, rec.id, this->http, manual));
             return true;
         });
         row->addGestureRecognizer(new brls::TapGestureRecognizer(row));

@@ -32,5 +32,8 @@
     "installed_ok": "Mod baixado e instalado.",
     "resolving": "Procurando este jogo no GameBanana…",
     "game_not_found": "Este jogo não está no GameBanana. Busque manualmente:",
-    "game_search": "Buscar neste jogo"
+    "game_search": "Buscar neste jogo",
+    "showing_game": "Mostrando mods de: {{game}}",
+    "manual_search_label": "Busca manual — os mods não são filtrados por este jogo",
+    "confirm_install_body": "Este mod será instalado para {{game}}. Continuar?"
 }

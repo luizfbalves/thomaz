@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<brls:AppletFrame title="@i18n/thomaz/saves/title" iconInterpolation="linear">
+<brls:AppletFrame id="saveManagerFrame" title="@i18n/thomaz/saves/title" iconInterpolation="linear">
     <brls:Box axis="column" grow="1.0"
               paddingTop="32" paddingBottom="28" paddingLeft="48" paddingRight="48">
 

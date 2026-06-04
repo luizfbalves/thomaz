@@ -87,3 +87,40 @@ TEST_CASE("list_backups reads manifests newest-first; last_backup_timestamp pick
     auto none = last_backup_timestamp(root, 0xDEADBEEFULL);
     CHECK_FALSE(none.has_value());
 }
+
+TEST_CASE("delete_backup removes one backup dir and its contents") {
+    std::uint64_t tid = 0x0100000000030000ULL;
+    std::string root = "test-saves-tmp";
+    std::string tdir = root + "/0100000000030000";
+    ::mkdir(root.c_str(), 0777);
+    ::mkdir(tdir.c_str(), 0777);
+
+    // Two backups so we can delete one and confirm the other survives.
+    for (const char* ts : {"2026-06-01_10-00-00", "2026-06-03_14-20-00"}) {
+        std::string b = tdir + "/" + ts;
+        ::mkdir(b.c_str(), 0777);
+        ManifestInfo m; m.title_id = tid; m.timestamp = ts; m.profiles = {"aa"};
+        write_file(b + "/manifest.json", build_manifest(m));
+        ::mkdir((b + "/aa").c_str(), 0777);
+        write_file(b + "/aa/save.bin", "payload"); // nested file -> exercises recursion
+    }
+
+    auto before = list_backups(root, tid);
+    REQUIRE(before.size() == 2);
+
+    // Delete the newest; the directory (and nested files) must be gone.
+    BackupEntry newest = before.front();
+    CHECK(newest.timestamp == "2026-06-03_14-20-00");
+    REQUIRE(delete_backup(newest));
+
+    struct stat st;
+    CHECK(::stat(newest.path.c_str(), &st) != 0); // dir no longer exists
+
+    auto after = list_backups(root, tid);
+    REQUIRE(after.size() == 1);
+    CHECK(after[0].timestamp == "2026-06-01_10-00-00");
+
+    // Empty path is a safe no-op.
+    BackupEntry empty;
+    CHECK_FALSE(delete_backup(empty));
+}
