@@ -62,32 +62,30 @@ Explicitly excluded — see PROJECT.md and FEATURES.md anti-features.
 
 ## Traceability
 
-Populated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | TBD | Pending |
-| SEC-02 | TBD | Pending |
-| SEC-03 | TBD | Pending |
-| VAL-01 | TBD | Pending |
-| VAL-02 | TBD | Pending |
-| CONC-01 | TBD | Pending |
-| CONC-02 | TBD | Pending |
-| CONC-03 | TBD | Pending |
-| DEBT-01 | TBD | Pending |
-| DEBT-02 | TBD | Pending |
-| DEBT-03 | TBD | Pending |
-| DEBT-04 | TBD | Pending |
-| TEST-01 | TBD | Pending |
-| TEST-02 | TBD | Pending |
-| TEST-03 | TBD | Pending |
-| TEST-04 | TBD | Pending |
+| SEC-01 | Phase 1 | Pending |
+| SEC-02 | Phase 1 | Pending |
+| VAL-01 | Phase 1 | Pending |
+| VAL-02 | Phase 1 | Pending |
+| DEBT-04 | Phase 1 | Pending |
+| TEST-01 | Phase 1 | Pending |
+| TEST-02 | Phase 1 | Pending |
+| SEC-03 | Phase 2 | Pending |
+| CONC-01 | Phase 2 | Pending |
+| DEBT-01 | Phase 2 | Pending |
+| DEBT-02 | Phase 2 | Pending |
+| TEST-03 | Phase 2 | Pending |
+| CONC-02 | Phase 3 | Pending |
+| CONC-03 | Phase 3 | Pending |
+| DEBT-03 | Phase 3 | Pending |
+| TEST-04 | Phase 3 | Pending |
 
 **Coverage:**
 - v1 requirements: 16 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 16 ⚠️
+- Mapped to phases: 16
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-04*
-*Last updated: 2026-06-04 after initial definition*
+*Last updated: 2026-06-04 — traceability populated after roadmap creation*
