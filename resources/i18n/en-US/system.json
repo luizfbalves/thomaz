@@ -1,0 +1,15 @@
+{
+    "title": "System",
+    "home": "System",
+    "subtitle": "Enable or disable system modules (sysmodules)",
+    "loading": "Loading…",
+    "empty": "No sysmodules found in /atmosphere/contents.",
+    "no_metadata": "no metadata",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "toggle_failed": "Could not change the module (SD full or read-only?)",
+    "reboot_banner": "Changes apply on the next boot.",
+    "reboot_now": "Reboot now",
+    "reboot_manual": "Reboot the console manually to apply.",
+    "reboot_failed": "Could not reboot automatically. Please reboot manually."
+}

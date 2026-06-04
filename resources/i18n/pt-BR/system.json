@@ -1,0 +1,15 @@
+{
+    "title": "Sistema",
+    "home": "Sistema",
+    "subtitle": "Ative ou desative módulos do sistema (sysmodules)",
+    "loading": "Carregando…",
+    "empty": "Nenhum sysmodule encontrado em /atmosphere/contents.",
+    "no_metadata": "sem metadados",
+    "enabled": "Ativado",
+    "disabled": "Desativado",
+    "toggle_failed": "Falha ao alterar o módulo (SD cheio ou somente leitura?)",
+    "reboot_banner": "Mudanças aplicam no próximo boot.",
+    "reboot_now": "Reiniciar agora",
+    "reboot_manual": "Reinicie o console manualmente para aplicar.",
+    "reboot_failed": "Não foi possível reiniciar automaticamente. Reinicie manualmente."
+}
