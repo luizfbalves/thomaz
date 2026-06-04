@@ -25,7 +25,7 @@
             <brls:ProgressSpinner id="spinner" width="40" height="40"
                                   alignSelf="center" marginTop="20" visibility="gone"/>
             <brls:ScrollingFrame grow="1.0" marginBottom="14">
-                <brls:Label id="detailDesc" width="100%" fontSize="15" lineHeight="1.45"
+                <brls:Label id="detailDesc" width="690" fontSize="15" lineHeight="1.45"
                             verticalAlign="top" textColor="@theme/thomaz/text_dim"/>
             </brls:ScrollingFrame>
             <brls:Box id="downloadButton" axis="row" height="56" cornerRadius="10"
