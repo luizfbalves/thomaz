@@ -27,9 +27,7 @@
             <AnimatedBox id="cheatsCard" entranceDelay="80"
                       axis="column" grow="1.55" marginRight="18"
                       padding="34" cornerRadius="22"
-                      background="vertical_linear"
-                      backgroundStartColor="@theme/thomaz/accent_bright"
-                      backgroundEndColor="@theme/thomaz/accent_deep"
+                      backgroundColor="@theme/thomaz/accent_bright"
                       focusable="true" highlightCornerRadius="22"
                       hideHighlightBackground="true">
 
