@@ -35,4 +35,21 @@ Approach locked: **Option A** (port exelix BIS + SPL + hactool, GPLv2).
 - Changing the Phase B apply/remove/reboot flow — this milestone only feeds it base layouts
 
 ## Traceability
-<!-- Filled by the roadmapper: REQ-ID → Phase -->
+<!-- REQ-ID → Phase. Every v0.4 requirement maps to exactly one phase. -->
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| EXTRACT-04 | Phase 1 | Pending |
+| TAKEOVER-01 | Phase 1 | Pending |
+| TAKEOVER-02 | Phase 1 | Pending |
+| EXTRACT-01 | Phase 2 | Pending |
+| EXTRACT-02 | Phase 2 | Pending |
+| EXTRACT-03 | Phase 2 | Pending |
+| INTEG-01 | Phase 3 | Pending |
+| INTEG-02 | Phase 3 | Pending |
+| INTEG-03 | Phase 3 | Pending |
+| INTEG-04 | Phase 3 | Pending |
+| INTEG-05 | Phase 3 | Pending |
+| TAKEOVER-03 *(optional)* | Phase 4 | Pending |
+
+**Coverage:** 12/12 v0.4 requirements mapped (11 core + 1 optional). No orphans, no duplicates.
