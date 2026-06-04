@@ -48,6 +48,7 @@ SaveDetailActivity::~SaveDetailActivity()
 void SaveDetailActivity::onContentAvailable()
 {
     install_header_username(this);
+    install_help_action(this, "saveFrame", "thomaz/help/saves");
 
     populate_game_panel(this, this->title);
 

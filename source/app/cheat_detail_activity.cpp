@@ -32,6 +32,7 @@ CheatDetailActivity::~CheatDetailActivity()
 void CheatDetailActivity::onContentAvailable()
 {
     install_header_username(this);
+    install_help_action(this, "cheatFrame", "thomaz/help/cheats");
 
     populate_game_panel(this, this->title);
 

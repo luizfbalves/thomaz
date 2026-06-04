@@ -150,5 +150,13 @@
     "last_played": "Jogado por último",
     "never_played": "Nunca jogado",
     "unknown": "—"
+  },
+  "help": {
+    "hint": "Ajuda",
+    "close": "Entendi",
+    "title": "Como esta tela funciona",
+    "cheats": "Trapaças para este jogo.\n\nA lista é baixada do banco de trapaças para a versão exata do seu jogo. Toque em uma trapaça para ativar ou desativar e pressione X para salvar. As trapaças ativas são aplicadas pelo Atmosphère na próxima vez que você abrir o jogo (segure L ao iniciá-lo para abrir o menu de trapaças).\n\nSe nada aparecer, ainda não há trapaças para este jogo/versão.",
+    "mods": "Mods para este jogo.\n\nUse \"Importar do SD\" para instalar um .zip/.7z/.rar que você colocou na pasta _incoming de mods, ou \"Buscar mods\" para navegar no GameBanana. Só um mod pode ficar ativo por jogo de cada vez — ative o que quiser. Desinstalar remove o mod do cartão SD.\n\nOs mods são aplicados via LayeredFS do Atmosphère na próxima vez que você abrir o jogo.",
+    "saves": "Backups de save deste jogo.\n\nFazer backup copia o save atual do jogo para o cartão SD. Restaurar grava um backup escolhido por cima do seu save — o jogo precisa estar fechado antes. A lista de histórico mostra cada backup com a data. Se você estiver logado, os saves também podem sincronizar com a nuvem."
   }
 }
