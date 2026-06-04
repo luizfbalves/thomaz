@@ -16,5 +16,18 @@
     "enable_failed": "Falha ao ativar o mod",
     "disable_failed": "Falha ao desativar o mod",
     "uninstall_failed": "Falha ao desinstalar o mod",
-    "active": "Ativo"
+    "active": "Ativo",
+    "browse": "Baixar mods (GameBanana)",
+    "search": "Buscar mods",
+    "search_hint": "Digite o nome do mod",
+    "searching": "Buscando…",
+    "no_results": "Nenhum mod encontrado.",
+    "load_more": "Carregar mais",
+    "likes": "curtidas",
+    "no_files": "Este mod não tem arquivos.",
+    "download": "Baixar e instalar",
+    "downloading": "Baixando…",
+    "download_failed": "Falha no download",
+    "search_error": "Falha na busca. Verifique a conexão.",
+    "installed_ok": "Mod baixado e instalado."
 }

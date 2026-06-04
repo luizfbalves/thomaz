@@ -4,6 +4,7 @@
 
 #include "app/mod_manager_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/mod_browser_activity.hpp"
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
@@ -15,6 +16,7 @@
 #include <vector>
 
 #include "core/mods/mod_paths.hpp"
+#include "platform/http_client.hpp"
 #include "platform/mods/mod_actions.hpp"
 
 using namespace brls::literals;
@@ -47,8 +49,8 @@ std::string strip_extension(const std::string& name)
 
 } // namespace
 
-ModManagerActivity::ModManagerActivity(InstalledTitle title)
-    : title(std::move(title))
+ModManagerActivity::ModManagerActivity(InstalledTitle title, IHttpClient* http)
+    : title(std::move(title)), http(http)
 {
 }
 
@@ -99,6 +101,29 @@ void ModManagerActivity::refreshList()
         });
         importBtn->addGestureRecognizer(new brls::TapGestureRecognizer(importBtn));
         listBox->addView(importBtn);
+    }
+
+    // "Get mods (GameBanana)" button (mirrors the Import button).
+    {
+        auto* browseBtn = new brls::Box(brls::Axis::ROW);
+        browseBtn->setHeight(56.0f);
+        browseBtn->setFocusable(true);
+        browseBtn->setMarginBottom(16.0f);
+        browseBtn->setCornerRadius(8.0f);
+        browseBtn->setJustifyContent(brls::JustifyContent::CENTER);
+        browseBtn->setAlignItems(brls::AlignItems::CENTER);
+        browseBtn->setBackgroundColor(nvgRGB(0x22, 0x24, 0x2D)); // surface_2
+        auto* browseLabel = new brls::Label();
+        browseLabel->setText("mods/browse"_i18n);
+        browseLabel->setFontSize(18.0f);
+        browseLabel->setTextColor(nvgRGB(0xFF, 0xFF, 0xFF));
+        browseBtn->addView(browseLabel);
+        browseBtn->registerClickAction([this](brls::View*) {
+            brls::Application::pushActivity(new ModBrowserActivity(this->title, this->http));
+            return true;
+        });
+        browseBtn->addGestureRecognizer(new brls::TapGestureRecognizer(browseBtn));
+        listBox->addView(browseBtn);
     }
 
     std::vector<core::StagedMod> mods = installed_mods(this->title.title_id);

@@ -211,7 +211,7 @@ void GameListActivity::populate(const std::vector<InstalledTitle>& titles)
         Target rowTarget         = this->target;
         row->registerClickAction([rowTitle, client, rowTarget](brls::View* view) {
             if (rowTarget == Target::Mods)
-                brls::Application::pushActivity(new ModManagerActivity(rowTitle));
+                brls::Application::pushActivity(new ModManagerActivity(rowTitle, client));
             else
                 brls::Application::pushActivity(new CheatDetailActivity(rowTitle, client));
             return true;
