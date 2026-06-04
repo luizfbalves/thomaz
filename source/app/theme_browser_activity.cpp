@@ -137,6 +137,7 @@ void ThemeBrowserActivity::populate(const core::BrowsePage& pg) {
     if (empty) empty->setVisibility(brls::Visibility::GONE);
 
     brls::Box* rowBox = nullptr;
+    brls::View* firstCard = nullptr;
     int col = 0;
     for (const auto& entry : pg.entries) {
         if (col == 0) {
@@ -154,6 +155,7 @@ void ThemeBrowserActivity::populate(const core::BrowsePage& pg) {
         card->setFocusable(true);
         card->setHideHighlightBackground(true);
         card->setBackgroundColor(nvgRGB(0x1A, 0x1C, 0x23));
+        if (!firstCard) firstCard = card;
 
         auto* img = new brls::Image();
         img->setWidth(214.0f);
@@ -209,6 +211,8 @@ void ThemeBrowserActivity::populate(const core::BrowsePage& pg) {
         more->addGestureRecognizer(new brls::TapGestureRecognizer(more));
         box->addView(more);
     }
+
+    if (firstCard) brls::Application::giveFocus(firstCard);
 }
 
 void ThemeBrowserActivity::openSearch() {
