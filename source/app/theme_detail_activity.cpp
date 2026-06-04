@@ -107,7 +107,7 @@ void ThemeDetailActivity::onResolved(const core::ThemeDetail& d, bool ok) {
         if (auto* box = (brls::Box*)this->getView("partsBox")) {
             for (const auto& p : d.parts) {
                 auto* row = new brls::Label();
-                row->setText(std::string("• ") + (p.name.empty() ? p.target : p.name));
+                row->setText(std::string("- ") + (p.name.empty() ? p.target : p.name));
                 row->setFontSize(14.0f);
                 row->setTextColor(nvgRGB(0xC8, 0xC8, 0xD0));
                 box->addView(row);

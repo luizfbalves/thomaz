@@ -148,7 +148,7 @@ void ThemeBrowserActivity::populate(const core::BrowsePage& pg) {
         core::ThemeEntry e = entry;
 
         auto* card = new brls::Box(brls::Axis::COLUMN);
-        card->setWidth(230.0f);
+        card->setWidth(384.0f);     // 3 per row fill the ~1200px content width
         card->setMarginRight(12.0f);
         card->setPadding(8.0f, 8.0f, 10.0f, 8.0f);
         card->setCornerRadius(12.0f);
@@ -158,8 +158,8 @@ void ThemeBrowserActivity::populate(const core::BrowsePage& pg) {
         if (!firstCard) firstCard = card;
 
         auto* img = new brls::Image();
-        img->setWidth(214.0f);
-        img->setHeight(120.0f);
+        img->setWidth(368.0f);      // fills the card inner width; ~16:9
+        img->setHeight(207.0f);
         img->setCornerRadius(8.0f);
         card->addView(img);
         this->loadThumb(e.preview_url, img);
@@ -171,9 +171,16 @@ void ThemeBrowserActivity::populate(const core::BrowsePage& pg) {
         name->setMarginTop(6.0f);
         card->addView(name);
 
+        // Plain text only — the Switch font has no glyph for arrow/check
+        // symbols (they render as tofu boxes).
         auto* meta = new brls::Label();
-        std::string m = "@" + e.author + "  ⬇ " + std::to_string(e.downloads);
-        if (theme_already_downloaded(e)) m += "  ✓";
+        std::string m = "@" + e.author + "  " + std::to_string(e.downloads) +
+                        " " + "themes/downloads"_i18n;
+        if (theme_already_downloaded(e)) {
+            m += "  [";
+            m += "themes/downloaded"_i18n;
+            m += "]";
+        }
         meta->setText(m);
         meta->setFontSize(12.0f);
         meta->setTextColor(nvgRGB(0x92, 0x77, 0xFF));
