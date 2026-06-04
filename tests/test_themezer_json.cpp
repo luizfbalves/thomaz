@@ -1,0 +1,96 @@
+#include "doctest.h"
+#include "core/themes/themezer_json.hpp"
+
+using namespace thomaz::core;
+
+static const char* THEMES_JSON = R"json({"data":{"switch":{"themes":{
+  "pageInfo":{"page":1,"pageCount":3},
+  "nodes":[
+    {"hexId":"A24","name":"Purple Skies","downloadCount":105079,
+     "downloadUrl":"https://api.themezer.net/switch/themes/A24/download",
+     "target":"ResidentMenu","creator":{"username":"Hsushi"},
+     "screenshotPreview":{"jpgThumbUrl":"https://img/x.jpg"}}
+  ]}}}})json";
+
+static const char* PACKS_JSON = R"json({"data":{"switch":{"packs":{
+  "pageInfo":{"page":2,"pageCount":2},
+  "nodes":[
+    {"hexId":"16D","name":"Project Clean","downloadCount":57870,
+     "downloadUrl":"https://api.themezer.net/switch/packs/16D/download",
+     "creator":{"username":"usiruktv"},
+     "collagePreview":{"jpgThumbUrl":"https://img/c.jpg"}}
+  ]}}}})json";
+
+static const char* PACK_DETAIL_JSON = R"json({"data":{"switch":{"pack":{
+  "hexId":"16D","name":"Project Clean","description":"clean",
+  "downloadUrl":"https://api.themezer.net/switch/packs/16D/download",
+  "creator":{"username":"usiruktv"},
+  "collagePreview":{"jpgThumbUrl":"https://img/c.jpg"},
+  "themes":[
+    {"hexId":"9A6","name":"Home","target":"ResidentMenu",
+     "downloadUrl":"https://api.themezer.net/switch/themes/9A6/download"},
+    {"hexId":"9A7","name":"Lock","target":"Entrance",
+     "downloadUrl":"https://api.themezer.net/switch/themes/9A7/download"}
+  ]}}}})json";
+
+TEST_CASE("parse_browse_page reads themes nodes + pagination") {
+    BrowsePage p = parse_browse_page(THEMES_JSON, ThemeKind::Theme);
+    REQUIRE(p.entries.size() == 1);
+    CHECK(p.entries[0].kind == ThemeKind::Theme);
+    CHECK(p.entries[0].hex_id == "A24");
+    CHECK(p.entries[0].name == "Purple Skies");
+    CHECK(p.entries[0].author == "Hsushi");
+    CHECK(p.entries[0].target == "ResidentMenu");
+    CHECK(p.entries[0].downloads == 105079);
+    CHECK(p.entries[0].preview_url == "https://img/x.jpg");
+    CHECK(p.entries[0].download_url == "https://api.themezer.net/switch/themes/A24/download");
+    CHECK(p.page == 1);
+    CHECK(p.page_count == 3);
+    CHECK_FALSE(p.is_complete);
+}
+
+TEST_CASE("parse_browse_page reads packs + collage preview, last page complete") {
+    BrowsePage p = parse_browse_page(PACKS_JSON, ThemeKind::Pack);
+    REQUIRE(p.entries.size() == 1);
+    CHECK(p.entries[0].kind == ThemeKind::Pack);
+    CHECK(p.entries[0].target.empty());
+    CHECK(p.entries[0].preview_url == "https://img/c.jpg");
+    CHECK(p.is_complete);
+}
+
+TEST_CASE("parse_browse_page returns empty page on garbage") {
+    BrowsePage p = parse_browse_page("not json", ThemeKind::Theme);
+    CHECK(p.entries.empty());
+    CHECK(p.is_complete);
+}
+
+TEST_CASE("parse_pack_detail expands member themes into parts") {
+    bool found = false;
+    ThemeDetail d = parse_pack_detail(PACK_DETAIL_JSON, &found);
+    REQUIRE(found);
+    CHECK(d.entry.kind == ThemeKind::Pack);
+    CHECK(d.entry.name == "Project Clean");
+    REQUIRE(d.parts.size() == 2);
+    CHECK(d.parts[0].target == "ResidentMenu");
+    CHECK(d.parts[1].download_url == "https://api.themezer.net/switch/themes/9A7/download");
+}
+
+TEST_CASE("parse_theme_detail yields a single self part; missing node => not found") {
+    const char* TH = R"json({"data":{"switch":{"theme":{
+      "hexId":"A24","name":"Purple","description":"d",
+      "downloadUrl":"https://api.themezer.net/switch/themes/A24/download",
+      "target":"ResidentMenu","creator":{"username":"Hsushi"},
+      "screenshotPreview":{"jpgThumbUrl":"https://img/x.jpg"}}}}})json";
+    bool found = false;
+    ThemeDetail d = parse_theme_detail(TH, &found);
+    REQUIRE(found);
+    CHECK(d.entry.kind == ThemeKind::Theme);
+    REQUIRE(d.parts.size() == 1);
+    CHECK(d.parts[0].hex_id == "A24");
+    CHECK(d.parts[0].download_url == "https://api.themezer.net/switch/themes/A24/download");
+
+    bool found2 = true;
+    ThemeDetail miss = parse_theme_detail(R"json({"data":{"switch":{"theme":null}}})json", &found2);
+    CHECK_FALSE(found2);
+    CHECK(miss.parts.empty());
+}

@@ -1,0 +1,118 @@
+#include "core/themes/themezer_json.hpp"
+#include <nlohmann/json.hpp>
+
+namespace thomaz::core {
+
+using nlohmann::json;
+
+namespace {
+const json& switch_node(const json& doc, const char* key) {
+    static const json kNull;
+    if (!doc.is_object() || !doc.contains("data")) return kNull;
+    const json& data = doc["data"];
+    if (!data.is_object() || !data.contains("switch")) return kNull;
+    const json& sw = data["switch"];
+    if (!sw.is_object() || !sw.contains(key)) return kNull;
+    return sw[key];
+}
+
+std::string author_of(const json& node) {
+    if (node.contains("creator") && node["creator"].is_object())
+        return node["creator"].value("username", std::string());
+    return std::string();
+}
+
+std::string preview_of(const json& node) {
+    for (const char* k : {"screenshotPreview", "collagePreview"}) {
+        if (node.contains(k) && node[k].is_object())
+            return node[k].value("jpgThumbUrl", std::string());
+    }
+    return std::string();
+}
+
+ThemeEntry entry_of(const json& node, ThemeKind kind) {
+    ThemeEntry e;
+    e.kind         = kind;
+    e.hex_id       = node.value("hexId", std::string());
+    e.name         = node.value("name", std::string());
+    e.author       = author_of(node);
+    e.target       = node.value("target", std::string());
+    e.preview_url  = preview_of(node);
+    e.download_url = node.value("downloadUrl", std::string());
+    e.downloads    = node.value("downloadCount", (std::uint64_t)0);
+    return e;
+}
+} // namespace
+
+BrowsePage parse_browse_page(const std::string& body, ThemeKind kind) {
+    BrowsePage page;
+    json doc = json::parse(body, nullptr, /*allow_exceptions=*/false);
+    if (doc.is_discarded()) return page;
+
+    const json& list = switch_node(doc, kind == ThemeKind::Theme ? "themes" : "packs");
+    if (!list.is_object()) return page;
+
+    if (list.contains("pageInfo") && list["pageInfo"].is_object()) {
+        page.page       = list["pageInfo"].value("page", 1);
+        page.page_count = list["pageInfo"].value("pageCount", 1);
+    }
+    page.is_complete = page.page >= page.page_count;
+
+    if (list.contains("nodes") && list["nodes"].is_array()) {
+        for (const json& n : list["nodes"]) {
+            if (!n.is_object()) continue;
+            try { page.entries.push_back(entry_of(n, kind)); }
+            catch (const json::exception&) { continue; }
+        }
+    }
+    return page;
+}
+
+ThemeDetail parse_theme_detail(const std::string& body, bool* found) {
+    if (found) *found = false;
+    ThemeDetail d;
+    json doc = json::parse(body, nullptr, /*allow_exceptions=*/false);
+    if (doc.is_discarded()) return d;
+
+    const json& node = switch_node(doc, "theme");
+    if (!node.is_object()) return d;
+
+    d.entry       = entry_of(node, ThemeKind::Theme);
+    d.description = node.value("description", std::string());
+    ThemePart self;
+    self.hex_id       = d.entry.hex_id;
+    self.target       = d.entry.target;
+    self.name         = d.entry.name;
+    self.download_url = d.entry.download_url;
+    d.parts.push_back(self);
+    if (found) *found = true;
+    return d;
+}
+
+ThemeDetail parse_pack_detail(const std::string& body, bool* found) {
+    if (found) *found = false;
+    ThemeDetail d;
+    json doc = json::parse(body, nullptr, /*allow_exceptions=*/false);
+    if (doc.is_discarded()) return d;
+
+    const json& node = switch_node(doc, "pack");
+    if (!node.is_object()) return d;
+
+    d.entry       = entry_of(node, ThemeKind::Pack);
+    d.description = node.value("description", std::string());
+    if (node.contains("themes") && node["themes"].is_array()) {
+        for (const json& t : node["themes"]) {
+            if (!t.is_object()) continue;
+            ThemePart p;
+            p.hex_id       = t.value("hexId", std::string());
+            p.target       = t.value("target", std::string());
+            p.name         = t.value("name", std::string());
+            p.download_url = t.value("downloadUrl", std::string());
+            d.parts.push_back(p);
+        }
+    }
+    if (found) *found = true;
+    return d;
+}
+
+} // namespace thomaz::core
