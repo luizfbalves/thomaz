@@ -1,89 +1,79 @@
-# thomaz — Hardening Milestone
+# thomaz — Extração de Temas Milestone
 
 ## What This Is
 
-thomaz is a Nintendo Switch homebrew hub (Borealis UI, devkitPro NRO + desktop build) that manages cheats, mods, themes, cloud saves, and sysmodules, backed by a Node.js/Fastify + PostgreSQL cloud API. This milestone is a **quality/hardening pass**: take the issues already surfaced by the codebase audit (`.planning/codebase/CONCERNS.md`) as a backlog and fix them — no new features.
+thomaz is a Nintendo Switch homebrew hub (Borealis UI, devkitPro NRO + desktop build) that manages cheats, mods, themes, cloud saves, and sysmodules, backed by a Node.js/Fastify + PostgreSQL cloud API. This milestone adds **native firmware layout extraction**: the app extracts the home-menu base `.szs` layouts from the running console into `/themes/systemData/` by itself, removing the dependency on NXThemes Installer for first-time base-layout extraction. This is the implementation of the firmware-extraction path that Phase B (native theme apply) deliberately deferred ("Path B").
 
 ## Core Value
 
-Every issue documented in `CONCERNS.md` is resolved (or explicitly deferred with reason) without regressing existing behavior — verified by host tests and a clean desktop build.
+A user can apply downloaded themes on a fresh console using thomaz alone — no second app — because thomaz can extract the firmware base layouts on-device, keyless to the user (no `prod.keys` file required).
 
 ## Requirements
 
 ### Validated
 
-<!-- Existing, working capabilities inferred from the codebase map. -->
+<!-- Existing, working capabilities — do not re-build. -->
 
 - ✓ Cheat fetch + apply via switch-cheats-db (`core/cheat_repository`, `platform/cheat_store`) — existing
 - ✓ Mod browse/install from GameBanana with archive extraction (`core/mods`, `platform/mods`) — existing
-- ✓ Theme browse/apply via Themezer + exelix engine (`core/themes`, `platform/themes`) — existing
-- ✓ Cloud save upload/download/sync with optimistic locking (`core/saves`, `platform/saves`, `api/routes/saves`) — existing
+- ✓ Theme browse via Themezer + **native apply** via vendored exelix engine — Phase B (apply/remove/reboot/active-indicator) — existing
+- ✓ Cloud save upload/download/sync with optimistic locking (`core/saves`, `platform/saves`) — existing
 - ✓ Sysmodule scan/manage (`core/sysmod`, `platform/sysmod`) — existing
-- ✓ Community feed + posts with image upload (`core/feed`, `platform/feed`, `api/routes/{feed,posts}`) — existing
-- ✓ JWT auth with refresh-token rotation, rate limiting (`api/plugins/auth`, `api/lib/refresh-tokens`) — existing
-- ✓ Clean-architecture split: pure `core/` covered by host doctest suite, `platform/` switch/fake pairs — existing
+- ✓ Clean-architecture split: pure `core/` host-tested via doctest, `platform/` switch/fake pairs — existing
+- ✓ `cfw_paths` / `active_theme_store` / `theme_install` already read base layouts from `/themes/systemData/` — existing (Phase B); this milestone *produces* what they consume
 
 ### Active
 
-<!-- This milestone: fix everything mapped in CONCERNS.md, across four fronts. -->
+<!-- This milestone: native on-device extraction of the firmware base layouts. -->
 
-**Security**
-- [ ] Save blobs no longer publicly downloadable — require auth / move out of static root (HIGH)
-- [ ] Post `caption` length-capped via schema before DB write
-- [ ] Image uploads validated by magic bytes, not trusted `Content-Type`
-- [ ] Visible on-screen warning when TLS verification is unavailable (CA bundle probe fails) — behavior unchanged, safety net only
-- [ ] Token revocation / blocklist on logout/compromise — JWT lifetime unchanged, safety net only
+**Extraction engine (Option A — BIS + SPL + hactool, ported from exelix GPLv2)**
+- [ ] Re-vendor the hactool fork + custom mbedtls (`MBEDTLS_CMAC_C`) excluded in Phase B
+- [ ] Port `key_loader` (`__SWITCH__`): BIS System mount, `lr` title→NCA resolve, SPL header-key derivation
+- [ ] Port `hactool` in-memory NCA RomFS extraction with `/lyt/*.szs` filename filter
+- [ ] Extract qlaunch (`…1000`: ResidentMenu/Entrance/Flaunch/Set/Notification/common), Psl (`…1007`), MyPage (`…1013`)
 
-**Concurrency / crashes**
-- [ ] `cloudBusy` threading contract made safe/explicit (document invariant or `std::atomic<bool>`)
-- [ ] `alive` lifetime-guard pattern made hard to omit (shared `runAsync` wrapper on activity base)
-- [ ] `brls::async` in-flight request cancellation on activity destruction (pool-exhaustion guard)
+**Integration with the app**
+- [ ] "Extrair layouts do firmware" action in the theme UI (one-time)
+- [ ] Write extracted `.szs` to the canonical `/themes/systemData/` layout that `cfw_paths` expects
+- [ ] After successful extraction, `base_missing` no longer blocks "Aplicar Tema"
+- [ ] Detect "already extracted" + allow re-extract (e.g. after firmware update); record firmware version
 
-**Tech debt / duplication**
-- [ ] `ensure_parent_dirs` extracted to one shared `platform/fs_util` helper (4 copies removed)
-- [ ] `copy_tree` factored into a single shared platform utility (2 copies removed)
-- [ ] C-style view casts replaced with `brls::View::cast<T>()` / null-guarded `dynamic_cast`
-- [ ] Production logging enabled in the API (`logger` not unconditionally false)
-
-**Test coverage**
-- [ ] API test for saves `PUT` revision-required / revision-conflict branches
-- [ ] Test asserting save-blob URL is not publicly accessible (security regression guard)
-- [ ] Test for the TLS fail-safe branch (`ca_ok == false`)
-- [ ] Coverage for the cloud-save upload conflict-resolution path
+**Title-takeover enablement**
+- [ ] Determine + document the title-takeover launch path required for privileged FS/SPL access
+- [ ] Detect applet vs Application mode at runtime; show a clear message if extraction is run as an applet
 
 ### Out of Scope
 
-- New features (cheats/mods/themes/saves/feed functionality) — this is a hardening milestone, not a feature milestone
-- Changing the intentional TLS fail-safe behavior — keep fail-safe; only add a visible warning (per user decision)
-- Reducing the 365-day JWT lifetime / adding device auto-refresh — keep console-UX trade-off; only add revocation (per user decision)
-- Mandatory on-hardware verification gate — hardware testing tracked as a separate manual checklist, not a per-fix blocker (per user decision)
-- Performance bottlenecks (double archive traversal, cloud-save status prefetch) — documented in CONCERNS.md but lower priority; revisit only if time remains
+- The lighter `fsOpenFileSystemWithId` route (Option B) — rejected in favor of the proven exelix mechanism (Option A)
+- Distributing any extracted Nintendo `.szs` assets — copyrighted; extraction is always on the user's own console
+- Supporting `prod.keys`-on-SD extraction (the PC/offline-dump path) — only the on-device keyless-to-user path
+- Changing the existing Phase B apply/remove flow — this milestone only *feeds* it base layouts
+- Raw-NCA dump feature — not needed; we only need the `.szs` layouts
 
 ## Context
 
-- The codebase was mapped on 2026-06-04; all issues for this milestone come from `.planning/codebase/CONCERNS.md` (Tech Debt, Security, Performance, Fragile Areas, Test Coverage Gaps).
-- Architecture is clean-architecture: pure `core/` (host-testable via doctest), `platform/` with `*_switch.cpp`/`*_fake.cpp` pairs, Borealis `*Activity` UI. The API is Fastify + Prisma + Postgres, tested with Vitest.
-- Two HIGH-severity security items center on the same root cause: save blobs served statically from `UPLOAD_DIR` without auth.
-- Several fragile areas are concurrency patterns (`alive` guard, `cloudBusy`, async pool) that are correct today but easy to break in future edits.
-- API runs in production at `api.thomaz.baseup.cc` (Lightsail, PM2, auto-deploy on push to `main` touching `api/**`) — security fixes ship to a live service.
+- Direct continuation of Phase B (native theme apply), which chose "Path B": read pre-extracted base layouts from `/themes/systemData/`, deferring on-device extraction. This milestone implements that extraction.
+- Research (`.planning/research/EXTRACTION.md`) verified the real exelix mechanism against source @ `2618b0c`. Critical correction vs initial assumption: it is **not** a keyless FS-service mount; it mounts raw BIS, resolves via `lr`, derives the header key via SPL from public sources, and decrypts with a bundled hactool + mbedtls. "Keyless" = no user-provided `prod.keys`, not key-free.
+- The hardest unknowns are hardware-only: whether the pinned public key sources still derive a valid header key on the target firmware, and the exact title-takeover launch/permission path.
+- exelix code is GPL-2.0; thomaz is already GPLv2 (relicensed in Phase B), so the port is legally clean.
 
 ## Constraints
 
-- **Verification**: Each fix needs a host test (doctest for core, Vitest for API) where feasible, plus a clean desktop build (`-DUSE_SDL2=ON`). Hardware validation is a separate manual checklist, not a per-item gate.
-- **Behavior preservation**: Intentional trade-offs (TLS fail-safe, 365-day JWT) keep their behavior; only safety nets are added.
-- **Architecture**: New shared logic goes in `core/` (testable); `platform/` stays thin orchestration. No exceptions in core/platform — return-value error handling.
-- **Tech stack**: C++20 client (devkitA64 / desktop SDL2); Node ≥20 + TypeScript strict API. No new heavy dependencies just to fix issues.
-- **Live API**: API security fixes must not break existing clients (365-day tokens already in the wild).
+- **Verification**: Core/parsing logic gets host doctest coverage where feasible; the privileged extraction path is **hardware-only** and cannot be host-tested. Build via CI/Docker (devkitA64). Desktop build stays green (extraction is a Switch-only no-op on desktop).
+- **License**: GPLv2 preserved; vendored hactool/mbedtls headers retained with attribution in `THIRD_PARTY.md`.
+- **Architecture**: keep the `core/` (pure, testable) vs `platform/` (switch/fake) split. Extraction is a `platform/themes/*_switch.cpp` concern with a `*_fake.cpp` no-op for desktop.
+- **No asset distribution**: never bundle or upload extracted `.szs`.
+- **Title takeover**: the feature requires running as an Application; applet-mode must fail gracefully with guidance, not crash.
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Treat CONCERNS.md as the backlog; no new hunting | Audit already surfaced concrete, prioritized issues | — Pending |
-| Fix all four fronts (security, concurrency, debt, tests) | User wants a thorough hardening pass | — Pending |
-| Intentional trade-offs get safety nets, not behavior changes | Preserve console UX; avoid regressions on a live service | — Pending |
-| Verify via host tests + clean desktop build; hardware separate | On-hardware testing is manual; can't gate every fix on it | — Pending |
-| Performance items deferred | Lower risk/impact than security & crash items | — Pending |
+| Option A (port exelix BIS+SPL+hactool) over Option B (`fsOpenFileSystemWithId`) | Proven, in-tree precedent; Option B is unverified theory | — Pending |
+| Keyless-to-user only (SPL-derived key); no `prod.keys` path | Best UX; avoids handling user key files | — Pending |
+| Re-vendor hactool + mbedtls (reverse the Phase B exclusion) | Required by Option A | — Pending |
+| Extraction is hardware-only verified; host tests cover only pure parsing | Privileged services can't run on host/desktop | — Pending |
+| Requires title takeover; applet mode fails gracefully | Privileged FS/SPL access only granted to Applications | — Pending |
 
 ## Evolution
 
@@ -103,4 +93,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-04 after initialization*
+*Last updated: 2026-06-04 — milestone v0.4 (Extração de Temas) started*
