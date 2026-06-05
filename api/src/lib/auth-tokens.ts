@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { FastifyReply } from "fastify";
 import type { Env } from "../config.js";
 import type { PrismaClient } from "@prisma/client";
@@ -11,7 +12,7 @@ export async function signAuthResponse(
 ): Promise<{ ok: true; token: string; refreshToken: string }> {
   const token = await reply.jwtSign(
     { sub: user.id, username: user.username },
-    { expiresIn: env.JWT_ACCESS_EXPIRES },
+    { jti: randomUUID(), expiresIn: env.JWT_ACCESS_EXPIRES },
   );
   const refreshToken = await issueRefreshToken(prisma, env, user.id);
   return { ok: true, token, refreshToken };

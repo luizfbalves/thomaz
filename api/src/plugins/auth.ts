@@ -4,6 +4,8 @@ import type { Env } from "../config.js";
 export type JwtPayload = {
   sub: string;
   username: string;
+  jti?: string;
+  exp?: number;
 };
 
 declare module "@fastify/jwt" {

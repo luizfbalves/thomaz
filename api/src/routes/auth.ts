@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { Env } from "../config.js";
@@ -8,6 +9,7 @@ import {
   revokeRefreshToken,
   rotateRefreshToken,
 } from "../lib/refresh-tokens.js";
+import type { JwtPayload } from "../plugins/auth.js";
 
 const credentialsSchema = z.object({
   username: z
@@ -94,7 +96,7 @@ export async function authRoutes(
 
     const token = await reply.jwtSign(
       { sub: user.id, username: user.username },
-      { expiresIn: env.JWT_ACCESS_EXPIRES },
+      { jti: randomUUID(), expiresIn: env.JWT_ACCESS_EXPIRES },
     );
 
     return { ok: true, token, refreshToken: rotated.refreshToken };
