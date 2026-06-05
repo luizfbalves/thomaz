@@ -38,13 +38,34 @@ struct CaptureCtx {
 };
 
 // RomFS filename filter — called by hactool for every file in the RomFS.
-// Returns true (keep) if the filename is in our filter_list; false (skip)
-// otherwise. Passed as settings.romfs_filter.
+// Returns true (keep) if the filename matches an entry in filter_list; false
+// (skip) otherwise. Passed as settings.romfs_filter.
+//
+// D-01 directory-prefix match: if an entry ends with '/' it is treated as a
+// directory prefix — any file_name that starts with that prefix is accepted.
+// Example: "/lyt/" matches "/lyt/common.szs", "/lyt/ResidentMenu.szs", etc.
+//
+// Exact-name fallback (backward compat): entries without a trailing '/' are
+// matched by equality, preserving single-target callers that pass e.g.
+// "/lyt/ResidentMenu.szs" directly.
+//
+// file_name is the leading-slash absolute RomFS path (e.g. "/lyt/common.szs")
+// as passed by hactool (nca.c:1743 + filepath.c:69).
 static bool nca_romfs_filter(void* context, const char* file_name) {
     if (!context || !file_name) return false;
     const auto* ctx = static_cast<const CaptureCtx*>(context);
     const auto& list = *ctx->filter_list;
-    return std::find(list.begin(), list.end(), std::string(file_name)) != list.end();
+    std::string name(file_name);
+    for (const auto& entry : list) {
+        if (!entry.empty() && entry.back() == '/') {
+            // Directory-prefix match: name starts with the entry string.
+            if (name.rfind(entry, 0) == 0) return true;
+        } else {
+            // Exact-name match (single-target backward compat).
+            if (name == entry) return true;
+        }
+    }
+    return false;
 }
 
 // Per-file dump callback — called by hactool for every file that passes the
