@@ -49,7 +49,12 @@ Plans:
   2. A token used after `POST /auth/logout` returns 401; other valid tokens for the same user still return 200; pre-deploy tokens without a `jti` claim are unaffected (pass through the blocklist check)
   3. Saves `PUT` with a mismatched revision returns 400 (`revision_required`) or 409 (`revision_conflict`); a matching revision updates successfully (200); a new slot creates successfully (200) — all four branches covered by TEST-02
   4. API running in `production` environment emits pino JSON request logs; `test` environment stays silent (existing Vitest suite passes with no spurious output)
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Add RevokedToken model + hand-numbered migration (applied to test DB) and replace logger:false with the envToLogger map + pino-pretty devDep [DEBT-04] (Wave 1)
+- [ ] 02-02-PLAN.md — Mint jti on both access-token signers, enforce the jti-gated fail-open blocklist in authenticate, and add best-effort revoke + lazy sweep to /auth/logout [SEC-02] (Wave 2)
+- [ ] 02-03-PLAN.md — Regression tests: TEST-01 save-blob 404 guard, TEST-02 revision_required branch, SEC-02 revoked-token rejection [SEC-01, TEST-01, TEST-02] (Wave 3)
 
 **Planning flags:**
 - **jti scope (SEC-02):** Logout revokes only the current access token via `jti` claim + Postgres `RevokedToken` table. Refresh tokens are already DB-backed via `revokeRefreshToken` — no change there. Tokens minted before deploy (without `jti`) must pass the blocklist check unblocked, not be rejected.
@@ -100,6 +105,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Remove Community Feature | 3/3 | Complete   | 2026-06-04 |
-| 2. API Security + Regression Tests | 0/? | Not started | - |
+| 2. API Security + Regression Tests | 0/3 | Not started | - |
 | 3. C++ Platform Hardening | 0/? | Not started | - |
 | 4. C++ Activity Hardening | 0/? | Not started | - |
