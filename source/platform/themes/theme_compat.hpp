@@ -1,11 +1,14 @@
 #pragma once
 // Theme/firmware compatibility analysis.
 //
-// Custom-layout themes are authored for a specific firmware's menu layout. When
-// applied to a much newer firmware (e.g. a fw-11.0 theme on a fw-22.1.0 console)
-// the patched layout can crash qlaunch. Background-only themes are firmware-
-// agnostic and always safe. This module classifies that risk BEFORE applying so
-// the UI can warn and offer the safe "background only" fallback.
+// Most themes apply cleanly across firmwares once the qlaunch memory-budget IPS
+// patch is installed (see qlaunch_patches) — a fw-11.0 layout boots fine on a
+// fw-22.1.0 console. The residual risk is the rare layout the engine cannot
+// convert for the running firmware; the engine's own apply_nxtheme dry-run is
+// what detects it (hard error => won't work; warnings => some parts dropped).
+// Risk is classified from that dry-run, NOT from a firmware-version gap.
+// Background-only themes are firmware-agnostic and always safe. The UI uses this
+// to warn and offer the safe "background only" fallback BEFORE applying.
 //
 // Pure analysis (no __SWITCH__): uses the vendored theme engine, so it is
 // host-testable. Only get_console_firmware() is platform-specific.

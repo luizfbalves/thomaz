@@ -76,7 +76,8 @@ PartCompat analyze_part_compat(const std::vector<unsigned char>& nxtheme_bytes,
         return pc;
     }
 
-    // Custom layout: read the firmware it was authored for.
+    // Custom layout: read the firmware it was authored for (informational only;
+    // shown in the badge, not used to classify risk).
     try {
         LayoutPatch lp = Patches::LoadLayout(theme.GetMainLayout());
         pc.target_firmware = lp.TargetFirmware;
@@ -84,17 +85,12 @@ PartCompat analyze_part_compat(const std::vector<unsigned char>& nxtheme_bytes,
         pc.target_firmware = 0;
     }
 
-    // Static signal: the engine's layout-compat knowledge maxes out at fw 20.0
-    // (ConsoleFirmware::Fw20_0). A console newer than that can't be fully bridged
-    // for a layout authored on an older firmware -> caution.
-    if (console_fw.major > 20) {
-        pc.risk = CompatRisk::Caution;
-        pc.detail = "fw_beyond_engine";
-    }
-
-    // Dry-run refine: actually run the patch against the base layout. A hard
-    // failure means it definitely won't work; engine warnings (dropped parts)
-    // mean partial incompatibility.
+    // Risk is decided by the engine DRY-RUN, not by a firmware-version gap.
+    // (The old "console fw > engine max -> Caution" heuristic was wrong: themes
+    // authored for old firmware boot fine on 22.x once the qlaunch memory-budget
+    // IPS patch is installed — see qlaunch_patches. The engine's own
+    // apply_nxtheme is the real signal: a hard failure means it won't work;
+    // warnings mean some parts were dropped.)
     if (!base_szs.empty()) {
         switchthemes::ApplyOutput ao =
             switchthemes::apply_nxtheme(base_szs, nxtheme_bytes, /*background_only*/ false);
