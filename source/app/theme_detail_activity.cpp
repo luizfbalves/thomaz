@@ -13,7 +13,10 @@
 #include "platform/themes/theme_paths.hpp"
 #include "platform/themes/active_theme_store.hpp"
 #include "platform/themes/theme_install.hpp"
+#include "platform/themes/firmware_extract.hpp"
 #include "platform/system/reboot.hpp"
+
+#include <vector>
 
 using namespace brls::literals;
 
@@ -215,9 +218,49 @@ void ThemeDetailActivity::doRemove() {
     });
 }
 
+// On-device firmware base-layout extraction (privileged SPL→hactool chain,
+// Phase 1 spike). Runs once per missing target, writes to sd:/themes/systemData
+// so a subsequent Apply finds the base layouts. Requires Application mode
+// (title takeover); extract_base_layout() returns the relaunch prompt otherwise.
+void ThemeDetailActivity::doExtract() {
+    if (!this->resolved || this->busy) return;
+
+    // The targets this theme/pack needs (mirrors theme_install's detail_targets).
+    std::vector<std::string> targets;
+    for (const auto& p : this->detail.parts)
+        if (!p.target.empty()) targets.push_back(p.target);
+    if (targets.empty()) {
+        brls::Application::notify("themes/extract_no_targets"_i18n);
+        return;
+    }
+
+    this->busy = true;
+    brls::Application::notify("themes/extracting"_i18n);
+
+    auto alive = this->alive;
+    brls::async([this, alive, targets]() {
+        ExtractResult last{ true, "" };
+        for (const auto& t : targets) {
+            last = extract_base_layout(t);
+            if (!last.ok) break;   // stop on first failure (e.g. applet mode)
+        }
+        brls::sync([this, alive, last]() {
+            if (!alive->load()) return;
+            this->busy = false;
+            if (!last.ok) {
+                brls::Application::notify("themes/extract_fail"_i18n + std::string(": ") + last.error);
+                return;
+            }
+            brls::Application::notify("themes/extract_ok"_i18n);
+            this->refreshActionButton();
+        });
+    });
+}
+
 void ThemeDetailActivity::showBaseMissingDialog() {
     auto* dialog = new brls::Dialog("themes/base_missing_help"_i18n);
-    dialog->addButton("themes/base_missing"_i18n, []() {});
+    dialog->addButton("themes/extract_now"_i18n, [this]() { this->doExtract(); });
+    dialog->addButton("themes/base_missing_close"_i18n, []() {});
     dialog->open();
 }
 

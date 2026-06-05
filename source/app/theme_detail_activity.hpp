@@ -26,6 +26,7 @@ class ThemeDetailActivity : public brls::Activity {
     void refreshActionButton();   // sets label + which action the button performs
     void doApply();
     void doRemove();
+    void doExtract();             // on-device firmware base-layout extraction (spike entry point)
     void showBaseMissingDialog();
     void showRebootDialog();
 
