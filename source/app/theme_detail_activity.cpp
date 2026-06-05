@@ -22,13 +22,18 @@ namespace thomaz {
 
 namespace {
 // POST GraphQL via the app's http client; returns the response body or nullopt.
-core::themezer::GraphQlFetcher makeFetcher(IHttpClient* http) {
-    return [http](const std::string& body) -> std::optional<std::string> {
+// `cancelled` (optional): cooperative abort flag forwarded into the HttpRequest
+// so the curl transport can abort in-flight transfers when the activity is torn
+// down (CONC-03).
+core::themezer::GraphQlFetcher makeFetcher(IHttpClient* http,
+                                           std::shared_ptr<std::atomic<bool>> cancelled = nullptr) {
+    return [http, cancelled](const std::string& body) -> std::optional<std::string> {
         HttpRequest req;
-        req.method = HttpMethod::Post;
-        req.url    = "https://api.themezer.net/graphql";
+        req.method    = HttpMethod::Post;
+        req.url       = "https://api.themezer.net/graphql";
         req.headers.push_back({ "Content-Type", "application/json" });
-        req.body = body;
+        req.body      = body;
+        req.cancelled = cancelled;
         HttpResponse r = http->request(req);
         return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
     };
@@ -53,9 +58,13 @@ void ThemeDetailActivity::onContentAvailable() {
         IHttpClient* client = this->http;
         auto body           = std::make_shared<std::string>();
         auto imgOk          = std::make_shared<bool>(false);
+        auto cancelled      = this->cancelledFlag();
         this->runAsync(
-            [client, url, body, imgOk]() {
-                HttpResponse r = client->get(url);
+            [client, url, body, imgOk, cancelled]() {
+                HttpRequest req;
+                req.url       = url;
+                req.cancelled = cancelled;
+                HttpResponse r = client->request(req);
                 if (r.ok()) { *body = r.body; *imgOk = true; }
             },
             [this, body, imgOk]() {
@@ -71,9 +80,10 @@ void ThemeDetailActivity::onContentAvailable() {
     core::ThemeEntry e  = this->entry;
     IHttpClient* client = this->http;
     auto detResult      = std::make_shared<std::pair<core::ThemeDetail, bool>>(); // (d, ok)
+    auto cancelled      = this->cancelledFlag();
     this->runAsync(
-        [e, client, detResult]() {
-            core::themezer::GraphQlFetcher fetch = makeFetcher(client);
+        [e, client, detResult, cancelled]() {
+            core::themezer::GraphQlFetcher fetch = makeFetcher(client, cancelled);
             core::themezer::DetailResult res = (e.kind == core::ThemeKind::Pack)
                 ? core::themezer::pack_detail(e.hex_id, fetch)
                 : core::themezer::theme_detail(e.hex_id, fetch);
@@ -138,9 +148,10 @@ void ThemeDetailActivity::startDownload() {
 
     core::ThemeDetail d = this->detail;
     auto results = std::make_shared<std::pair<bool, std::string>>(); // (ok, msg)
+    auto cancelled      = this->cancelledFlag();
     this->runAsync(
-        [d, results]() {
-            ThemeDownloadResult r  = download_theme(d);
+        [d, results, cancelled]() {
+            ThemeDownloadResult r  = download_theme(d, cancelled);
             results->first         = r.ok;
             results->second        = r.ok ? "themes/download_ok"_i18n
                                           : ("themes/download_fail"_i18n + std::string(": ") + r.error);

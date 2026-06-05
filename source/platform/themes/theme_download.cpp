@@ -13,7 +13,8 @@ std::string nxtheme_filename(const thomaz::core::ThemePart& p, int index) {
     return base + ".nxtheme";
 }
 
-ThemeDownloadResult download_theme(const thomaz::core::ThemeDetail& detail) {
+ThemeDownloadResult download_theme(const thomaz::core::ThemeDetail& detail,
+                                   std::shared_ptr<std::atomic<bool>> cancelled) {
     ThemeDownloadResult res;
     if (detail.parts.empty()) {
         res.error = "nothing to download";
@@ -28,7 +29,7 @@ ThemeDownloadResult download_theme(const thomaz::core::ThemeDetail& detail) {
     for (const auto& part : detail.parts) {
         std::string dest = folder + "/" + nxtheme_filename(part, index++);
         std::string err;
-        if (!download_file(part.download_url, dest, nullptr, &err)) {
+        if (!download_file(part.download_url, dest, nullptr, &err, cancelled)) {
             remove_tree(folder); // no half-written theme left behind
             res.error = err.empty() ? "download failed" : err;
             return res;

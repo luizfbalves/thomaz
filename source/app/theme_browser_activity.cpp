@@ -23,13 +23,15 @@ namespace {
 const char* kTargets[] = { "", "ResidentMenu", "Entrance", "Flaunch",
                            "Set", "Psl", "MyPage", "Notification" };
 
-core::themezer::GraphQlFetcher makeFetcher(IHttpClient* http) {
-    return [http](const std::string& body) -> std::optional<std::string> {
+core::themezer::GraphQlFetcher makeFetcher(IHttpClient* http,
+                                           std::shared_ptr<std::atomic<bool>> cancelled = nullptr) {
+    return [http, cancelled](const std::string& body) -> std::optional<std::string> {
         HttpRequest req;
-        req.method = HttpMethod::Post;
-        req.url    = "https://api.themezer.net/graphql";
+        req.method    = HttpMethod::Post;
+        req.url       = "https://api.themezer.net/graphql";
         req.headers.push_back({ "Content-Type", "application/json" });
-        req.body   = body;
+        req.body      = body;
+        req.cancelled = cancelled;
         HttpResponse r = http->request(req);
         return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
     };
@@ -89,10 +91,11 @@ void ThemeBrowserActivity::runQuery(int page) {
     std::string q = this->query;
     std::string t = this->target;
 
-    auto results = std::make_shared<std::pair<bool, core::BrowsePage>>(); // (ok, pg)
+    auto results    = std::make_shared<std::pair<bool, core::BrowsePage>>(); // (ok, pg)
+    auto cancelled  = this->cancelledFlag();
     this->runAsync(
-        [client, packs, q, t, page, results]() {
-            core::themezer::GraphQlFetcher fetch = makeFetcher(client);
+        [client, packs, q, t, page, results, cancelled]() {
+            core::themezer::GraphQlFetcher fetch = makeFetcher(client, cancelled);
             core::themezer::BrowseResult res = packs
                 ? core::themezer::browse_packs(q, page, 30, fetch)
                 : core::themezer::browse_themes(q, t, page, 30, fetch);
@@ -110,11 +113,15 @@ void ThemeBrowserActivity::loadThumb(const std::string& url, brls::Image* into) 
     if (url.empty() || !into) return;
     IHttpClient* client = this->http;
     std::string u = url;
-    auto body = std::make_shared<std::string>();
-    auto ok   = std::make_shared<bool>(false);
+    auto body      = std::make_shared<std::string>();
+    auto ok        = std::make_shared<bool>(false);
+    auto cancelled = this->cancelledFlag();
     this->runAsync(
-        [client, u, body, ok]() {
-            HttpResponse r = client->get(u);
+        [client, u, body, ok, cancelled]() {
+            HttpRequest req;
+            req.url       = u;
+            req.cancelled = cancelled;
+            HttpResponse r = client->request(req);
             if (r.ok()) { *body = r.body; *ok = true; }
         },
         [into, body, ok]() {
