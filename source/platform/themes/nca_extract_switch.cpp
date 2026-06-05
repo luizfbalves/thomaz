@@ -174,8 +174,40 @@ NcaExtractResult extract_szs_from_nca(
     // install is obvious: compare this line to the nro's mtime. The "iso3" tag
     // marks the isolated-mbedtls build (hactool bound to our private non-PSA
     // mbedtls, not the portlib PSA copy that fails XTS decrypt setkey).
-    std::fprintf(stderr, "thomaz hactool build: %s %s [iso5-finishfix]\n", __DATE__, __TIME__);
+    std::fprintf(stderr, "thomaz hactool build: %s %s [iso6-diag]\n", __DATE__, __TIME__);
     std::fflush(stderr);
+
+    // --- Diagnostics (non-secret) to localize the "Invalid NCA header" cause --
+    // The key VALUE is never printed (T-01-04); only whether it is all-zero (SPL
+    // silent-failure signal) plus a non-invertible 2-byte XOR fold. The raw NCA
+    // bytes peeked below are still ENCRYPTED on disk and are not secret.
+    {
+        bool key_zero = true;
+        std::uint16_t fold = 0;
+        for (std::size_t i = 0; i < header_key.size(); ++i) {
+            if (header_key[i] != 0) key_zero = false;
+            fold ^= static_cast<std::uint16_t>(header_key[i] << ((i & 1) * 8));
+        }
+        std::fprintf(stderr, "diag: nca_path=%s\n", nca_path.c_str());
+        std::fprintf(stderr, "diag: header_key all_zero=%d fold=%04x\n",
+                     key_zero ? 1 : 0, fold);
+
+        unsigned char peek[0x210];
+        std::fseek(nca_file, 0, SEEK_END);
+        long fsz = std::ftell(nca_file);
+        std::fseek(nca_file, 0, SEEK_SET);
+        std::size_t pn = std::fread(peek, 1, sizeof(peek), nca_file);
+        std::fseek(nca_file, 0, SEEK_SET);   // hactool re-seeks to 0 anyway
+        std::fprintf(stderr, "diag: file_size=%ld read=%zu\n", fsz, pn);
+        std::fprintf(stderr, "diag: enc[0x000]=");
+        for (int i = 0; i < 16 && static_cast<std::size_t>(i) < pn; ++i)
+            std::fprintf(stderr, "%02x", peek[i]);
+        std::fprintf(stderr, "\ndiag: enc[0x200]=");
+        for (int i = 0; i < 16 && static_cast<std::size_t>(0x200 + i) < pn; ++i)
+            std::fprintf(stderr, "%02x", peek[0x200 + i]);
+        std::fprintf(stderr, "\n");
+        std::fflush(stderr);
+    }
 
     // --- Run the extraction under a recovery guard ----------------------------
     // Source: exelix hactool.cpp @ 2618b0c — RESEARCH Pattern 4.
