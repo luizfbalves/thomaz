@@ -11,9 +11,6 @@
 #include "app/theme_browser_activity.hpp"
 #include "app/system_activity.hpp"
 #include "platform/sysmod/sysmod_store.hpp"
-#ifndef __SWITCH__
-#include "platform/sysmod/sysmod_store_fake.hpp"
-#endif
 
 #include <borealis.hpp>
 #include <memory>
@@ -91,11 +88,7 @@ void HomeActivity::onContentAvailable()
     if (brls::View* system = this->getView("systemCard"))
     {
         system->registerClickAction([this](brls::View*) {
-#ifdef __SWITCH__
             auto store = std::make_shared<SysmoduleStore>();
-#else
-            auto store = std::make_shared<FakeSysmoduleStore>();
-#endif
             brls::Application::pushActivity(new SystemActivity(store),
                                             brls::TransitionAnimation::NONE);
             return true;
