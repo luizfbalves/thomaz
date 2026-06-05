@@ -284,7 +284,25 @@ ExtractAllResult extract_all_base_layouts() {
             // D-03: output path is base_layout_dir() + "/" + basename(romfs_key).
             // T-02-09: only the last path segment is used — no ".." can survive
             // rfind('/')+1 on a firmware-controlled "/lyt/NAME.szs" key.
-            const std::string base = romfs_key.substr(romfs_key.rfind('/') + 1);
+            //
+            // CR-01: the "/lyt/" prefix filter accepts EVERY file under /lyt/,
+            // not just *.szs. The structural SARC check above is integrity, not
+            // authorization — it does not stop a non-layout SARC file from being
+            // written under a firmware-controlled name. Gate the write on a
+            // ".szs" extension and a non-empty basename so only true layout
+            // files reach base_layout_dir(). This engine is the trust boundary
+            // for third-party NCA content, so the RomFS key shape is never
+            // assumed well-formed.
+            const std::size_t slash = romfs_key.rfind('/');
+            const std::string base =
+                (slash == std::string::npos) ? std::string()
+                                             : romfs_key.substr(slash + 1);
+            if (base.empty() ||
+                base.size() < 4 ||
+                base.compare(base.size() - 4, 4, ".szs") != 0) {
+                failed_parts.push_back(romfs_key + ": not a .szs layout, skipped");
+                continue;
+            }
             const std::string out  = base_layout_dir() + "/" + base;
 
             ensure_parent_dirs(out);
