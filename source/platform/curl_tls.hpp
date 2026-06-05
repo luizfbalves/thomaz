@@ -1,8 +1,23 @@
 #pragma once
 #include <curl/curl.h>
 #include <cstdio>
+#include "platform/tls_policy.hpp"
 
 namespace thomaz {
+
+// Process-global latch: set to true the first time apply_curl_tls detects a
+// missing CA bundle (ca_ok == false on Switch). One-way flag, never cleared.
+// The SEC-03 UI banner reads this via tls_is_insecure() to warn the user.
+// Lives OUTSIDE #ifdef __SWITCH__ so the host build can inspect it (always false
+// on desktop because the desktop branch never sets it).
+inline bool& tls_insecure_flag() {
+    static bool f = false;
+    return f;
+}
+
+inline bool tls_is_insecure() {
+    return tls_insecure_flag();
+}
 
 // Enable TLS certificate verification on a curl easy handle.
 //   - Switch: verify against the CA bundle packed into romfs
@@ -25,17 +40,22 @@ inline void apply_curl_tls(CURL* curl) {
         return false;
     }();
     if (ca_ok) {
+        auto p = tls_policy(true);
         curl_easy_setopt(curl, CURLOPT_CAINFO, "romfs:/cacert.pem");
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, p.verifypeer);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, p.verifyhost);
     } else {
         // Fail-safe: keep the app usable rather than bricking all HTTPS.
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        // Set the insecure latch so the SEC-03 banner can warn the user.
+        auto p = tls_policy(false);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, p.verifypeer);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, p.verifyhost);
+        tls_insecure_flag() = true;
     }
 #else
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
+    auto p = tls_policy(true);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, p.verifypeer);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, p.verifyhost);
 #endif
 }
 
