@@ -42,15 +42,15 @@ struct BrowsePage {
 struct GalleryImage {
     std::string url;
     std::string thumb_url;
-    std::string label;   // "Preview", "Background", an icon name, or a pack member name
+    std::string label;   // "Preview", "Background", an icon name, or a pack member name (may be empty)
 };
 
 // Detail resolved from theme(hexId)/pack(hexId). `parts` unifies download: a
 // standalone theme yields one part (itself); a pack yields its members.
 struct ThemeDetail {
-    ThemeEntry              entry;
-    std::string             description;
-    std::vector<ThemePart>  parts;
+    ThemeEntry                entry;
+    std::string               description;
+    std::vector<ThemePart>    parts;
     std::vector<GalleryImage> gallery;
 };
 
