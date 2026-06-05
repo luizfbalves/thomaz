@@ -170,7 +170,10 @@ void SettingsActivity::checkForUpdate(brls::Label* status)
                               "thomaz/update/confirm_post"_i18n;
             auto* dialog = new brls::Dialog(msg);
             dialog->addButton("thomaz/update/confirm_yes"_i18n,
-                              [this, rel, status]() { this->installUpdate(rel, status); });
+                              [this, alive = this->alive, rel, status]() {
+                                  if (!alive->load()) return;
+                                  this->installUpdate(rel, status);
+                              });
             dialog->addButton("thomaz/update/confirm_no"_i18n, []() {});
             dialog->open();
         });
