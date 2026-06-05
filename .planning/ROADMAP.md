@@ -22,7 +22,7 @@ skip the manual hold-`R` launch.
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [x] **Phase 1: Privileged Extraction Spike** - Re-vendor hactool+mbedtls, run as a title takeover, and prove BIS→lr→SPL→hactool extracts ONE qlaunch `.szs` to the SD on real hardware (completed 2026-06-05)
+- [~] **Phase 1: Privileged Extraction Spike** - Re-vendor hactool+mbedtls, run as a title takeover, and prove BIS→lr→SPL→hactool extracts ONE qlaunch `.szs` to the SD on real hardware (code-complete 2026-06-04; awaiting on-hardware validation — plan 01-05 Task 2 human-verify checkpoint open)
 - [ ] **Phase 2: Full Extraction Engine** - Extract every required layout from all three titles (qlaunch, Psl, MyPage) into the canonical `/themes/systemData/` flat layout
 - [ ] **Phase 3: Theme UI Integration** - "Extrair layouts do firmware" action with already-extracted/re-extract state, firmware-version record, base_missing unblock, and clear success/failure messaging
 - [ ] **Phase 4: Forwarder (Optional)** - Provide and document an installable Home-menu forwarder that launches thomaz directly in Application mode
