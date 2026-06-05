@@ -28,6 +28,8 @@
                 </brls:HScrollingFrame>
                 <brls:Label id="detailName" fontSize="24" lineHeight="1.2" textColor="#FFFFFF" marginBottom="4"/>
                 <brls:Label id="detailAuthor" fontSize="15" textColor="@theme/thomaz/text_dim" marginBottom="14"/>
+                <brls:Label id="compatBadge" fontSize="14" lineHeight="1.3"
+                            visibility="gone" marginBottom="12"/>
                 <brls:Label id="partsLabel" fontSize="15" textColor="@theme/thomaz/text_dim"
                             visibility="gone" marginBottom="6"/>
                 <brls:Box id="partsBox" axis="column"/>

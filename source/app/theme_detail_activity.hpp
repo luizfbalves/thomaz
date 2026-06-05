@@ -9,6 +9,7 @@
 #include "core/themes/themezer_types.hpp"
 #include "platform/http_client.hpp"
 #include "platform/themes/theme_install.hpp"
+#include "platform/themes/theme_compat.hpp"
 
 namespace thomaz {
 
@@ -29,9 +30,13 @@ class ThemeDetailActivity : public brls::Activity {
     void showGalleryImage(const thomaz::core::GalleryImage& img);
     void startDownload();
     void refreshActionButton();   // sets label + which action the button performs
-    void doApply();
+    void doApply();                       // entry: routes to choice dialog or full apply
+    void doApplyMode(bool background_only);
     void doRemove();
     void doExtract();             // on-device firmware base-layout extraction (spike entry point)
+    void analyzeCompat();         // post-download: classify theme/firmware compatibility
+    void updateCompatBadge();     // reflect `compat` in the badge label
+    void showApplyChoiceDialog(); // full vs background-only when risk != Safe
     void showBaseMissingDialog();
     void showRebootDialog();
 
@@ -45,6 +50,10 @@ class ThemeDetailActivity : public brls::Activity {
     bool downloaded = false;
     bool applied    = false;
     bool busy       = false;      // guards against double-taps during async work
+
+    ThemeCompat compat;           // filled by analyzeCompat() once downloaded
+    bool        compatChecked = false;
+    FwVersion   consoleFw;        // console firmware captured during analysis
 };
 
 } // namespace thomaz

@@ -220,6 +220,9 @@ void ThemeDetailActivity::onResolved(const core::ThemeDetail& d, bool ok) {
     this->downloaded = theme_already_downloaded(this->entry);
     this->applied    = is_active_theme(this->entry);
     this->refreshActionButton();
+
+    // If the .nxtheme is already on disk, classify firmware compatibility now.
+    if (this->downloaded) this->analyzeCompat();
 }
 
 void ThemeDetailActivity::startDownload() {
@@ -239,6 +242,7 @@ void ThemeDetailActivity::startDownload() {
             if (ok) {
                 this->downloaded = true;
                 this->refreshActionButton();
+                this->analyzeCompat();   // classify now that the .nxtheme is on disk
             }
         });
     });
@@ -257,18 +261,32 @@ void ThemeDetailActivity::refreshActionButton() {
     }
 }
 
+// Entry point for the Apply button. Routes risky (layout-incompatible) themes
+// through a choice dialog (full vs background-only); safe themes apply directly.
 void ThemeDetailActivity::doApply() {
     if (!this->resolved || this->busy) return;
     if (!base_layouts_available(this->detail)) { this->showBaseMissingDialog(); return; }
 
+    if (this->compatChecked && this->compat.overall != CompatRisk::Safe) {
+        this->showApplyChoiceDialog();
+        return;
+    }
+    this->doApplyMode(false);
+}
+
+void ThemeDetailActivity::doApplyMode(bool background_only) {
+    if (!this->resolved || this->busy) return;
+    if (!base_layouts_available(this->detail)) { this->showBaseMissingDialog(); return; }
+
     this->busy = true;
-    brls::Application::notify("themes/applying"_i18n);
+    brls::Application::notify(background_only ? "themes/applying_bg_only"_i18n
+                                             : "themes/applying"_i18n);
 
     core::ThemeDetail d = this->detail;
     auto alive = this->alive;
-    brls::async([this, d, alive]() {
-        InstallResult r = install_theme(d);
-        brls::sync([this, alive, r]() {
+    brls::async([this, d, alive, background_only]() {
+        InstallResult r = install_theme(d, background_only);
+        brls::sync([this, alive, r, background_only]() {
             if (!alive->load()) return;
             this->busy = false;
             if (!r.ok) {
@@ -276,12 +294,91 @@ void ThemeDetailActivity::doApply() {
                 return;
             }
             if (!r.warnings.empty()) brls::Application::notify("themes/warn_parts_removed"_i18n);
-            brls::Application::notify("themes/apply_ok"_i18n);
+            brls::Application::notify(background_only ? "themes/apply_bg_ok"_i18n
+                                                     : "themes/apply_ok"_i18n);
             this->applied = true;
             this->refreshActionButton();
             this->showRebootDialog();
         });
     });
+}
+
+// Classify theme/firmware compatibility from the downloaded .nxtheme files.
+// Dry-run only when the base layouts are present. Updates the badge.
+void ThemeDetailActivity::analyzeCompat() {
+    if (!this->resolved) return;
+
+    if (auto* badge = (brls::Label*)this->getView("compatBadge")) {
+        badge->setText("themes/compat_checking"_i18n);
+        badge->setTextColor(nvgRGB(0xC8, 0xC8, 0xD0));
+        badge->setVisibility(brls::Visibility::VISIBLE);
+    }
+
+    core::ThemeDetail d = this->detail;
+    bool allow_dry = base_layouts_available(d);
+    auto alive = this->alive;
+    brls::async([this, d, allow_dry, alive]() {
+        FwVersion fw = get_console_firmware();
+        ThemeCompat tc = analyze_theme_compat(d, fw, allow_dry);
+        brls::sync([this, alive, tc, fw]() {
+            if (!alive->load()) return;
+            this->compat        = tc;
+            this->consoleFw     = fw;
+            this->compatChecked = true;
+            this->updateCompatBadge();
+        });
+    });
+}
+
+void ThemeDetailActivity::updateCompatBadge() {
+    auto* badge = (brls::Label*)this->getView("compatBadge");
+    if (!badge) return;
+    if (!this->compatChecked) { badge->setVisibility(brls::Visibility::GONE); return; }
+
+    bool allBgOnly = true;
+    int  themeFw   = 0;
+    for (const auto& p : this->compat.parts) {
+        if (p.has_layout) {
+            allBgOnly = false;
+            if (p.target_firmware > themeFw) themeFw = p.target_firmware;
+        }
+    }
+
+    std::string text;
+    NVGcolor    color = nvgRGB(0xC8, 0xC8, 0xD0);
+    switch (this->compat.overall) {
+        case CompatRisk::Safe:
+            text  = allBgOnly ? "themes/compat_safe"_i18n : "themes/compat_safe_layout"_i18n;
+            color = nvgRGB(0x4C, 0xC2, 0x6E);
+            break;
+        case CompatRisk::Caution:
+            text  = "themes/compat_caution"_i18n;
+            color = nvgRGB(0xE0, 0xA0, 0x30);
+            break;
+        case CompatRisk::LikelyBroken:
+            text  = "themes/compat_broken"_i18n;
+            color = nvgRGB(0xE0, 0x5A, 0x5A);
+            break;
+    }
+
+    if (this->compat.overall != CompatRisk::Safe && themeFw > 0) {
+        text += "\n" + "themes/compat_fw_note"_i18n + " " + fw_int_to_string(themeFw) +
+                " · " + "themes/compat_fw_console"_i18n + " " + fw_to_string(this->consoleFw);
+    }
+
+    badge->setText(text);
+    badge->setTextColor(color);
+    badge->setVisibility(brls::Visibility::VISIBLE);
+}
+
+// Layout-incompatible theme: let the user pick full apply or the safe
+// background-only fallback. Background-only is offered first (recommended).
+void ThemeDetailActivity::showApplyChoiceDialog() {
+    auto* dialog = new brls::Dialog("themes/apply_choose_title"_i18n);
+    dialog->addButton("themes/apply_bg_only"_i18n, [this]() { this->doApplyMode(true); });
+    dialog->addButton("themes/apply_full"_i18n,    [this]() { this->doApplyMode(false); });
+    dialog->addButton("themes/apply_cancel"_i18n,  []() {});
+    dialog->open();
 }
 
 void ThemeDetailActivity::doRemove() {
