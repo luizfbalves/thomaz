@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v0.4
 milestone_name: Extração de Temas
 status: executing
-last_updated: "2026-06-05T00:03:00.194Z"
+last_updated: "2026-06-05T00:12:09.753Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 5
-  completed_plans: 1
-  percent: 20
+  completed_plans: 2
+  percent: 40
 ---
 
 # Project State
@@ -28,10 +28,10 @@ Phase B's existing "Aplicar Tema".
 ## Current Position
 
 Phase: 01 (privileged-extraction-spike) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-06-05
-Progress: [██░░░░░░░░] 20%
+Progress: [████░░░░░░] 40%
 
 ## Roadmap Summary
 
@@ -60,6 +60,9 @@ Progress: [██░░░░░░░░] 20%
 - Requires title takeover (run as Application); applet mode fails gracefully.
 - Output layout: adapt exelix's `extracted/{qlaunch,...}/` subdirs to thomaz's FLAT
   `/themes/systemData/<szs>` layout (confirmed in `cfw_paths.cpp`).
+
+- [Phase ?]: KeyDerivationOutput name avoids grep collision with libnx Result type
+- [Phase ?]: SPL key sources pinned to Atmosphère 1.7.1 (b39e29d) — provenance in-code for plan 05 doc
 
 ### De-risking rationale
 
