@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 03 Plan 01 Tasks 1+2 done; checkpoint Task 3 (desktop build human-verify)
-last_updated: "2026-06-05T15:42:46.303Z"
+last_updated: "2026-06-05T15:48:18.562Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 4
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-04)
 ## Current Position
 
 Phase: 03 (c-platform-hardening) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-06-05
 
-Progress: [████████░░] 80%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
@@ -77,6 +77,7 @@ Recent decisions affecting current work:
 - [02-02]: Blocklist fail-open (D-06) — findUnique DB error → log.warn + allow; availability over strict revocation
 - [02-02]: Logout upsert over create (Pitfall 3) — double-logout idempotent; no preHandler or authRateLimit added (D-01/Pitfall 4)
 - [03-01]: Canonical ensure_parent_dirs is substring-at-slash from cheat_store.cpp; ghost-file-removal folded into copy_file from save_service_switch.cpp; save_service_switch 2-arg callers migrated to 3-arg with nullptr
+- [Phase ?]: [03-03] SEC-03 banner wiring: red 0xFF5555 at hint_box index 0; save_detail_activity.hpp untouched for Plan 04 boundary
 
 ### Pending Todos
 
@@ -98,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-05T15:42:46.295Z
+Last session: 2026-06-05T15:47:54.669Z
 Stopped at: Phase 03 Plan 01 Tasks 1+2 done; checkpoint Task 3 (desktop build human-verify)
 Resume file: None
