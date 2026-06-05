@@ -4,14 +4,9 @@
     title service for the platform, and pushes the home activity.
 */
 
-#ifdef __SWITCH__
 #include <switch.h>
 #include "platform/title_service_switch.hpp"
 #include "platform/save_service_switch.hpp"
-#else
-#include "platform/title_service_fake.hpp"
-#include "platform/save_service_fake.hpp"
-#endif
 
 #include <borealis.hpp>
 #include <string>
@@ -67,23 +62,15 @@ int main(int argc, char* argv[])
     brls::Application::registerXMLView("AnimatedBox", thomaz::AnimatedBox::create);
 
     // Select the title service for the current platform.
-#ifdef __SWITCH__
     auto titleService = std::make_unique<thomaz::NsTitleService>();
     if (!titleService->init())
     {
         brls::Logger::error("thomaz: failed to initialize ns title service");
         return EXIT_FAILURE;
     }
-#else
-    auto titleService = std::make_unique<thomaz::FakeTitleService>();
-#endif
 
     // Save backup/restore service for the current platform.
-#ifdef __SWITCH__
     auto saveService = std::make_unique<thomaz::NsSaveService>();
-#else
-    auto saveService = std::make_unique<thomaz::FakeSaveService>();
-#endif
 
     // HTTP client for downloading cheats (libcurl; libnx sockets on Switch).
     auto httpClient = std::make_unique<thomaz::CurlHttpClient>();
