@@ -224,7 +224,21 @@ NcaExtractResult extract_szs_from_nca(
         std::fprintf(stderr, "diag: header_key all_zero=%d fold=%04x\n",
                      key_zero ? 1 : 0, fold);
 
-        unsigned char peek[0x210];
+        // WR-02: raw-byte peek diagnostic — instrumentation added to chase the
+        // Phase 1 key bugs (068499f, c749d46, 301c2e5), now fixed. Gated behind
+        // a debug flag so it stays off the shipping extraction path. The buffer
+        // size and the second peek offset derive from ONE pair of named
+        // constants, so the loop bound can never overrun the buffer if either is
+        // changed (the previous code relied on sizeof(peek) coincidentally
+        // equalling 0x200 + 0x10).
+#ifndef THOMAZ_NCA_EXTRACT_DEBUG
+#define THOMAZ_NCA_EXTRACT_DEBUG 0
+#endif
+#if THOMAZ_NCA_EXTRACT_DEBUG
+        constexpr std::size_t kPeekWindow = 0x10;   // bytes dumped per offset
+        constexpr std::size_t kPeekOffset = 0x200;  // second dump offset
+        constexpr std::size_t kPeekSize   = kPeekOffset + kPeekWindow;
+        unsigned char peek[kPeekSize];
         std::fseek(nca_file, 0, SEEK_END);
         long fsz = std::ftell(nca_file);
         std::fseek(nca_file, 0, SEEK_SET);
@@ -232,12 +246,13 @@ NcaExtractResult extract_szs_from_nca(
         std::fseek(nca_file, 0, SEEK_SET);   // hactool re-seeks to 0 anyway
         std::fprintf(stderr, "diag: file_size=%ld read=%zu\n", fsz, pn);
         std::fprintf(stderr, "diag: enc[0x000]=");
-        for (int i = 0; i < 16 && static_cast<std::size_t>(i) < pn; ++i)
+        for (std::size_t i = 0; i < kPeekWindow && i < pn; ++i)
             std::fprintf(stderr, "%02x", peek[i]);
         std::fprintf(stderr, "\ndiag: enc[0x200]=");
-        for (int i = 0; i < 16 && static_cast<std::size_t>(0x200 + i) < pn; ++i)
-            std::fprintf(stderr, "%02x", peek[0x200 + i]);
+        for (std::size_t i = 0; i < kPeekWindow && (kPeekOffset + i) < pn; ++i)
+            std::fprintf(stderr, "%02x", peek[kPeekOffset + i]);
         std::fprintf(stderr, "\n");
+#endif // THOMAZ_NCA_EXTRACT_DEBUG
         std::fflush(stderr);
     }
 
