@@ -35,7 +35,8 @@ std::vector<u8> SarcPack(SARC::SarcData& data)
 } // namespace
 
 ApplyOutput apply_nxtheme(const std::vector<unsigned char>& base_szs,
-                          const std::vector<unsigned char>& nxtheme)
+                          const std::vector<unsigned char>& nxtheme,
+                          bool background_only)
 {
     ApplyOutput out;
     try {
@@ -75,7 +76,9 @@ ApplyOutput apply_nxtheme(const std::vector<unsigned char>& base_szs,
 
         // 3b. Layout (BFLYT/BFLAN) patch. The manifest Target names the part
         //     (home/lock/apps/...) which drives part-specific layout handling.
-        if (theme.HasMainLayout())
+        //     Skipped entirely in background_only mode (the safe fallback for
+        //     layouts incompatible with the console firmware).
+        if (!background_only && theme.HasMainLayout())
         {
             const std::string partName = theme.manifest->Target;
             LayoutPatch patch = Patches::LoadLayout(theme.GetMainLayout());
@@ -87,7 +90,9 @@ ApplyOutput apply_nxtheme(const std::vector<unsigned char>& base_szs,
         }
 
         if (!patched)
-            throw std::runtime_error("nxtheme contained neither a background nor a layout to apply");
+            throw std::runtime_error(background_only
+                ? "background-only requested but this theme has no background image"
+                : "nxtheme contained neither a background nor a layout to apply");
 
         // 4. Collect compatibility warnings (parts the engine dropped to avoid crashes).
         if (patcher.TotalNonCompatibleFixes > 0)

@@ -51,7 +51,10 @@ std::string theme_detail_body(const std::string& hex_id) {
     std::string q =
         "{ switch{ theme(hexId:\"" + sanitize_hex(hex_id) + "\"){ hexId name "
         "description downloadUrl target creator{username} "
-        "screenshotPreview{jpgThumbUrl} } } }";
+        "screenshotPreview{jpgThumbUrl hdUrl thumbUrl} "
+        "assets{backgroundImageUrl albumIconUrl homeIconUrl newsIconUrl "
+        "shopIconUrl controllerIconUrl settingsIconUrl powerIconUrl "
+        "nsoIconUrl cardIconUrl shareIconUrl } } } }";
     return wrap(q, json::object());
 }
 
@@ -59,7 +62,8 @@ std::string pack_detail_body(const std::string& hex_id) {
     std::string q =
         "{ switch{ pack(hexId:\"" + sanitize_hex(hex_id) + "\"){ hexId name "
         "description downloadUrl creator{username} collagePreview{jpgThumbUrl} "
-        "themes{ hexId name target downloadUrl } } } }";
+        "themes{ hexId name target downloadUrl "
+        "screenshotPreview{jpgThumbUrl hdUrl thumbUrl} } } } }";
     return wrap(q, json::object());
 }
 

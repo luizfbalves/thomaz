@@ -3,6 +3,8 @@
 #include "platform/themes/theme_paths.hpp"
 #include "platform/themes/theme_download.hpp"   // nxtheme_filename
 #include "platform/themes/active_theme_store.hpp"
+#include "platform/themes/theme_compat.hpp"     // init_engine_firmware
+#include "platform/themes/qlaunch_patches.hpp"   // install_qlaunch_patches
 #include "apply_facade.hpp"
 #include "platform/fs_util.hpp"
 
@@ -41,11 +43,30 @@ bool base_layouts_available(const thomaz::core::ThemeDetail& detail) {
     return base_present_for(detail_targets(detail));
 }
 
-InstallResult install_theme(const thomaz::core::ThemeDetail& detail) {
+InstallResult install_theme(const thomaz::core::ThemeDetail& detail,
+                            bool background_only) {
     InstallResult res;
     auto targets = detail_targets(detail);
     if (targets.empty()) { res.error = "theme has no installable parts"; return res; }
     if (!base_present_for(targets)) { res.error = "base layouts missing"; return res; }
+
+    // Give the theme engine the real console firmware so its layout-compat fixes
+    // run (the engine defaults hos::Version to 0.0.0 = pre-5.0, which disables
+    // every firmware fix). No-op on desktop.
+    init_engine_firmware();
+
+    // On firmware 20.0+ a themed (larger-than-stock) qlaunch SZS crashes the
+    // Home Menu on boot unless the qlaunch memory-budget IPS patch is present.
+    // The stock installer downloads it; we ship it bundled and install it here.
+    // Idempotent — only the patch matching this console's qlaunch is applied.
+    int patches = install_qlaunch_patches();
+#ifdef __SWITCH__
+    if (patches == 0)
+        res.warnings.push_back("could not install qlaunch theme patch — the "
+                               "Home Menu may crash on reboot");
+#else
+    (void)patches;
+#endif
 
     std::string folder = theme_folder(detail.entry);
     std::vector<std::string> written;        // for rollback
@@ -79,9 +100,15 @@ InstallResult install_theme(const thomaz::core::ThemeDetail& detail) {
         }
 
         switchthemes::ApplyOutput ao =
-            switchthemes::apply_nxtheme(base_bytes, nx_bytes);
+            switchthemes::apply_nxtheme(base_bytes, nx_bytes, background_only);
         for (const auto& w : ao.warnings) res.warnings.push_back(part.target + ": " + w);
         if (!ao.ok) {
+            // In background-only mode a part may simply have no background to
+            // apply — skip it (best-effort) instead of failing the whole install.
+            if (background_only) {
+                res.warnings.push_back(part.target + ": " + ao.error + " (skipped)");
+                continue;
+            }
             rollback();
             res.error = "engine: " + ao.error;
             return res;
@@ -104,6 +131,15 @@ InstallResult install_theme(const thomaz::core::ThemeDetail& detail) {
             std::ofstream(flag).put('\0');
             flags_written.push_back(flag);
         }
+    }
+
+    // Background-only mode can skip every part (e.g. a pack of layout-only
+    // themes with no backgrounds) — nothing was written, so report failure.
+    if (applied_targets.empty()) {
+        rollback();
+        res.error = background_only ? "no part had a background to apply"
+                                    : "no parts were applied";
+        return res;
     }
 
     ActiveTheme at;

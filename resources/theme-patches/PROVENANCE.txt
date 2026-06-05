@@ -1,0 +1,11 @@
+qlaunch (Home Menu) exefs IPS patches for custom themes.
+
+Source : https://github.com/exelix11/theme-patches  (systemPatches/)
+Commit : 8f397f4aa919179b0f0ba5fdde79795422d0b500  ("Support 22.0 and 22.1", 2026-04-09)
+License : see upstream repo.
+
+These patches enlarge the qlaunch SceneEntrance memory budget so a custom
+theme SZS larger than stock can be loaded without crashing the Home Menu on
+firmware 20.0+. Each .ips is named after a qlaunch main-NSO build-id;
+Atmosphère applies only the file matching the running console's qlaunch
+build, the rest are inert. Installed to /atmosphere/exefs_patches/ on apply.

@@ -33,3 +33,26 @@ TEST_CASE("detail bodies inline a sanitized hexId") {
     json p = json::parse(pack_detail_body("16D"));
     CHECK(p["query"].get<std::string>().find("pack(hexId:\"16D\")") != std::string::npos);
 }
+
+TEST_CASE("theme_detail_body requests preview sizes + asset images") {
+    json t = json::parse(theme_detail_body("A24"));
+    std::string q = t["query"].get<std::string>();
+    CHECK(q.find("screenshotPreview{") != std::string::npos);
+    CHECK(q.find("jpgThumbUrl") != std::string::npos);  // kept for the existing parser
+    CHECK(q.find("hdUrl") != std::string::npos);
+    CHECK(q.find("thumbUrl") != std::string::npos);
+    CHECK(q.find("assets{") != std::string::npos);
+    CHECK(q.find("backgroundImageUrl") != std::string::npos);
+    CHECK(q.find("homeIconUrl") != std::string::npos);
+    CHECK(q.find("shareIconUrl") != std::string::npos);
+}
+
+TEST_CASE("pack_detail_body requests member theme previews") {
+    json p = json::parse(pack_detail_body("16D"));
+    std::string q = p["query"].get<std::string>();
+    CHECK(q.find("themes{") != std::string::npos);
+    CHECK(q.find("screenshotPreview{") != std::string::npos);
+    CHECK(q.find("jpgThumbUrl") != std::string::npos);  // kept for the existing parser
+    CHECK(q.find("hdUrl") != std::string::npos);
+    CHECK(q.find("thumbUrl") != std::string::npos);
+}

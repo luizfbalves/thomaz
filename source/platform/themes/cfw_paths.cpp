@@ -28,6 +28,7 @@ std::optional<TargetMap> target_map(const std::string& target) {
     if (target == "Notification") return TargetMap{"0100000000001000", "Notification.szs"};
     if (target == "Psl")          return TargetMap{"0100000000001007", "Psl.szs"};
     if (target == "MyPage")       return TargetMap{"0100000000001013", "MyPage.szs"};
+    if (target == "common")       return TargetMap{"0100000000001000", "common.szs"};
     return std::nullopt;
 }
 

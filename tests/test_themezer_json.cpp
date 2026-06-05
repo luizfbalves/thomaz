@@ -94,3 +94,51 @@ TEST_CASE("parse_theme_detail yields a single self part; missing node => not fou
     CHECK_FALSE(found2);
     CHECK(miss.parts.empty());
 }
+
+TEST_CASE("parse_theme_detail builds gallery: preview + background + non-null icons") {
+    const char* TH = R"json({"data":{"switch":{"theme":{
+      "hexId":"A24","name":"Purple","description":"d","downloadUrl":"u",
+      "target":"ResidentMenu","creator":{"username":"Hsushi"},
+      "screenshotPreview":{"jpgThumbUrl":"j.jpg","hdUrl":"hd.png","thumbUrl":"th.png"},
+      "assets":{"backgroundImageUrl":"bg.png","homeIconUrl":"home.png",
+                "albumIconUrl":null,"newsIconUrl":""}}}}})json";
+    bool found = false;
+    ThemeDetail d = parse_theme_detail(TH, &found);
+    REQUIRE(found);
+    REQUIRE(d.gallery.size() == 3);          // preview, background, home (album/news skipped)
+    CHECK(d.gallery[0].label == "Preview");
+    CHECK(d.gallery[0].url == "hd.png");
+    CHECK(d.gallery[0].thumb_url == "th.png");
+    CHECK(d.gallery[1].label == "Background");
+    CHECK(d.gallery[1].url == "bg.png");
+    CHECK(d.gallery[1].thumb_url == "bg.png");
+    CHECK(d.gallery[2].label == "Home");
+}
+
+TEST_CASE("parse_pack_detail builds gallery: one item per member preview") {
+    const char* P = R"json({"data":{"switch":{"pack":{
+      "hexId":"16D","name":"Clean","description":"c","downloadUrl":"u",
+      "creator":{"username":"x"},"collagePreview":{"jpgThumbUrl":"c.jpg"},
+      "themes":[
+        {"hexId":"9A6","name":"Home","target":"ResidentMenu","downloadUrl":"u1",
+         "screenshotPreview":{"hdUrl":"h1.png","thumbUrl":"t1.png"}},
+        {"hexId":"9A7","name":"Lock","target":"Entrance","downloadUrl":"u2",
+         "screenshotPreview":{"hdUrl":"h2.png","thumbUrl":"t2.png"}},
+        {"hexId":"9A8","name":"","target":"News","downloadUrl":"u3",
+         "screenshotPreview":{"jpgThumbUrl":"j3.jpg"}}
+      ]}}}})json";
+    bool found = false;
+    ThemeDetail d = parse_pack_detail(P, &found);
+    REQUIRE(found);
+    REQUIRE(d.gallery.size() == 3);
+    CHECK(d.gallery[0].label == "Home");
+    CHECK(d.gallery[0].url == "h1.png");
+    CHECK(d.gallery[1].label == "Lock");
+    CHECK(d.gallery[1].thumb_url == "t2.png");
+    // empty name falls back to target; jpgThumbUrl-only fills both url and thumb
+    CHECK(d.gallery[2].label == "News");
+    CHECK(d.gallery[2].url == "j3.jpg");
+    CHECK(d.gallery[2].thumb_url == "j3.jpg");
+    // members are still expanded into parts (download path unchanged)
+    CHECK(d.parts.size() == 3);
+}
