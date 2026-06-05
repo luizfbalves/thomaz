@@ -20,7 +20,7 @@ The posts/feed/comments/likes community feature is being removed entirely. Its i
 
 - [x] **SEC-01**: Save blobs are not downloadable without authentication and not by a non-owner — achieved by removing static file serving (RM-02); cross-user access via the API returns 403, owner access returns 200. Verified by TEST-01. *(AC-1, HIGH — fixed in removal phase, verified in security phase)*
 - [x] **SEC-02**: A revoked (logged-out) access token can no longer authenticate — `POST /auth/logout` blocklists the bearer token via a `jti` claim + DB-backed `RevokedToken`; that token then returns 401, while other valid tokens still return 200. Logout revokes only the current token; pre-deploy tokens without `jti` keep working until relogin. *(AC-5, HIGH)*
-- [ ] **SEC-03**: When the CA bundle probe fails on Switch (`ca_ok == false`), a persistent on-screen warning is shown; the fail-safe networking behavior is unchanged. *(AC-4)*
+- [x] **SEC-03**: When the CA bundle probe fails on Switch (`ca_ok == false`), a persistent on-screen warning is shown; the fail-safe networking behavior is unchanged. *(AC-4)*
 
 ### Concurrency
 
@@ -79,7 +79,7 @@ Explicitly excluded — see PROJECT.md and FEATURES.md anti-features.
 | DEBT-04 | Phase 2 | Complete |
 | TEST-01 | Phase 2 | Complete |
 | TEST-02 | Phase 2 | Complete |
-| SEC-03 | Phase 3 | Pending |
+| SEC-03 | Phase 3 | Complete |
 | CONC-01 | Phase 3 | Pending |
 | DEBT-01 | Phase 3 | Complete |
 | DEBT-02 | Phase 3 | Complete |
