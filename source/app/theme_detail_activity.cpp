@@ -1,5 +1,6 @@
 #include "app/theme_detail_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/image_viewer_activity.hpp"
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
@@ -51,22 +52,6 @@ void ThemeDetailActivity::onContentAvailable() {
     if (auto* note = (brls::Label*)this->getView("downloadNote"))
         note->setText("themes/download_ok"_i18n);
 
-    if (!this->entry.preview_url.empty()) {
-        std::string url = this->entry.preview_url;
-        IHttpClient* client = this->http;
-        auto alive = this->alive;
-        brls::async([this, client, url, alive]() {
-            HttpResponse r = client->get(url);
-            if (!r.ok()) return;
-            std::string body = r.body;
-            brls::sync([this, alive, body]() {
-                if (!alive->load()) return;
-                if (auto* img = (brls::Image*)this->getView("detailPreview"))
-                    img->setImageFromMem((const unsigned char*)body.data(), (int)body.size());
-            });
-        });
-    }
-
     if (auto* spinner = this->getView("spinner")) spinner->setVisibility(brls::Visibility::VISIBLE);
 
     core::ThemeEntry e = this->entry;
@@ -98,14 +83,111 @@ void ThemeDetailActivity::onContentAvailable() {
     }
 }
 
+// Fetches `url` into `into`, guarded by the activity's alive flag (same pattern
+// as the browse grid).
+void ThemeDetailActivity::loadThumb(const std::string& url, brls::Image* into) {
+    if (url.empty() || !into) return;
+    IHttpClient* client = this->http;
+    auto alive = this->alive;
+    std::string u = url;
+    brls::async([client, alive, u, into]() {
+        HttpResponse r = client->get(u);
+        if (!r.ok()) return;
+        std::string body = r.body;
+        brls::sync([alive, body, into]() {
+            if (!alive->load()) return;
+            into->setImageFromMem((const unsigned char*)body.data(), (int)body.size());
+        });
+    });
+}
+
+// Loads the HD image into the hero, caching bytes by url so revisits are instant.
+void ThemeDetailActivity::showGalleryImage(const core::GalleryImage& img) {
+    auto* hero = (brls::Image*)this->getView("detailPreview");
+    if (!hero || img.url.empty()) return;
+
+    auto it = this->heroCache.find(img.url);
+    if (it != this->heroCache.end()) {
+        hero->setImageFromMem((const unsigned char*)it->second.data(), (int)it->second.size());
+        return;
+    }
+    IHttpClient* client = this->http;
+    auto alive = this->alive;
+    std::string url = img.url;
+    brls::async([this, client, alive, url]() {
+        HttpResponse r = client->get(url);
+        if (!r.ok()) return;
+        std::string body = r.body;
+        brls::sync([this, alive, url, body]() {
+            if (!alive->load()) return;
+            this->heroCache[url] = body;
+            if (auto* hero = (brls::Image*)this->getView("detailPreview"))
+                hero->setImageFromMem((const unsigned char*)body.data(), (int)body.size());
+        });
+    });
+}
+
+// Builds the thumbnail strip from detail.gallery. Empty gallery => hide the
+// strip and fall back to the browse preview in the hero.
+void ThemeDetailActivity::buildGallery() {
+    auto* strip = this->getView("thumbStrip");
+    auto* row   = (brls::Box*)this->getView("thumbStripRow");
+    const auto& g = this->detail.gallery;
+
+    if (g.empty()) {
+        if (strip) strip->setVisibility(brls::Visibility::GONE);
+        if (!this->entry.preview_url.empty())
+            this->loadThumb(this->entry.preview_url, (brls::Image*)this->getView("detailPreview"));
+        return;
+    }
+
+    if (strip) strip->setVisibility(brls::Visibility::VISIBLE);
+    if (row) row->clearViews();
+
+    for (const auto& item : g) {
+        core::GalleryImage gi = item;
+        auto* thumb = new brls::Image();
+        thumb->setWidth(80.0f);
+        thumb->setHeight(45.0f);
+        thumb->setCornerRadius(6.0f);
+        thumb->setMarginRight(8.0f);
+        thumb->setFocusable(true);
+        this->loadThumb(gi.thumb_url, thumb);
+
+        thumb->getFocusEvent()->subscribe([this, gi](brls::View*) {
+            this->showGalleryImage(gi);
+        });
+        thumb->registerAction("themes/view_fullscreen"_i18n, brls::BUTTON_A,
+            [this, gi](brls::View*) {
+                brls::Application::pushActivity(new ImageViewerActivity(gi, this->http));
+                return true;
+            });
+        thumb->addGestureRecognizer(new brls::TapGestureRecognizer(thumb, [this, gi]() {
+            brls::Application::pushActivity(new ImageViewerActivity(gi, this->http));
+        }));
+
+        if (row) row->addView(thumb);
+    }
+
+    this->showGalleryImage(g.front());
+}
+
 void ThemeDetailActivity::onResolved(const core::ThemeDetail& d, bool ok) {
     if (auto* spinner = this->getView("spinner")) spinner->setVisibility(brls::Visibility::GONE);
     if (!ok) {
+        if (auto* err = (brls::Label*)this->getView("detailError")) {
+            err->setText("themes/error_network"_i18n);
+            err->setVisibility(brls::Visibility::VISIBLE);
+        }
         brls::Application::notify("themes/error_network"_i18n);
         return;
     }
     this->detail   = d;
     this->resolved = true;
+
+    if (auto* content = this->getView("detailContent"))
+        content->setVisibility(brls::Visibility::VISIBLE);
+    this->buildGallery();
 
     if (auto* desc = (brls::Label*)this->getView("detailDesc"))
         desc->setText(d.description);

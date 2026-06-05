@@ -1,6 +1,8 @@
 #pragma once
 #include <atomic>
 #include <memory>
+#include <string>
+#include <unordered_map>
 
 #include <borealis.hpp>
 
@@ -22,6 +24,9 @@ class ThemeDetailActivity : public brls::Activity {
 
   private:
     void onResolved(const thomaz::core::ThemeDetail& detail, bool ok);
+    void loadThumb(const std::string& url, brls::Image* into);
+    void buildGallery();
+    void showGalleryImage(const thomaz::core::GalleryImage& img);
     void startDownload();
     void refreshActionButton();   // sets label + which action the button performs
     void doApply();
@@ -35,6 +40,7 @@ class ThemeDetailActivity : public brls::Activity {
     bool                      resolved = false;
     IHttpClient*              http;
     std::shared_ptr<std::atomic_bool> alive = std::make_shared<std::atomic_bool>(true);
+    std::unordered_map<std::string, std::string> heroCache; // url -> raw image bytes
 
     bool downloaded = false;
     bool applied    = false;
