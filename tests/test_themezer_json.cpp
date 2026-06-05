@@ -94,3 +94,23 @@ TEST_CASE("parse_theme_detail yields a single self part; missing node => not fou
     CHECK_FALSE(found2);
     CHECK(miss.parts.empty());
 }
+
+TEST_CASE("parse_theme_detail builds gallery: preview + background + non-null icons") {
+    const char* TH = R"json({"data":{"switch":{"theme":{
+      "hexId":"A24","name":"Purple","description":"d","downloadUrl":"u",
+      "target":"ResidentMenu","creator":{"username":"Hsushi"},
+      "screenshotPreview":{"jpgThumbUrl":"j.jpg","hdUrl":"hd.png","thumbUrl":"th.png"},
+      "assets":{"backgroundImageUrl":"bg.png","homeIconUrl":"home.png",
+                "albumIconUrl":null,"newsIconUrl":""}}}}})json";
+    bool found = false;
+    ThemeDetail d = parse_theme_detail(TH, &found);
+    REQUIRE(found);
+    REQUIRE(d.gallery.size() == 3);          // preview, background, home (album/news skipped)
+    CHECK(d.gallery[0].label == "Preview");
+    CHECK(d.gallery[0].url == "hd.png");
+    CHECK(d.gallery[0].thumb_url == "th.png");
+    CHECK(d.gallery[1].label == "Background");
+    CHECK(d.gallery[1].url == "bg.png");
+    CHECK(d.gallery[1].thumb_url == "bg.png");
+    CHECK(d.gallery[2].label == "Home");
+}
