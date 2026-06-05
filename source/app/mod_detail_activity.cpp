@@ -210,7 +210,15 @@ void ModDetailActivity::startDownload(const core::ModFile& file)
             // progress nullptr is safe — download_file guards `if(progress)`.
             // A live progress bar is a future refinement.
             bool ok = download_file(f.download_url, dest, nullptr, &err, cancelled);
-            if (ok)
+            // WR-03: the download may finish just before the activity is torn
+            // down. Re-check the cancel flag before doing filesystem import work
+            // for an activity that no longer exists.
+            if (ok && cancelled && cancelled->load())
+            {
+                results->first  = false;
+                results->second = "";
+            }
+            else if (ok)
             {
                 ModActionResult ir = import_archive(tid, mod_name, dest, nullptr);
                 results->first     = ir.ok;
