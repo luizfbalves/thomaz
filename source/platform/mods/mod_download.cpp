@@ -21,8 +21,14 @@ struct ProgressCtx {
 
 int xferInfo(void* p, curl_off_t dltotal, curl_off_t dlnow, curl_off_t, curl_off_t) {
     auto* ctx = static_cast<ProgressCtx*>(p);
-    if (ctx && ctx->cb && *ctx->cb)
-        (*ctx->cb)((std::uint64_t)dlnow, (std::uint64_t)dltotal);
+    if (ctx && ctx->cb && *ctx->cb) {
+        // IN-01: dltotal is -1/0 while the total size is unknown. Casting -1 to
+        // uint64_t yields 0xFFFF... which a progress bar renders as a nonsensical
+        // denominator. Clamp to 0 and let the UI treat 0 as "indeterminate".
+        std::uint64_t total = dltotal > 0 ? (std::uint64_t)dltotal : 0;
+        std::uint64_t now   = dlnow > 0 ? (std::uint64_t)dlnow : 0;
+        (*ctx->cb)(now, total);
+    }
     return 0; // nonzero would abort
 }
 
