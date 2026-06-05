@@ -65,14 +65,18 @@ HttpResponse CurlHttpClient::request(const HttpRequest& req) {
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToString);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response.body);
 
-    // Cooperative abort: if the caller supplied a cancelled flag, install the
-    // progress hook so the transfer can be interrupted when the owning activity
-    // is destroyed.  The CancelCtx is stack-allocated and outlasts the
-    // easy_perform call below, so the pointer remains valid throughout.
+    // Cooperative abort: ONLY install the progress hook when the caller actually
+    // supplied a cancelled flag (WR-02). The vast majority of requests pass no
+    // flag; installing the hook for them would add a per-tick indirect call +
+    // shared_ptr deref to all HTTP traffic for no benefit. The CancelCtx is
+    // stack-allocated and outlasts the easy_perform call below, so the pointer
+    // remains valid throughout.
     CancelCtx cancelCtx{req.cancelled}; // shared_ptr copy by value
-    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-    curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, curlCancelXferInfo);
-    curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &cancelCtx);
+    if (req.cancelled) {
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, curlCancelXferInfo);
+        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &cancelCtx);
+    }
 
     // TLS certificate verification via the bundled CA (romfs) / system store.
     apply_curl_tls(curl);
