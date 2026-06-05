@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: ready_to_plan
-stopped_at: "Phase 1 planned (3 plans). Decision-coverage gate overridden: D-01..D-11 covered in substance by plans but not cited by ID — re-surface at verify-phase."
-last_updated: "2026-06-04T23:34:02.976Z"
+status: planning
+stopped_at: Phase 2 context gathered
+last_updated: "2026-06-05T00:10:26.427Z"
 last_activity: 2026-06-04
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 1
   total_plans: 3
   completed_plans: 3
-  percent: 50
+  percent: 100
 ---
 
 # Project State
@@ -87,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-04T23:34:02.965Z
-Stopped at: Phase 1 planned (3 plans). Decision-coverage gate overridden: D-01..D-11 covered in substance by plans but not cited by ID — re-surface at verify-phase.
-Resume file: None
+Last session: 2026-06-05T00:10:26.417Z
+Stopped at: Phase 2 context gathered
+Resume file: .planning/phases/02-api-security-regression-tests/02-CONTEXT.md
