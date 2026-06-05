@@ -57,12 +57,12 @@ Plans:
   2. On hardware, the same run extracts the Psl layout from title `…1007` and the MyPage layout from title `…1013`.
   3. Every extracted `.szs` lands directly in `/themes/systemData/` (flat layout, adapted from exelix's `extracted/{qlaunch,...}/` subdirs) with the exact filenames `target_map()` resolves to.
   4. Pure parsing/target-table logic (title-ID → szs-name mapping, path resolution) is covered by host doctest where it does not touch privileged services.
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Port the `ThemeTargetInfo` title-ID/szs tables from exelix `Common.{hpp,cpp}`; reconcile with thomaz `cfw_paths::target_map()` and host-test the mapping
-- [ ] 02-02: Drive extraction across all three titles (qlaunch + Psl + MyPage), iterating the per-title `/lyt/*.szs` filter set incl. `common.szs`
-- [ ] 02-03: Write outputs to the canonical flat `/themes/systemData/` layout; verify on hardware that all expected szs appear
+- [ ] 02-01-PLAN.md — Add `common` to target_map(), declare ExtractAllResult + extract_all_base_layouts() in firmware_extract.hpp, add desktop stub, extend cfw_paths doctest — Wave 1
+- [ ] 02-02-PLAN.md — Widen nca_romfs_filter to /lyt/ prefix; implement extract_all_base_layouts() multi-title driver (three titles, best-effort per-part, D-02/D-02a, D-04 structural validation, D-03 flat overwrite) — Wave 2
+- [ ] 02-03-PLAN.md — Hardware verify: run extract_all_base_layouts() on device, confirm all 8 szs in /themes/systemData/ — Wave 3 (checkpoint)
 
 ### Phase 3: Theme UI Integration
 **Goal**: Surface extraction as a first-class one-time action in the theme UI, wired so a successful run immediately unblocks "Aplicar Tema", with visible already-extracted/re-extract state, a recorded firmware version, and clear success/failure messaging.
