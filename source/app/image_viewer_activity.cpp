@@ -12,8 +12,13 @@ ImageViewerActivity::ImageViewerActivity(core::GalleryImage image, IHttpClient* 
 ImageViewerActivity::~ImageViewerActivity() { *this->alive = false; }
 
 void ImageViewerActivity::onContentAvailable() {
-    if (auto* caption = (brls::Label*)this->getView("viewerCaption"))
-        caption->setText(this->image.label);
+    if (auto* caption = (brls::Label*)this->getView("viewerCaption")) {
+        if (this->image.label.empty()) {
+            caption->setVisibility(brls::Visibility::GONE);  // no phantom gap below the image
+        } else {
+            caption->setText(this->image.label);
+        }
+    }
 
     std::string url = this->image.url;
     if (url.empty()) {
