@@ -4,6 +4,7 @@
 
 #include "app/system_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/tls_banner.hpp"
 #include "platform/sysmod/system_reboot.hpp"
 
 #include <borealis.hpp>
@@ -22,6 +23,7 @@ SystemActivity::SystemActivity(std::shared_ptr<ISysmoduleStore> store)
 void SystemActivity::onContentAvailable()
 {
     install_header_username(this);
+    install_tls_warning_banner(this);
 
     if (brls::View* btn = this->getView("rebootButton"))
     {

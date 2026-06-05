@@ -1,5 +1,6 @@
 #include "app/theme_detail_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/tls_banner.hpp"
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
@@ -41,6 +42,7 @@ ThemeDetailActivity::~ThemeDetailActivity() { *this->alive = false; }
 
 void ThemeDetailActivity::onContentAvailable() {
     install_header_username(this);
+    install_tls_warning_banner(this);
 
     if (auto* name = (brls::Label*)this->getView("detailName")) name->setText(this->entry.name);
     if (auto* author = (brls::Label*)this->getView("detailAuthor"))

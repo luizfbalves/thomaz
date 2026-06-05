@@ -1,5 +1,6 @@
 #include "app/save_detail_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/tls_banner.hpp"
 #include "app/game_panel.hpp"
 
 #include <borealis.hpp>
@@ -49,6 +50,7 @@ SaveDetailActivity::~SaveDetailActivity()
 void SaveDetailActivity::onContentAvailable()
 {
     install_header_username(this);
+    install_tls_warning_banner(this);
     install_help_action(this, "saveFrame", "thomaz/help/saves");
 
     populate_game_panel(this, this->title);

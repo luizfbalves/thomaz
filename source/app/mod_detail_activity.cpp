@@ -4,6 +4,7 @@
 
 #include "app/mod_detail_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/tls_banner.hpp"
 
 #include <borealis.hpp>
 #include <borealis/core/i18n.hpp>
@@ -61,6 +62,7 @@ ModDetailActivity::~ModDetailActivity()
 void ModDetailActivity::onContentAvailable()
 {
     install_header_username(this);
+    install_tls_warning_banner(this);
 
     if (auto* spinner = this->getView("spinner"))
         spinner->setVisibility(brls::Visibility::VISIBLE);

@@ -4,6 +4,7 @@
 
 #include "app/mod_manager_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/tls_banner.hpp"
 #include "app/game_panel.hpp"
 #include "app/mod_browser_activity.hpp"
 
@@ -63,6 +64,7 @@ ModManagerActivity::~ModManagerActivity()
 void ModManagerActivity::onContentAvailable()
 {
     install_header_username(this);
+    install_tls_warning_banner(this);
     install_help_action(this, "modFrame", "thomaz/help/mods");
 
     populate_game_panel(this, this->title);

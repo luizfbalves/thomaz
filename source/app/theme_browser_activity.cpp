@@ -1,5 +1,6 @@
 #include "app/theme_browser_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/tls_banner.hpp"
 #include "app/theme_detail_activity.hpp"
 
 #include <borealis.hpp>
@@ -45,6 +46,7 @@ ThemeBrowserActivity::~ThemeBrowserActivity() { *this->alive = false; }
 
 void ThemeBrowserActivity::onContentAvailable() {
     install_header_username(this);
+    install_tls_warning_banner(this);
 
     if (auto* tp = this->getView("tabPacks")) {
         tp->registerClickAction([this](brls::View*) {

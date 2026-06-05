@@ -4,6 +4,7 @@
 
 #include "app/game_list_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/tls_banner.hpp"
 #include "app/cheat_detail_activity.hpp"
 #include "app/clear_cheats_activity.hpp"
 #include "app/mod_manager_activity.hpp"
@@ -58,6 +59,7 @@ GameListActivity::~GameListActivity()
 void GameListActivity::onContentAvailable()
 {
     install_header_username(this);
+    install_tls_warning_banner(this);
     install_help_action(this, "gameListFrame",
                         this->target == Target::Mods ? "thomaz/help/mods_list"
                                                       : "thomaz/help/cheats_list");

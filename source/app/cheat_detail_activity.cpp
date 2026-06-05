@@ -4,6 +4,7 @@
 
 #include "app/cheat_detail_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/tls_banner.hpp"
 #include "app/game_panel.hpp"
 
 #include <borealis.hpp>
@@ -32,6 +33,7 @@ CheatDetailActivity::~CheatDetailActivity()
 void CheatDetailActivity::onContentAvailable()
 {
     install_header_username(this);
+    install_tls_warning_banner(this);
     install_help_action(this, "cheatFrame", "thomaz/help/cheats");
 
     populate_game_panel(this, this->title);

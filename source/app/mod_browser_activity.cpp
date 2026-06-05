@@ -4,6 +4,7 @@
 
 #include "app/mod_browser_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/tls_banner.hpp"
 #include "app/mod_detail_activity.hpp"
 
 #include <borealis.hpp>
@@ -35,6 +36,7 @@ ModBrowserActivity::~ModBrowserActivity()
 void ModBrowserActivity::onContentAvailable()
 {
     install_header_username(this);
+    install_tls_warning_banner(this);
 
     // Show the spinner while we resolve this game on GameBanana. Instead of
     // immediately opening the keyboard (M2 behaviour), we first try to resolve

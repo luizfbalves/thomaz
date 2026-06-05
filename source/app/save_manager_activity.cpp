@@ -1,5 +1,6 @@
 #include "app/save_manager_activity.hpp"
 #include "app/app_header.hpp"
+#include "app/tls_banner.hpp"
 #include "app/save_detail_activity.hpp"
 
 #include <borealis.hpp>
@@ -26,6 +27,7 @@ SaveManagerActivity::~SaveManagerActivity()
 void SaveManagerActivity::onContentAvailable()
 {
     install_header_username(this);
+    install_tls_warning_banner(this);
     install_help_action(this, "saveManagerFrame", "thomaz/help/saves_list");
 
     ITitleService* svc = this->titleService;
