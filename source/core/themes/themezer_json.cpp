@@ -163,6 +163,13 @@ ThemeDetail parse_pack_detail(const std::string& body, bool* found) {
             p.name         = t.value("name", std::string());
             p.download_url = t.value("downloadUrl", std::string());
             d.parts.push_back(p);
+            if (t.contains("screenshotPreview") && t["screenshotPreview"].is_object()) {
+                ImgUrls img = image_sizes_of(t["screenshotPreview"]);
+                if (!img.hd.empty()) {
+                    std::string label = p.name.empty() ? p.target : p.name;
+                    d.gallery.push_back({ img.hd, img.thumb, label });
+                }
+            }
         }
     }
     if (found) *found = true;
