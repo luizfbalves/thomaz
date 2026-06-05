@@ -29,6 +29,7 @@ class ThemeDetailActivity : public ThomazActivity {
     void showGalleryImage(const thomaz::core::GalleryImage& img);
     void startDownload();
     void refreshActionButton();   // sets label + which action the button performs
+    void setButtonBusy(bool busy); // sets this->busy + dims/unfocuses downloadButton
     void doApply();                       // entry: routes to choice dialog or full apply
     void doApplyMode(bool background_only);
     void doRemove();

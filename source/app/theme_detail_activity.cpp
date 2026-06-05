@@ -80,6 +80,7 @@ void ThemeDetailActivity::onContentAvailable() {
         btn->registerClickAction([this, alive = this->alive](brls::View*) {
             brls::sync([this, alive]() {
                 if (!alive->load()) return;
+                if (this->busy) return;
                 if (this->applied)         this->doRemove();
                 else if (this->downloaded) this->doApply();
                 else                       this->startDownload();
@@ -234,6 +235,8 @@ void ThemeDetailActivity::onResolved(const core::ThemeDetail& d, bool ok) {
 
 void ThemeDetailActivity::startDownload() {
     if (!this->resolved) return;
+    if (this->busy) return;
+    this->setButtonBusy(true);
     brls::Application::notify("themes/downloading"_i18n);
 
     core::ThemeDetail d = this->detail;
@@ -247,6 +250,7 @@ void ThemeDetailActivity::startDownload() {
                                           : ("themes/download_fail"_i18n + std::string(": ") + r.error);
         },
         [this, results]() {
+            this->setButtonBusy(false);
             brls::Application::notify(results->second);
             if (results->first) {
                 this->downloaded = true;
@@ -269,6 +273,14 @@ void ThemeDetailActivity::refreshActionButton() {
     }
 }
 
+void ThemeDetailActivity::setButtonBusy(bool busy) {
+    this->busy = busy;
+    auto* btn = this->getView("downloadButton");
+    if (!btn) return;
+    btn->setFocusable(!busy);
+    btn->setAlpha(busy ? 0.5f : 1.0f);
+}
+
 // Entry point for the Apply button. Routes risky (layout-incompatible) themes
 // through a choice dialog (full vs background-only); safe themes apply directly.
 void ThemeDetailActivity::doApply() {
@@ -286,7 +298,7 @@ void ThemeDetailActivity::doApplyMode(bool background_only) {
     if (!this->resolved || this->busy) return;
     if (!base_layouts_available(this->detail)) { this->showBaseMissingDialog(); return; }
 
-    this->busy = true;
+    this->setButtonBusy(true);
     brls::Application::notify(background_only ? "themes/applying_bg_only"_i18n
                                              : "themes/applying"_i18n);
 
@@ -297,7 +309,7 @@ void ThemeDetailActivity::doApplyMode(bool background_only) {
             *result = install_theme(d, background_only);
         },
         [this, background_only, result]() {
-            this->busy = false;
+            this->setButtonBusy(false);
             if (!result->ok) {
                 brls::Application::notify("themes/apply_fail"_i18n + std::string(": ") + result->error);
                 return;
@@ -391,7 +403,7 @@ void ThemeDetailActivity::showApplyChoiceDialog() {
 
 void ThemeDetailActivity::doRemove() {
     if (this->busy) return;
-    this->busy = true;
+    this->setButtonBusy(true);
     brls::Application::notify("themes/removing"_i18n);
 
     auto result = std::make_shared<InstallResult>();
@@ -400,7 +412,7 @@ void ThemeDetailActivity::doRemove() {
             *result = remove_active_theme();
         },
         [this, result]() {
-            this->busy = false;
+            this->setButtonBusy(false);
             if (!result->ok) {
                 brls::Application::notify("themes/remove_fail"_i18n + std::string(": ") + result->error);
                 return;
