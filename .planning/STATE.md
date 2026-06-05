@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v0.4
 milestone_name: Extração de Temas
 status: executing
-last_updated: "2026-06-05T00:33:41.674Z"
+last_updated: "2026-06-05T14:56:14.136Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 4
@@ -84,8 +84,10 @@ Progress: [████████░░] 80%
   (commit b7d3548), but Task 2 (human-verify) is open. The firmware extraction spike
   code is complete (plans 01-04 merged) but has NOT yet been executed on a real Nintendo
   Switch. Once the first hardware run succeeds:
+
   1. Record `setsysGetFirmwareVersion` major.minor.micro in `docs/title-takeover.md`
      Proveniência table and in `THIRD_PARTY.md` `## SPL key sources` block.
+
   2. Confirm Atmosphère 1.7.1/b39e29d key sources derived a valid header key.
   3. Approve Task 2 checkpoint (signal: "approved" or correction description).
 
