@@ -75,13 +75,13 @@ Plans:
   2. After a successful extraction, the theme detail page no longer shows the `base_missing` block and "Aplicar Tema" proceeds — because outputs satisfy `cfw_paths::base_present_for()`.
   3. The UI shows whether layouts are already extracted and lets the user re-extract on demand (e.g. after a firmware update), recording the firmware version it ran against.
   4. On completion the user sees a clear success message, or on failure a message naming the reason (e.g. applet mode, key-derivation failure, missing title).
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 03-01: Add the "Extrair layouts do firmware" action/page to the theme UI and wire it to the extraction engine with progress + result reporting
-- [ ] 03-02: Persist extraction state + firmware version (via `setsysGetFirmwareVersion`); render already-extracted status and a re-extract path
-- [ ] 03-03: Map engine outcomes to user-facing success/failure messages; confirm `base_missing` clears and "Aplicar Tema" runs immediately after extraction
+- [ ] 03-01-PLAN.md — Create extract_state_store.{hpp,cpp} (nlohmann JSON persistence, sExtractionRunning guard, D-06 fw_version marker at /switch/thomaz/config/.thomaz_extract.json); add 10 new i18n keys to pt-BR and en-US themes.json — Wave 1
+- [ ] 03-02-PLAN.md — Add extractionRow XML slot to theme_browser.xml; implement ThemeBrowserActivity status row (buildExtractionRow, doExtractOrConfirm D-03, doExtract D-04/D-05/D-06, showExtractResultDialog); promote ThemeDetailActivity::doExtract() to spinner+results shape — Wave 2
+- [ ] 03-03-PLAN.md — Complete refreshExtractionStatus() with D-07 mismatch advisory; confirm INTEG-02 live-check in refreshActionButton(); human checkpoint to verify end-to-end flow on desktop — Wave 3
 
 ### Phase 4: Forwarder (Optional)
 **Goal**: Remove the manual hold-`R` step by providing and documenting an installable Home-menu forwarder that launches thomaz directly in Application mode, so extraction's title-takeover requirement is satisfied by a single icon tap. This phase is OPTIONAL and must not block the core extraction path (Phases 1-3 are fully usable via the manual title-takeover route documented in Phase 1).
