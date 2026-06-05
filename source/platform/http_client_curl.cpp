@@ -118,6 +118,8 @@ HttpResponse CurlHttpClient::request(const HttpRequest& req) {
     CURLcode rc = curl_easy_perform(curl);
     if (rc == CURLE_OK)
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.status);
+    else if (rc == CURLE_ABORTED_BY_CALLBACK)
+        response.body.clear(); // cooperative teardown abort — discard any partial body, status stays 0
     else
         response.status = 0; // transport failure
 

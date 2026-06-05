@@ -91,9 +91,10 @@ bool download_file(const std::string& url, const std::string& dest_path,
     bool ok = (rc == CURLE_OK) && (httpStatus >= 200 && httpStatus < 300) && closeOk;
     if (!ok) {
         if (err) {
-            if (rc != CURLE_OK) *err = curl_easy_strerror(rc);
-            else if (!closeOk)  *err = "write error";
-            else                *err = "HTTP " + std::to_string(httpStatus);
+            if (rc == CURLE_ABORTED_BY_CALLBACK) { /* cooperative teardown — leave *err empty, no toast */ }
+            else if (rc != CURLE_OK) *err = curl_easy_strerror(rc);
+            else if (!closeOk)       *err = "write error";
+            else                     *err = "HTTP " + std::to_string(httpStatus);
         }
         std::remove(dest_path.c_str());
     }
