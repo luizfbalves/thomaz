@@ -134,6 +134,22 @@ NcaExtractResult extract_szs_from_nca(
                 header_key.data(),
                 0x20);
 
+    // --- Load the PUBLIC key-area-key source (kaek 0 / application) ------------
+    // hactool's nca_decrypt_key_area() (__SWITCH__ path) uses SPL to decrypt the
+    // NCA key area into the per-section keys, seeded by THIS public source. The
+    // header_key alone only decrypts the NCA *header*; without this source the
+    // key area derives to zero -> section keys are wrong -> the RomFS parse walks
+    // garbage offsets and the app crashes (data abort). This value is PUBLIC
+    // (mirrored by Atmosphère, same provenance as the header sources in
+    // key_loader_switch.cpp); kaek index 0 (application) covers the firmware
+    // theme titles qlaunch/Psl/MyPage. (EXTRACT-04 — still no prod.keys.)
+    static const unsigned char kKeyAreaKeyApplicationSource[0x10] = {
+        0x7F, 0x59, 0x97, 0x1E, 0x62, 0x9F, 0x36, 0xA1,
+        0x30, 0x98, 0x06, 0x6F, 0x21, 0x44, 0xC3, 0x0D
+    };
+    std::memcpy(tool_ctx.settings.keyset.key_area_key_application_source,
+                kKeyAreaKeyApplicationSource, 0x10);
+
     // --- Wire filter and dump callback ----------------------------------------
     // CaptureCtx lifetime covers nca_init through nca_free_section_contexts.
     std::unordered_map<std::string, std::vector<std::uint8_t>> captured;
