@@ -44,7 +44,14 @@ class SaveDetailActivity : public brls::Activity
     void setCloudStatusText(const std::string& text);
     std::string cloudErrorText(const std::string& apiError) const;
 
-    bool cloudBusy     = false; // guards against concurrent upload/download (doUpload/doDownload)
+    // Threading contract (CONC-01): cloudBusy is read and written exclusively on the main thread
+    // today (all callers — doUpload, pushAtRevision, doDownload — run their guard checks and set
+    // operations inside brls::sync or direct UI callbacks, which execute on the main thread).
+    // std::atomic enforces a well-defined memory model so that a future off-thread refactor
+    // (Phase 4 runAsync) cannot silently introduce a data race.  Use .load() to read and
+    // .store() to write at every site; do NOT use compare_exchange — the existing
+    // check-then-set semantics must be preserved verbatim.
+    std::atomic<bool> cloudBusy{false}; // guards against concurrent upload/download
 
     InstalledTitle title;
     ISaveService* saveService;
