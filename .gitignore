@@ -43,6 +43,7 @@ tests/run
 !/resources/i18n/pt-BR/system.json
 !/resources/img/
 !/resources/img/icon.jpg
+!/resources/img/boot_logo.png
 !/resources/cacert.pem
 !/resources/xml/
 !/resources/xml/activity/
