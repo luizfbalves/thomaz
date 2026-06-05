@@ -71,7 +71,13 @@ Plans:
   3. When the CA bundle probe fails (`ca_ok == false`), a visible warning is emitted via `brls::Logger::warning` (or `brls::Application::notify`); no `CURLOPT_SSL_VERIFYPEER` lines appear outside `#ifdef __SWITCH__`
   4. A doctest covering the TLS fail-safe branch (`ca_ok == false`) passes in the host test suite (TEST-03)
   5. Desktop build with `-DUSE_SDL2=ON` compiles clean with zero errors and zero new warnings
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Create shared fs_util.{hpp,cpp}; migrate all 7 ensure_parent_dirs/copy_tree call-sites; update tests/Makefile SRCS; D-05 equivalence doctest [DEBT-01, DEBT-02] (Wave 1)
+- [ ] 03-02-PLAN.md — Extract pure tls_policy(bool) seam + insecure latch in curl_tls.hpp; TEST-03 host doctest for the ca_present==false fail-safe branch [TEST-03] (Wave 1, parallel)
+- [ ] 03-03-PLAN.md — install_tls_warning_banner shared helper + wire into 14 activities + i18n in 5 locales (persistent on-screen TLS warning) [SEC-03] (Wave 2)
+- [ ] 03-04-PLAN.md — Atomicize cloudBusy to std::atomic<bool> in save_detail_activity (load/store at all 11 sites); alive member untouched (S2) [CONC-01] (Wave 3)
 
 **Planning flags:**
 - **Second `copy_tree` location (DEBT-02):** Research could not locate `save_service_switch.cpp` at the expected path. Verify at Phase 3 implementation start. If absent, DEBT-02 removes only the `mod_store.cpp` copy — still satisfies the requirement.
