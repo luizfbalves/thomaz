@@ -202,9 +202,18 @@ bool NsSaveService::restore(const core::BackupEntry& entry, std::uint64_t title_
         std::string mountRoot = std::string(kMount) + ":/";
         std::string src       = entry.path + "/" + profileHex;
 
+        // WR-03 INVARIANT (do not break on edit): wiping the live save BEFORE
+        // copying the backup back in is only safe because the commit is GATED on
+        // copy_tree succeeding. fsdevMountSaveData gives a transactional mount —
+        // an uncommitted mount is discarded on unmount. So if copy_tree fails
+        // midway (disk/IO error), we must NOT call fsdevCommitDevice; the partial
+        // write is then thrown away and the on-disk save is left at its
+        // pre-restore state. Any change that commits unconditionally, or moves
+        // the commit before the copy_tree check, would risk leaving a partially
+        // restored save permanently.
         clear_tree(mountRoot);                      // wipe current save contents
         bool ok = copy_tree(src, mountRoot, nullptr); // write backup files back in
-        if (ok && R_SUCCEEDED(fsdevCommitDevice(kMount))) // commit, or it is discarded
+        if (ok && R_SUCCEEDED(fsdevCommitDevice(kMount))) // commit ONLY on full copy; else discarded
             done.push_back(profileHex);
         else
             skipped.push_back(profileHex);
