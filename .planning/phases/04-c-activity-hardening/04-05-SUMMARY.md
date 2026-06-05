@@ -88,3 +88,9 @@ None — no external service configuration required.
 ---
 *Phase: 04-c-activity-hardening*
 *Completed: 2026-06-05*
+
+## Self-Check: PASSED
+
+- `tests/test_save_sync.cpp` — FOUND
+- `04-05-SUMMARY.md` — FOUND
+- Commit `e2cfdda` — FOUND in git log

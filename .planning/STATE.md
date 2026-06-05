@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
+status: Awaiting next milestone
 stopped_at: Completed 04-06-PLAN.md
-last_updated: "2026-06-05T18:47:09.008Z"
-last_activity: 2026-06-05
+last_updated: "2026-06-05T19:41:32.661Z"
+last_activity: 2026-06-05 — Milestone v1.0 completed and archived
 progress:
   total_phases: 4
   completed_phases: 4
@@ -18,19 +18,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-04)
+See: .planning/PROJECT.md (updated 2026-06-05)
 
 **Core value:** Every issue in CONCERNS.md resolved (or explicitly deferred) without regressing existing behavior — verified by host tests and a clean desktop build
-**Current focus:** Phase 04 — c-activity-hardening
+**Current focus:** Planning next milestone — v1.0 Hardening shipped 2026-06-05
 
 ## Current Position
 
-Phase: 04 (c-activity-hardening) — EXECUTING
-Plan: 2 of 6
-Status: Ready to execute
-Last activity: 2026-06-05
-
-Progress: [██████████] 100%
+Phase: Milestone v1.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-05 — Milestone v1.0 completed and archived
 
 ## Performance Metrics
 
@@ -109,13 +107,24 @@ None yet.
 
 ## Deferred Items
 
+Items acknowledged and deferred at milestone close on 2026-06-05:
+
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
 | Performance | PERF-01: avoid double archive traversal | v2 backlog | Roadmap |
 | Performance | PERF-02: cache CloudStatus for upload skip | v2 backlog | Roadmap |
+| Hardware UAT | Phase 03: TLS-insecure red banner visual render across all activity screens (forced latch) | human_needed | v1.0 close |
+| Hardware UAT | Phase 03: save_service_switch.cpp compiles clean under devkitPro Switch toolchain (IN-03 uid_from_hex) | human_needed | v1.0 close |
+| Hardware UAT | Phase 04: 5 activity-pop / dialog-button UAF crash-path scenarios (settings, clear_cheats, mod_manager, theme_detail) | testing | v1.0 close |
+
+All deferred UAT/verification items are on-hardware checks the host test suite cannot exercise; all automated gates (Vitest + doctest + clean `-DUSE_SDL2=ON` build) passed. Resume with `/gsd-verify-work 03` / `/gsd-verify-work 04` when a Switch is available.
 
 ## Session Continuity
 
 Last session: 2026-06-05T18:47:09.000Z
 Stopped at: Completed 04-06-PLAN.md
 Resume file: None
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone

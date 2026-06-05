@@ -19,39 +19,31 @@ Every issue documented in `CONCERNS.md` is resolved (or explicitly deferred with
 - ✓ Theme browse/apply via Themezer + exelix engine (`core/themes`, `platform/themes`) — existing
 - ✓ Cloud save upload/download/sync with optimistic locking (`core/saves`, `platform/saves`, `api/routes/saves`) — existing
 - ✓ Sysmodule scan/manage (`core/sysmod`, `platform/sysmod`) — existing
-- ✓ Community feed + posts with image upload (`core/feed`, `platform/feed`, `api/routes/{feed,posts}`) — existing
 - ✓ JWT auth with refresh-token rotation, rate limiting (`api/plugins/auth`, `api/lib/refresh-tokens`) — existing
 - ✓ Clean-architecture split: pure `core/` covered by host doctest suite, `platform/` switch/fake pairs — existing
 
+**Shipped v1.0 (Hardening):**
+
+- ✓ Community feature removed entirely — posts/feed/comments/likes routes, `@fastify/static`+`multipart`, `Post`/`Like`/`Comment` models, client feed code; shared `session_codec`/`auth_store` preserved (RM-01..RM-04) — v1.0
+- ✓ Save blobs require auth and owner identity — static serving removed; cross-user 403, owner 200, direct path 404, regression-tested (SEC-01, TEST-01) — v1.0
+- ✓ Token revocation on logout — `jti` claim + Postgres `RevokedToken` blocklist; pre-deploy tokens pass unblocked; DB outage fails open (SEC-02) — v1.0
+- ✓ TLS fail-closed when CA probe fails + latent on-screen warning banner wired in 14 activities / 5 locales (SEC-03, revised to fail-closed per CONTEXT D-06a) — v1.0
+- ✓ `cloudBusy` is `std::atomic<bool>` with documented contract (CONC-01) — v1.0
+- ✓ `ThomazActivity` base with `runAsync` auto-capturing the `alive` guard; all 13 activities migrated, `brls::async` count = 0 (CONC-02) — v1.0
+- ✓ In-flight curl requests abort on activity destruction across both transports (`mod_download` + `http_client_curl`) (CONC-03) — v1.0
+- ✓ `ensure_parent_dirs` + `copy_tree` consolidated into one `platform/fs_util` helper (7 call-sites) (DEBT-01, DEBT-02) — v1.0
+- ✓ C-style view casts replaced with null-guarded `dynamic_cast` in flagged activities (DEBT-03) — v1.0
+- ✓ API production logging via `envToLogger` map with header/PII redaction (DEBT-04) — v1.0
+- ✓ Regression/host tests added: revision branches, save-blob 404, TLS fail-safe, conflict-resolution/`plan_push` (TEST-02, TEST-01, TEST-03, TEST-04) — v1.0
+
 ### Active
 
-<!-- This milestone: remove the community feature, then fix everything mapped in CONCERNS.md. -->
+<!-- v1.0 Hardening shipped. Next milestone TBD via /gsd-new-milestone. -->
 
-**Community feature removal** (decided 2026-06-04, runs first)
-- [ ] Remove posts/feed/comments/likes entirely — API routes, `@fastify/static` + `multipart`, `Post`/`Like`/`Comment` Prisma models, client feed code
-- [ ] Preserve shared auth/session that lives under `feed/` dirs (`session_codec`, `auth_store`) and all cloud-save functionality
-
-**Security**
-- [ ] Save blobs no longer publicly downloadable — achieved by removing static serving (above); verified by regression test (HIGH)
-- [ ] Visible on-screen warning when TLS verification is unavailable (CA bundle probe fails) — behavior unchanged, safety net only
-- [ ] Token revocation / blocklist on logout/compromise — current token only; JWT lifetime unchanged, safety net only
-
-**Concurrency / crashes**
-- [ ] `cloudBusy` threading contract made safe/explicit (document invariant or `std::atomic<bool>`)
-- [ ] `alive` lifetime-guard pattern made hard to omit (shared `runAsync` wrapper on activity base)
-- [ ] `brls::async` in-flight request cancellation on activity destruction (pool-exhaustion guard)
-
-**Tech debt / duplication**
-- [ ] `ensure_parent_dirs` extracted to one shared `platform/fs_util` helper (4 copies removed)
-- [ ] `copy_tree` factored into a single shared platform utility (2 copies removed)
-- [ ] C-style view casts replaced with `brls::View::cast<T>()` / null-guarded `dynamic_cast`
-- [ ] Production logging enabled in the API (`logger` not unconditionally false)
-
-**Test coverage**
-- [ ] API test for saves `PUT` revision-required / revision-conflict branches
-- [ ] Test asserting save-blob URL is not publicly accessible (security regression guard)
-- [ ] Test for the TLS fail-safe branch (`ca_ok == false`)
-- [ ] Coverage for the cloud-save upload conflict-resolution path
+_None — v1.0 Hardening complete. Candidates for the next milestone:_
+- [ ] PERF-01: avoid double archive traversal per mod extraction (deferred from v1.0)
+- [ ] PERF-02: cache last-known `CloudStatus` to skip the upload status prefetch (deferred from v1.0)
+- [ ] On-hardware UAT pass: 5 Phase-04 activity-pop/dialog UAF crash-path scenarios + Phase-03 TLS banner render + `save_service_switch.cpp` Switch-toolchain compile (deferred from v1.0 close — see STATE.md)
 
 ### Out of Scope
 
@@ -71,6 +63,8 @@ Every issue documented in `CONCERNS.md` is resolved (or explicitly deferred with
 - Several fragile areas are concurrency patterns (`alive` guard, `cloudBusy`, async pool) that are correct today but easy to break in future edits.
 - API runs in production at `api.thomaz.baseup.cc` (Lightsail, PM2, auto-deploy on push to `main` touching `api/**`) — security fixes ship to a live service.
 
+**Post-v1.0 state (2026-06-05):** Community feature fully excised from both API and client. API security hardened (auth-gated save blobs, token revocation, production logging) with a green Vitest regression suite. C++ client refactored onto a `ThomazActivity`/`runAsync` base that makes the `alive` guard unforgettable, with curl cancellation on teardown and a shared `fs_util`; host doctest suite passes (175+ tests). All gates are host-only — a physical-Switch UAT pass for the activity-pop crash paths and TLS banner render remains outstanding (deferred, non-gating).
+
 ## Constraints
 
 - **Verification**: Each fix needs a host test (doctest for core, Vitest for API) where feasible, plus a clean desktop build (`-DUSE_SDL2=ON`). Hardware validation is a separate manual checklist, not a per-item gate.
@@ -83,14 +77,16 @@ Every issue documented in `CONCERNS.md` is resolved (or explicitly deferred with
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Treat CONCERNS.md as the backlog; no new hunting | Audit already surfaced concrete, prioritized issues | — Pending |
-| Remove the entire community feature (posts/feed) as the first phase | No longer wanted; its `@fastify/static`/`multipart` path is the root cause of the save-blob exposure (SEC-01) | — Pending |
-| Logout revokes only the current token (not all sessions); tokens without `jti` pass until relogin | Simplest safety net; no break for existing 365-day console tokens | — Pending |
-| Keep `session_codec` + `auth_store` (under `feed/` dirs) — they are auth, not community | Cloud saves depend on them | — Pending |
-| Fix all four fronts (security, concurrency, debt, tests) | User wants a thorough hardening pass | — Pending |
-| Intentional trade-offs get safety nets, not behavior changes | Preserve console UX; avoid regressions on a live service | — Pending |
-| Verify via host tests + clean desktop build; hardware separate | On-hardware testing is manual; can't gate every fix on it | — Pending |
-| Performance items deferred | Lower risk/impact than security & crash items | — Pending |
+| Treat CONCERNS.md as the backlog; no new hunting | Audit already surfaced concrete, prioritized issues | ✓ Good — 18/18 reqs shipped from the backlog |
+| Remove the entire community feature (posts/feed) as the first phase | No longer wanted; its `@fastify/static`/`multipart` path is the root cause of the save-blob exposure (SEC-01) | ✓ Good — removal closed SEC-01 at the source (RM-01..04) |
+| Logout revokes only the current token (not all sessions); tokens without `jti` pass until relogin | Simplest safety net; no break for existing 365-day console tokens | ✓ Good — SEC-02 shipped; pre-deploy tokens unaffected |
+| Keep `session_codec` + `auth_store` (under `feed/` dirs) — they are auth, not community | Cloud saves depend on them | ✓ Good — preserved; cloud saves intact |
+| Fix all four fronts (security, concurrency, debt, tests) | User wants a thorough hardening pass | ✓ Good — all four delivered |
+| Intentional trade-offs get safety nets, not behavior changes | Preserve console UX; avoid regressions on a live service | ✓ Good — 365-day JWT lifetime preserved |
+| Verify via host tests + clean desktop build; hardware separate | On-hardware testing is manual; can't gate every fix on it | ⚠️ Revisit — 3 hardware UAT items deferred at close; needs a Switch pass |
+| Performance items deferred | Lower risk/impact than security & crash items | — Pending — PERF-01/02 carried to next milestone |
+| TLS revised from fail-open+banner to **fail-closed** during Phase 3 (CONTEXT D-06a) | Refusing unauthenticated downloads is safer than warning-and-proceeding; banner kept latent | ✓ Good — TEST-03 asserts both branches |
+| `runAsync` base-class wrapper (CONC-02) over per-site `alive` captures | Makes the use-after-free guard impossible to forget; `brls::async` count driven to 0 | ✓ Good — 13 activities migrated |
 
 ## Evolution
 
@@ -110,4 +106,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-04 after initialization*
+*Last updated: 2026-06-05 after v1.0 Hardening milestone*

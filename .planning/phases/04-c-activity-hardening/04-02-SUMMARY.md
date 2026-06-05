@@ -129,6 +129,17 @@ None — no external service configuration required.
 - Plans 02 (this plan) provides the 4 DEBT-03/CONC-02 shared activities migrated; Plans 03 (the remaining 9 activities — base-swap + runAsync only, no DEBT-03) can proceed
 - `cancelledFlag()` accessor on `ThomazActivity` is available for Plan 04 (CONC-03) to thread the `cancelled` shared_ptr into platform-layer curl calls
 
+## Self-Check: PASSED
+
+- `04-02-SUMMARY.md` exists on disk
+- All 8 source files exist (4 headers + 4 cpp)
+- Commit `740f04f` (Task 1) exists in git log
+- Commit `1cbf2a7` (Task 2) exists in git log
+- All 4 headers: `public ThomazActivity` confirmed by grep
+- Zero `brls::async` calls remain in all 4 cpp files
+- Zero C-style `(brls::T*)this->getView` casts remain in all 4 cpp files
+- `cloudBusy` preserved in `save_detail_activity.hpp`
+
 ---
 *Phase: 04-c-activity-hardening*
 *Completed: 2026-06-05*
