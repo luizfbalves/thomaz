@@ -45,9 +45,9 @@ decisions:
   - test_http_feed_client.cpp removed (orphan from Phase 1 community removal, blocking make)
   - test_mod_store.cpp updated to include fs_util.hpp (copy_tree moved out of mod_store.hpp)
 metrics:
-  duration: "~18 minutes"
-  completed: "2026-06-05T15:20:59Z"
-  tasks_completed: 2
+  duration: "~25 minutes"
+  completed: "2026-06-05T15:45:00Z"
+  tasks_completed: 3
   tasks_total: 3
   files_created: 3
   files_modified: 10
@@ -83,10 +83,11 @@ D-05 equivalence gate: `tests/test_fs_util.cpp` proves via inline char-by-char o
 | TDD RED | D-05 test + Makefile fix | 03000fe | tests/test_fs_util.cpp, tests/Makefile, tests/test_http_feed_client.cpp (deleted) |
 | Task 1 GREEN | fs_util.{hpp,cpp} implementation | 1e8179e | source/platform/fs_util.hpp, source/platform/fs_util.cpp, tests/Makefile |
 | Task 2 | Migrate 7 call-sites | 33ed988 | 9 source files modified |
+| Task 3 | Desktop build verification (checkpoint APPROVED) | — | cmake -DUSE_SDL2=ON configure + full build |
 
 ## Pending
 
-**Task 3 (checkpoint:human-verify):** Desktop CMake build verification — human must run fresh CMake configure with `-DUSE_SDL2=ON` to confirm fs_util.cpp is picked up by GLOB_RECURSE and compiled with zero new warnings.
+None. All 3 tasks complete.
 
 ## Verification Results
 
@@ -95,6 +96,7 @@ D-05 equivalence gate: `tests/test_fs_util.cpp` proves via inline char-by-char o
 - `grep -l fs_util.hpp` across all 7 migrated files: **all 7 found**
 - `grep -c copy_tree source/platform/mods/mod_store.hpp`: **0**
 - No C++20-only constructs (std::format, std::span) in fs_util.cpp/.hpp
+- **Desktop build (Task 3, APPROVED):** Fresh `cmake -DPLATFORM_DESKTOP=ON -DUSE_SDL2=ON -S . -B build_p3verify` exited 0; `fs_util.cpp` compiled at 90% build step; full link exit 0; zero new warnings attributable to fs_util.cpp or any of the 7 migrated files (sole `#pragma message` from third-party libarchive header — pre-existing, not new)
 
 ## Deviations from Plan
 

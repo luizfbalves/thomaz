@@ -74,7 +74,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Create shared fs_util.{hpp,cpp}; migrate all 7 ensure_parent_dirs/copy_tree call-sites; update tests/Makefile SRCS; D-05 equivalence doctest [DEBT-01, DEBT-02] (Wave 1)
+- [x] 03-01-PLAN.md — Create shared fs_util.{hpp,cpp}; migrate all 7 ensure_parent_dirs/copy_tree call-sites; update tests/Makefile SRCS; D-05 equivalence doctest [DEBT-01, DEBT-02] (Wave 1)
 - [ ] 03-02-PLAN.md — Extract pure tls_policy(bool) seam + insecure latch in curl_tls.hpp; TEST-03 host doctest for the ca_present==false fail-safe branch [TEST-03] (Wave 1, parallel)
 - [ ] 03-03-PLAN.md — install_tls_warning_banner shared helper + wire into 14 activities + i18n in 5 locales (persistent on-screen TLS warning) [SEC-03] (Wave 2)
 - [ ] 03-04-PLAN.md — Atomicize cloudBusy to std::atomic<bool> in save_detail_activity (load/store at all 11 sites); alive member untouched (S2) [CONC-01] (Wave 3)
@@ -112,5 +112,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Remove Community Feature | 3/3 | Complete   | 2026-06-04 |
 | 2. API Security + Regression Tests | 1/3 | In Progress|  |
-| 3. C++ Platform Hardening | 0/? | Not started | - |
+| 3. C++ Platform Hardening | 1/4 | In Progress|  |
 | 4. C++ Activity Hardening | 0/? | Not started | - |
