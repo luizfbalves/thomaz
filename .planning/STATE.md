@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 Phase: Milestone v1.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-06-05 — Milestone v1.0 completed and archived
+Last activity: 2026-06-05 — Completed quick task 260605-ot7: theme-apply screen button busy-guard
 
 ## Performance Metrics
 
@@ -104,6 +104,12 @@ None yet.
 - Phase 2: Save blob static exposure already fixed in Phase 1; Phase 2 adds TEST-01 as the regression guard
 - Phase 3: Second `copy_tree` location (`save_service_switch.cpp`) unconfirmed — verify at Phase 3 start
 - Phase 4: `brls::View::cast<T>()` existence in vendored Borealis unconfirmed — check `lib/borealis/library/include/borealis/core/view.hpp` before Phase 4
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260605-ot7 | Theme-apply screen UX: busy-guard download/apply button against repeated clicks | 2026-06-05 | 4f9205b | [260605-ot7-melhorar-a-ux-da-tela-de-aplicacao-de-te](./quick/260605-ot7-melhorar-a-ux-da-tela-de-aplicacao-de-te/) |
 
 ## Deferred Items
 
