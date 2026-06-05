@@ -15,10 +15,21 @@ std::optional<std::string> read_text_file(const std::string& path) {
     std::string out;
     char buf[4096];
     std::size_t n;
-    while ((n = std::fread(buf, 1, sizeof(buf), f)) > 0)
+    // WR-04: cap the read — cheat/version-cache files are small, but they live
+    // on SD-card paths that a malformed download could replace with an
+    // arbitrarily large file (unbounded allocation on a memory-constrained
+    // console). 1 MiB is far beyond any legitimate cheat .txt or version cache.
+    constexpr std::size_t kMaxBytes = 1u << 20;
+    while ((n = std::fread(buf, 1, sizeof(buf), f)) > 0 && out.size() < kMaxBytes)
         out.append(buf, n);
 
+    // WR-05: distinguish EOF from a mid-read I/O error. fread()==0 is true for
+    // both; without ferror a flaky-SD truncation yields a half-parsed cache that
+    // looks like valid content. Mirror save_service_switch's precedent.
+    bool readErr = std::ferror(f) != 0;
     std::fclose(f);
+    if (readErr)
+        return std::nullopt;
     return out;
 }
 

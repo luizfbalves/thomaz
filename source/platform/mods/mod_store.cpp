@@ -70,9 +70,18 @@ std::optional<std::string> read_marker(const std::string& path) {
     std::string out;
     char buf[256];
     std::size_t n;
-    while ((n = std::fread(buf, 1, sizeof(buf), f)) > 0)
+    // WR-04: cap the read — a marker is one short line, but it lives on an
+    // SD-card path a user/malformed download could replace with a huge file,
+    // and the result is later used as a path component.
+    while ((n = std::fread(buf, 1, sizeof(buf), f)) > 0 && out.size() < 4096)
         out.append(buf, n);
+    // WR-05: distinguish EOF from a mid-read I/O error (flaky SD card). A
+    // truncated-but-successful-looking read would silently select the wrong
+    // active mod — mirror save_service_switch's ferror precedent and fail.
+    bool readErr = std::ferror(f) != 0;
     std::fclose(f);
+    if (readErr)
+        return std::nullopt;
     // Trim a single trailing newline if present.
     if (!out.empty() && out.back() == '\n')
         out.pop_back();
