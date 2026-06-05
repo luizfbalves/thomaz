@@ -58,7 +58,12 @@ Remove the desktop (PC/SDL2/GLFW) build target entirely so the source tree targe
   2. No desktop selection branch survives: `grep -rn 'ifndef __SWITCH__\|#else' source/` shows no remaining `*_fake`-vs-`*_switch` seam, and each affected `*_switch` impl is the sole implementation behind its interface (the `#ifdef __SWITCH__ … #endif` guards around always-Switch code may stay or be dropped, but no `#else`/`#ifndef __SWITCH__` desktop branch remains).
   3. No `source/` file references a deleted stub or a desktop-only symbol/include — `grep -rnE 'PLATFORM_DESKTOP|SDL2|GLFW|_fake' source/` returns nothing except the retained `fake_cloud_save_client` references.
   4. `tests/Makefile` still builds and `make -C tests test` passes unchanged, confirming core + platform-neutral logic is unregressed and `saves/fake_cloud_save_client.*` is still compiled by the suite.
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 05-01-PLAN.md — Collapse main.cpp and home_activity.cpp factory/include seams (consumer edits before stub deletion)
+- [ ] 05-02-PLAN.md — Delete 9 desktop stub files from source/platform/
+- [ ] 05-03-PLAN.md — Collapse 22 remaining #else desktop branches across 12 files + clean 4 header comments
+- [ ] 05-04-PLAN.md — Run all 4 success-criterion greps and make -C tests test verification gate
 
 ### Phase 6: Strip Desktop from Build System
 **Goal**: The build system offers only the Switch toolchain — CMake has no `PLATFORM_DESKTOP` path, the desktop helper scripts are gone, and a clean Switch build still produces `thomaz.nro`.
@@ -92,8 +97,6 @@ Remove the desktop (PC/SDL2/GLFW) build target entirely so the source tree targe
 | 2. Full Extraction Engine          | v0.5.0 | 4/4 | Complete | 2026-06-05 |
 | 3. Theme UI Integration            | v0.5.0 | 0/3 | Carried forward | - |
 | 4. Forwarder (Optional)            | v0.5.0 | 0/1 | Carried forward | - |
-| 5. Collapse Source Seams to Switch-Only | v1.1 | 0/0 | Not started | - |
+| 5. Collapse Source Seams to Switch-Only | v1.1 | 0/4 | Not started | - |
 | 6. Strip Desktop from Build System      | v1.1 | 0/0 | Not started | - |
 | 7. Docs Cleanup & Final Verification Gate | v1.1 | 0/0 | Not started | - |
-</content>
-</invoke>
