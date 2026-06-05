@@ -59,6 +59,11 @@ ExtractResult extract_archive(const std::string& archive_path,
                               const std::function<void(int, int)>& progress) {
     ExtractResult result;
 
+    // IN-02 (maintainability): this re-opens and fully walks the archive solely
+    // to obtain an entry count for the progress callback, then open_archive()
+    // below opens it a second time to extract. Correct but wasteful on a console.
+    // Acceptable for v1 (performance out of scope); a future optimisation could
+    // pass total=-1 (indeterminate) and skip this pre-count, or cache entries.
     int total = static_cast<int>(list_archive_entries(archive_path).size());
 
     struct archive* a = open_archive(archive_path);
