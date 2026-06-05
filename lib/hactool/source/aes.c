@@ -95,8 +95,13 @@ void aes_encrypt(aes_ctx_t *ctx, void *dst, const void *src, size_t l) {
         }
     }
 
-    /* Flush all data */
-    mbedtls_cipher_finish(&ctx->cipher_enc, NULL, NULL);
+    /* Flush all data.
+     * olen MUST be a valid pointer: mbedtls_cipher_finish() does `*olen = 0`
+     * at the top before the XTS/CTR/stream early-return, so passing NULL
+     * null-derefs (Data Abort at 0x0) on a build without MBEDTLS_CHECK_PARAMS.
+     * For the XTS/CTR modes hactool uses, finish writes no output, so a local
+     * olen sink is sufficient. */
+    mbedtls_cipher_finish(&ctx->cipher_enc, NULL, &out_len);
 }
 
 /* Decrypt with context. */
@@ -135,8 +140,9 @@ void aes_decrypt(aes_ctx_t *ctx, void *dst, const void *src, size_t l)
         }
     }
 
-    /* Flush all data */
-    mbedtls_cipher_finish(&ctx->cipher_dec, NULL, NULL);
+    /* Flush all data. olen must be non-NULL — see aes_encrypt() above
+     * (cipher_finish does `*olen = 0` before the XTS/CTR early-return). */
+    mbedtls_cipher_finish(&ctx->cipher_dec, NULL, &out_len);
 
     if (src_equals_dst)
     {
