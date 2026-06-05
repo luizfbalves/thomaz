@@ -1,0 +1,50 @@
+<brls:AppletFrame title="" backgroundColor="#000000" iconInterpolation="linear">
+    <brls:Box axis="row" grow="1.0" backgroundColor="#000000">
+
+        <!-- Left: app icon centered -->
+        <brls:Box axis="column" grow="1.0"
+                  justifyContent="center" alignItems="center"
+                  backgroundColor="#000000">
+            <brls:Image id="bootIcon"
+                        image="@res/icon/icon.png"
+                        width="180" height="180"/>
+        </brls:Box>
+
+        <!-- Right: login and guest buttons -->
+        <brls:Box axis="column" grow="1.0"
+                  justifyContent="center" alignItems="center"
+                  backgroundColor="#000000">
+
+            <!-- Log in button -->
+            <AnimatedBox id="loginBtn"
+                         entranceDelay="80"
+                         axis="row" justifyContent="center" alignItems="center"
+                         width="320" height="60"
+                         marginBottom="18"
+                         cornerRadius="16"
+                         backgroundColor="@theme/thomaz/tile_cheats"
+                         focusable="true" highlightCornerRadius="16"
+                         hideHighlightBackground="true">
+                <brls:Label id="loginLabel"
+                            text="@i18n/thomaz/boot/login"
+                            fontSize="19" textColor="#FFFFFF"/>
+            </AnimatedBox>
+
+            <!-- Continue without login button -->
+            <AnimatedBox id="guestBtn"
+                         entranceDelay="180"
+                         axis="row" justifyContent="center" alignItems="center"
+                         width="320" height="60"
+                         cornerRadius="16"
+                         backgroundColor="@theme/thomaz/surface_1"
+                         borderColor="@theme/thomaz/line" borderThickness="1"
+                         focusable="true" highlightCornerRadius="16"
+                         hideHighlightBackground="true">
+                <brls:Label id="guestLabel"
+                            text="@i18n/thomaz/boot/guest"
+                            fontSize="19" textColor="@theme/thomaz/text"/>
+            </AnimatedBox>
+
+        </brls:Box>
+    </brls:Box>
+</brls:AppletFrame>
