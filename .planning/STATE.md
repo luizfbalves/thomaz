@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-06-05T17:39:26.711Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-06-05T17:52:46.356Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 15
-  completed_plans: 12
-  percent: 80
+  completed_plans: 13
+  percent: 87
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-04)
 ## Current Position
 
 Phase: 04 (c-activity-hardening) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-06-05
 
-Progress: [████████░░] 80%
+Progress: [█████████░] 87%
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Progress: [████████░░] 80%
 | Phase 03-c-platform-hardening P04 | 5min | 1 tasks | 2 files |
 | Phase 04-c-activity-hardening P01 | 3min | 3 tasks | 3 files |
 | Phase 04-c-activity-hardening P05 | 3min | 1 tasks | 1 files |
+| Phase 04-c-activity-hardening P02 | 20min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,9 @@ Recent decisions affecting current work:
 - [04-01]: runAsync uses template form (not std::function) — moves worker/onSync into lambda; avoids allocation overhead
 - [04-01]: cancelledFlag() returns shared_ptr<atomic<bool>> directly — Plan 04 CONC-03 uses this to thread the flag into platform curl calls
 - [04-01]: run_if_alive null-guard branch implemented — returns false/drops onSync when alive is nullptr
+- [Phase ?]: [04-02]: shared_ptr<T> result struct for runAsync data handoff — worker writes into it, onSync reads it; cleaner than captures across async boundary
+- [Phase ?]: [04-02]: Non-async alive captures in IME/dialog callbacks preserved — these are UI-event closures not brls::async sites; alive resolved via ThomazActivity inheritance
+- [Phase ?]: [04-02]: DEBT-03 null-guard early returns added for all bare-assignment casts; redundant downstream null checks removed for simplicity
 
 ### Pending Todos
 
@@ -108,6 +112,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-05T17:39:26.702Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-06-05T17:52:46.333Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None
