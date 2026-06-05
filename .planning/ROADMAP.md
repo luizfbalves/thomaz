@@ -23,7 +23,7 @@ skip the manual hold-`R` launch.
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [~] **Phase 1: Privileged Extraction Spike** - Re-vendor hactool+mbedtls, run as a title takeover, and prove BIS→lr→SPL→hactool extracts ONE qlaunch `.szs` to the SD on real hardware (code-complete 2026-06-04; awaiting on-hardware validation — plan 01-05 Task 2 human-verify checkpoint open)
-- [ ] **Phase 2: Full Extraction Engine** - Extract every required layout from all three titles (qlaunch, Psl, MyPage) into the canonical `/themes/systemData/` flat layout
+- [~] **Phase 2: Full Extraction Engine** - Extract every required layout from all three titles (qlaunch, Psl, MyPage) into the canonical `/themes/systemData/` flat layout (code-complete 2026-06-05, 187/187 host tests + all key-links verified; awaiting on-hardware validation — plan 02-04 Task 2 human-verify checkpoint open)
 - [ ] **Phase 3: Theme UI Integration** - "Extrair layouts do firmware" action with already-extracted/re-extract state, firmware-version record, base_missing unblock, and clear success/failure messaging
 - [ ] **Phase 4: Forwarder (Optional)** - Provide and document an installable Home-menu forwarder that launches thomaz directly in Application mode
 
@@ -64,7 +64,7 @@ Plans:
 - [x] 02-01-PLAN.md — Add `common` to `target_map()` (D-01a) + extend `test_cfw_paths` doctest; declare `ExtractAllResult` + `extract_all_base_layouts()` in the neutral `firmware_extract.hpp` and add the desktop no-op (interface contract) — Wave 1
 - [x] 02-02-PLAN.md — Extract D-04 structural validation into a neutral `szs_validate.{hpp,cpp}` (Yaz0+SARC) + host doctest; bump `tests/Makefile` to C++20 with SarcLib so success criterion 4 covers validation — Wave 1
 - [x] 02-03-PLAN.md — Widen `nca_romfs_filter` to a `/lyt/` directory prefix (D-01); implement `extract_all_base_layouts()` single-session multi-title best-effort driver (three titles, D-02/D-02a, D-04 validate, D-03 flat overwrite) — Wave 2
-- [ ] 02-04-PLAN.md — Hardware verify: run `extract_all_base_layouts()` under title takeover, confirm all six qlaunch layouts + Psl + MyPage land flat in `/themes/systemData/` (success criteria 1-3) — Wave 3 (checkpoint)
+- [~] 02-04-PLAN.md — Hardware verify: run `extract_all_base_layouts()` under title takeover, confirm all six qlaunch layouts + Psl + MyPage land flat in `/themes/systemData/` (success criteria 1-3) — Wave 3 (checkpoint) — Task 1 (device trigger) done; Task 2 on-hardware verify DEFERRED, not approved
 
 ### Phase 3: Theme UI Integration
 **Goal**: Surface extraction as a first-class one-time action in the theme UI, wired so a successful run immediately unblocks "Aplicar Tema", with visible already-extracted/re-extract state, a recorded firmware version, and clear success/failure messaging.

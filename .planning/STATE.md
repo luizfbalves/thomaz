@@ -27,9 +27,9 @@ Phase B's existing "Aplicar Tema".
 
 ## Current Position
 
-Phase: 02 (full-extraction-engine) — EXECUTING
-Plan: 4 of 4
-Status: Ready to execute
+Phase: 02 (full-extraction-engine) — CODE-COMPLETE, AWAITING HARDWARE
+Plan: 4 of 4 (02-01/02/03 done; 02-04 Task 1 done, Task 2 on-hardware verify DEFERRED)
+Status: Blocked on on-hardware verification (plan 02-04 Task 2, human-verify checkpoint open)
 Last activity: 2026-06-05
 Progress: [█████████░] 89%
 
