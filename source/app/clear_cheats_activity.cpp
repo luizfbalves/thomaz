@@ -126,7 +126,8 @@ void ClearCheatsActivity::confirmAndClear()
                       "thomaz/clear/confirm_post"_i18n;
 
     auto* dialog = new brls::Dialog(msg);
-    dialog->addButton("thomaz/clear/confirm_button"_i18n, [this]() {
+    dialog->addButton("thomaz/clear/confirm_button"_i18n, [this, alive = this->alive]() {
+        if (!alive->load()) return;
         int cleared = 0;
         for (auto& [titleId, cell] : this->selections)
             if (cell->isOn())

@@ -95,8 +95,9 @@ void ThemeDetailActivity::onContentAvailable() {
         });
 
     if (auto* btn = this->getView("downloadButton")) {
-        btn->registerClickAction([this](brls::View*) {
-            brls::sync([this]() {
+        btn->registerClickAction([this, alive = this->alive](brls::View*) {
+            brls::sync([this, alive]() {
+                if (!alive->load()) return;
                 if (this->applied)         this->doRemove();
                 else if (this->downloaded) this->doApply();
                 else                       this->startDownload();

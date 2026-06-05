@@ -189,7 +189,8 @@ void ModManagerActivity::refreshList()
         uninstallBtn->addView(uninstallLabel);
         uninstallBtn->registerClickAction([this, tid, modName](brls::View*) {
             auto* dialog = new brls::Dialog("mods/uninstall_confirm"_i18n);
-            dialog->addButton("mods/uninstall_button"_i18n, [this, tid, modName]() {
+            dialog->addButton("mods/uninstall_button"_i18n, [this, alive = this->alive, tid, modName]() {
+                if (!alive->load()) return;
                 ModActionResult r = uninstall_mod(tid, modName);
                 if (!r.ok)
                     brls::Application::notify("mods/uninstall_failed"_i18n);
