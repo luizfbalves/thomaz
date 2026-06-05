@@ -18,7 +18,14 @@ void install_tls_warning_banner(brls::Activity* activity)
     // by justifyContent="spaceBetween". Mirrors the install_header_username
     // approach for app-wide injection (D-02a).
     auto* hintBox = dynamic_cast<brls::Box*>(activity->getView("brls/applet_frame/hint_box"));
-    if (!hintBox) return;
+    if (!hintBox)
+        hintBox = dynamic_cast<brls::Box*>(activity->getView("brls/applet_frame/header"));
+    if (!hintBox) {
+        // Pairing a fail-open path with a fail-silent warning would compound the
+        // risk: log loudly so an insecure session is never left fully unwarned.
+        brls::Logger::warning("tls banner: no hint_box/header slot on this activity; insecure mode unwarned");
+        return;
+    }
 
     auto* lbl = new brls::Label();
     lbl->setText("thomaz/tls/insecure_warning"_i18n);
