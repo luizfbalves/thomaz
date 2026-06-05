@@ -169,6 +169,14 @@ NcaExtractResult extract_szs_from_nca(
     std::fflush(stderr);
     std::freopen(kErrLog, "w", stderr);
 
+    // Build stamp (FIRST line of the log) — uniquely identifies which nro is on
+    // the SD card. __DATE__/__TIME__ are the compile time of THIS TU, so a stale
+    // install is obvious: compare this line to the nro's mtime. The "iso3" tag
+    // marks the isolated-mbedtls build (hactool bound to our private non-PSA
+    // mbedtls, not the portlib PSA copy that fails XTS decrypt setkey).
+    std::fprintf(stderr, "thomaz hactool build: %s %s [iso3]\n", __DATE__, __TIME__);
+    std::fflush(stderr);
+
     // --- Run the extraction under a recovery guard ----------------------------
     // Source: exelix hactool.cpp @ 2618b0c — RESEARCH Pattern 4.
     // nca_init:    parses + decrypts the NCA header (exit()s on a bad key).
