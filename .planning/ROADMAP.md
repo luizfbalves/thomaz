@@ -54,7 +54,7 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — Add RevokedToken model + hand-numbered migration (applied to test DB) and replace logger:false with the envToLogger map + pino-pretty devDep [DEBT-04] (Wave 1)
 - [x] 02-02-PLAN.md — Mint jti on both access-token signers, enforce the jti-gated fail-open blocklist in authenticate, and add best-effort revoke + lazy sweep to /auth/logout [SEC-02] (Wave 2)
-- [ ] 02-03-PLAN.md — Regression tests: TEST-01 save-blob 404 guard, TEST-02 revision_required branch, SEC-02 revoked-token rejection [SEC-01, TEST-01, TEST-02] (Wave 3)
+- [x] 02-03-PLAN.md — Regression tests: TEST-01 save-blob 404 guard, TEST-02 revision_required branch, SEC-02 revoked-token rejection [SEC-01, TEST-01, TEST-02] (Wave 3)
 
 **Planning flags:**
 - **jti scope (SEC-02):** Logout revokes only the current access token via `jti` claim + Postgres `RevokedToken` table. Refresh tokens are already DB-backed via `revokeRefreshToken` — no change there. Tokens minted before deploy (without `jti`) must pass the blocklist check unblocked, not be rejected.

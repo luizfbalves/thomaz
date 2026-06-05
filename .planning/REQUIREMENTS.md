@@ -18,7 +18,7 @@ The posts/feed/comments/likes community feature is being removed entirely. Its i
 
 ### Security
 
-- [ ] **SEC-01**: Save blobs are not downloadable without authentication and not by a non-owner — achieved by removing static file serving (RM-02); cross-user access via the API returns 403, owner access returns 200. Verified by TEST-01. *(AC-1, HIGH — fixed in removal phase, verified in security phase)*
+- [x] **SEC-01**: Save blobs are not downloadable without authentication and not by a non-owner — achieved by removing static file serving (RM-02); cross-user access via the API returns 403, owner access returns 200. Verified by TEST-01. *(AC-1, HIGH — fixed in removal phase, verified in security phase)*
 - [x] **SEC-02**: A revoked (logged-out) access token can no longer authenticate — `POST /auth/logout` blocklists the bearer token via a `jti` claim + DB-backed `RevokedToken`; that token then returns 401, while other valid tokens still return 200. Logout revokes only the current token; pre-deploy tokens without `jti` keep working until relogin. *(AC-5, HIGH)*
 - [ ] **SEC-03**: When the CA bundle probe fails on Switch (`ca_ok == false`), a persistent on-screen warning is shown; the fail-safe networking behavior is unchanged. *(AC-4)*
 
@@ -37,8 +37,8 @@ The posts/feed/comments/likes community feature is being removed entirely. Its i
 
 ### Testing
 
-- [ ] **TEST-01**: A regression test asserts no save-blob URL is publicly accessible (guards SEC-01 / RM-02 — no static route exposes saves). *(AC-1.1 test, HIGH)*
-- [ ] **TEST-02**: API tests cover the saves `PUT` revision path — `revision_required` (400), `revision_conflict` (409), new-slot create (200), matching-revision update (200). *(AC-T, HIGH)*
+- [x] **TEST-01**: A regression test asserts no save-blob URL is publicly accessible (guards SEC-01 / RM-02 — no static route exposes saves). *(AC-1.1 test, HIGH)*
+- [x] **TEST-02**: API tests cover the saves `PUT` revision path — `revision_required` (400), `revision_conflict` (409), new-slot create (200), matching-revision update (200). *(AC-T, HIGH)*
 - [ ] **TEST-03**: A host test covers the TLS fail-safe branch (`ca_ok == false`) so a regression that silently disables verification fails CI. *(AC-4 test)*
 - [ ] **TEST-04**: The cloud-save upload conflict-resolution path is covered (host doctest for the conflict/`plan_push` branch and/or the `runAsync`-dropped-callback semantics). *(CONCERNS Test Gaps)*
 
@@ -74,11 +74,11 @@ Explicitly excluded — see PROJECT.md and FEATURES.md anti-features.
 | RM-02 | Phase 1 | Complete |
 | RM-03 | Phase 1 | Complete |
 | RM-04 | Phase 1 | Complete |
-| SEC-01 | Phase 2 | Pending |
+| SEC-01 | Phase 2 | Complete |
 | SEC-02 | Phase 2 | Complete |
 | DEBT-04 | Phase 2 | Complete |
-| TEST-01 | Phase 2 | Pending |
-| TEST-02 | Phase 2 | Pending |
+| TEST-01 | Phase 2 | Complete |
+| TEST-02 | Phase 2 | Complete |
 | SEC-03 | Phase 3 | Pending |
 | CONC-01 | Phase 3 | Pending |
 | DEBT-01 | Phase 3 | Pending |
