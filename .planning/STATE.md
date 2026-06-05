@@ -5,7 +5,7 @@ milestone_name: milestone
 status: Awaiting next milestone
 stopped_at: Completed 04-06-PLAN.md
 last_updated: "2026-06-05T19:41:32.661Z"
-last_activity: 2026-06-05 — Milestone v1.0 completed and archived
+last_activity: 2026-06-05 — Milestone v1.0 completed and archived; v0.5.0 theme-extraction engine merged (Phases 1-2 shipped, 3-4 open)
 progress:
   total_phases: 4
   completed_phases: 4
@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-05)
 
 **Core value:** Every issue in CONCERNS.md resolved (or explicitly deferred) without regressing existing behavior — verified by host tests and a clean desktop build
-**Current focus:** Planning next milestone — v1.0 Hardening shipped 2026-06-05
+**Current focus:** Planning next milestone — v1.0 Hardening + v0.5.0 theme-extraction engine shipped 2026-06-05 (theme-UI Phases 3-4 still open)
 
 ## Current Position
 
