@@ -36,12 +36,22 @@ struct BrowsePage {
     bool is_complete = true;     // page >= page_count => no more pages
 };
 
+// One image shown in the theme detail gallery. `url` is the full-resolution
+// image (hero + fullscreen); `thumb_url` is the small image for the strip
+// (same as `url` for single-size assets like icons/backgrounds).
+struct GalleryImage {
+    std::string url;
+    std::string thumb_url;
+    std::string label;   // "Preview", "Background", an icon name, or a pack member name
+};
+
 // Detail resolved from theme(hexId)/pack(hexId). `parts` unifies download: a
 // standalone theme yields one part (itself); a pack yields its members.
 struct ThemeDetail {
     ThemeEntry              entry;
     std::string             description;
     std::vector<ThemePart>  parts;
+    std::vector<GalleryImage> gallery;
 };
 
 } // namespace thomaz::core
