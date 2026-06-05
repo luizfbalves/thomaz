@@ -67,6 +67,14 @@ bool download_file(const std::string& url, const std::string& dest_path,
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStatus);
     curl_easy_cleanup(curl);
 
+    // WR-02: download_file does NOT by itself guarantee a byte-complete file.
+    // A server that closes early after a 200 (or a chunked/no-Content-Length
+    // response) can yield a truncated archive that still passes
+    // (rc==CURLE_OK && 2xx && closeOk). Integrity of downloaded archives
+    // therefore depends on the downstream extractor's EOF check
+    // (libarchive_extractor.cpp surfaces r != ARCHIVE_EOF), which rejects a
+    // truncated archive. Callers that download non-archive content must not
+    // assume completeness from this function's success return alone.
     bool closeOk = (std::fclose(out) == 0);
     bool ok = (rc == CURLE_OK) && (httpStatus >= 200 && httpStatus < 300) && closeOk;
     if (!ok) {
