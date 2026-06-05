@@ -14,15 +14,23 @@ AuthActivity::AuthActivity(IAuthClient* client, std::function<void()> onAuthed)
 
 void AuthActivity::onContentAvailable()
 {
-    auto* userCell = (brls::InputCell*)this->getView("usernameCell");
-    auto* passCell = (brls::InputCell*)this->getView("passwordCell");
+    auto* userCell = dynamic_cast<brls::InputCell*>(this->getView("usernameCell"));
+    auto* passCell = dynamic_cast<brls::InputCell*>(this->getView("passwordCell"));
+    if (!userCell || !passCell) {
+        brls::Logger::error("auth.xml: username/password cell missing or wrong type");
+        return;
+    }
 
     userCell->init("thomaz/auth/username"_i18n, "", [this](std::string v){ this->username = v; },
                    "thomaz/auth/username"_i18n, "", 32);
     passCell->init("thomaz/auth/password"_i18n, "", [this](std::string v){ this->password = v; },
                    "thomaz/auth/password"_i18n, "", 64);
 
-    auto* tabsRow = (brls::Box*)this->getView("tabsRow");
+    auto* tabsRow = dynamic_cast<brls::Box*>(this->getView("tabsRow"));
+    if (!tabsRow) {
+        brls::Logger::error("auth.xml: tabsRow missing or wrong type");
+        return;
+    }
     auto makeTab = [this](const std::string& text, bool regMode) {
         auto* tab = new brls::Box(brls::Axis::ROW);
         tab->setFocusable(true);
@@ -49,6 +57,10 @@ void AuthActivity::onContentAvailable()
     tabsRow->addView(makeTab("thomaz/auth/register_tab"_i18n, true));
 
     auto* submit = this->getView("submitBtn");
+    if (!submit) {
+        brls::Logger::error("auth.xml: submitBtn missing");
+        return;
+    }
     submit->registerClickAction([this](brls::View*) { this->submit(); return true; });
     submit->addGestureRecognizer(new brls::TapGestureRecognizer(submit));
 
@@ -57,7 +69,11 @@ void AuthActivity::onContentAvailable()
 
 void AuthActivity::refreshMode()
 {
-    auto* submitLabel = (brls::Label*)this->getView("submitLabel");
+    auto* submitLabel = dynamic_cast<brls::Label*>(this->getView("submitLabel"));
+    if (!submitLabel) {
+        brls::Logger::error("auth.xml: submitLabel missing or wrong type");
+        return;
+    }
     submitLabel->setText(this->registerMode ? "thomaz/auth/submit_register"_i18n
                                             : "thomaz/auth/submit_login"_i18n);
 }
@@ -65,7 +81,11 @@ void AuthActivity::refreshMode()
 void AuthActivity::submit()
 {
     if (this->busy) return;
-    auto* status = (brls::Label*)this->getView("authStatus");
+    auto* status = dynamic_cast<brls::Label*>(this->getView("authStatus"));
+    if (!status) {
+        brls::Logger::error("auth.xml: authStatus missing or wrong type");
+        return;
+    }
 
     if (this->username.empty() || this->password.empty()) {
         status->setText("thomaz/auth/err_empty"_i18n);
