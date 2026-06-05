@@ -484,6 +484,62 @@ describe("thomaz-api", () => {
     expect(logout.json()).toEqual({ ok: true });
   });
 
+  // ── TEST-01: SEC-01 regression guard ─────────────────────────────────────
+  it("TEST-01: direct save-blob path is not publicly accessible", async () => {
+    const res = await app.inject({
+      method: "GET",
+      url: "/uploads/saves/some-user-id/01008BB901469000.bin",
+    });
+    expect(res.statusCode).toBe(404); // no static route serves uploads/
+  });
+
+  // ── TEST-02: revision_required branch (fourth PUT revision matrix branch) ─
+  it("TEST-02: PUT to existing slot without revision → 400 revision_required", async () => {
+    const user = `rev_req_${Date.now()}`;
+    const pass = "password1";
+    const titleId = `010000${Date.now().toString(16).toUpperCase().padStart(10, "0")}`;
+
+    const reg = await app.inject({
+      method: "POST",
+      url: "/auth/register",
+      payload: { username: user, password: pass },
+    });
+    const token = (reg.json() as { token: string }).token;
+
+    // First PUT: create the slot (new-slot 200, revision 1)
+    const blob1 = Buffer.from("save-data-v1");
+    const form1 = new FormData();
+    form1.append("data", blob1, {
+      filename: "save.bin",
+      contentType: "application/octet-stream",
+    });
+    const create = await app.inject({
+      method: "PUT",
+      url: `/saves/${titleId}`,
+      headers: { authorization: `Bearer ${token}`, ...form1.getHeaders() },
+      payload: form1,
+    });
+    expect(create.statusCode).toBe(200);
+    expect((create.json() as { slot: { revision: number } }).slot.revision).toBe(1);
+
+    // Second PUT: update existing slot WITHOUT a revision field → 400 revision_required
+    const blob2 = Buffer.from("save-data-v2");
+    const form2 = new FormData();
+    form2.append("data", blob2, {
+      filename: "save.bin",
+      contentType: "application/octet-stream",
+    });
+    // intentionally omit form2.append("revision", ...) to hit the revision_required branch
+    const noRevision = await app.inject({
+      method: "PUT",
+      url: `/saves/${titleId}`,
+      headers: { authorization: `Bearer ${token}`, ...form2.getHeaders() },
+      payload: form2,
+    });
+    expect(noRevision.statusCode).toBe(400);
+    expect(noRevision.json()).toEqual({ ok: false, error: "revision_required" });
+  });
+
   it("SEC-02 T2: double logout with same token does not crash (200 both times)", async () => {
     const user = `dbllogout_${Date.now()}`;
     const reg = await app.inject({
