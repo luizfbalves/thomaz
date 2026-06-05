@@ -20,5 +20,9 @@
     },
     "tls": {
         "insecure_warning": "Vérification du certificat indisponible — la connexion n'est pas sécurisée"
+    },
+    "boot": {
+        "login": "Se connecter",
+        "guest": "Continuer sans connexion"
     }
 }

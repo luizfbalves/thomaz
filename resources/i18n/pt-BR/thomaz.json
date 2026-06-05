@@ -15,6 +15,10 @@
       "title": "Configurações"
     }
   },
+  "boot": {
+    "login": "Entrar",
+    "guest": "Continuar sem login"
+  },
   "auth": {
     "login_tab": "Entrar",
     "register_tab": "Criar conta",

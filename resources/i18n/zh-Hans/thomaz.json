@@ -20,5 +20,9 @@
     },
     "tls": {
         "insecure_warning": "证书验证不可用 — 连接不安全"
+    },
+    "boot": {
+        "login": "登录",
+        "guest": "不登录继续"
     }
 }
