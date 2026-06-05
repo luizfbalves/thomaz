@@ -6,6 +6,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <cinttypes>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -33,12 +34,28 @@ std::string now_timestamp() {
     return buf;
 }
 
+// IN-03: format/parse the 64-bit halves with PRIx64/SCNx64 and explicit
+// std::uint64_t locals instead of (unsigned long*) pointer casts. The old casts
+// assumed unsigned long == 64-bit and aliased a u64 through a differently-typed
+// pointer in sscanf. Parsing into locals first avoids the aliasing-fragile cast.
+
 // 32-hex string for an AccountUid (high then low), used as the SD folder name.
 std::string uid_hex(AccountUid uid) {
     char buf[33];
-    std::snprintf(buf, sizeof(buf), "%016lx%016lx",
-                  (unsigned long)uid.uid[0], (unsigned long)uid.uid[1]);
+    std::snprintf(buf, sizeof(buf), "%016" PRIx64 "%016" PRIx64,
+                  (std::uint64_t)uid.uid[0], (std::uint64_t)uid.uid[1]);
     return buf;
+}
+
+// Parse a 32-hex uid string (high then low) back into an AccountUid without a
+// pointer cast through a differently-typed object.
+AccountUid uid_from_hex(const char* hex) {
+    AccountUid uid{};
+    std::uint64_t hi = 0, lo = 0;
+    std::sscanf(hex, "%016" SCNx64 "%016" SCNx64, &hi, &lo);
+    uid.uid[0] = hi;
+    uid.uid[1] = lo;
+    return uid;
 }
 
 // Recursively read every file under `src` into the package, prefixing each
@@ -123,9 +140,7 @@ std::vector<core::SaveProfile> NsSaveService::profilesWithSave(std::uint64_t tit
     std::vector<core::SaveProfile> out;
     accountInitialize(AccountServiceType_System);
     for (auto& p : all_profiles()) {
-        AccountUid uid;
-        std::sscanf(p.uid_hex.c_str(), "%016lx%016lx",
-                    (unsigned long*)&uid.uid[0], (unsigned long*)&uid.uid[1]);
+        AccountUid uid = uid_from_hex(p.uid_hex.c_str());
         if (R_SUCCEEDED(fsdevMountSaveData(kMount, title_id, uid))) {
             out.push_back(p);
             fsdevUnmountDevice(kMount);
@@ -145,9 +160,7 @@ bool NsSaveService::backup(const InstalledTitle& title, std::string* outError) {
     bool anyFailure = false;
 
     for (auto& p : all_profiles()) {
-        AccountUid uid;
-        std::sscanf(p.uid_hex.c_str(), "%016lx%016lx",
-                    (unsigned long*)&uid.uid[0], (unsigned long*)&uid.uid[1]);
+        AccountUid uid = uid_from_hex(p.uid_hex.c_str());
         if (R_FAILED(fsdevMountSaveData(kMount, title.title_id, uid)))
             continue; // this profile has no save for this title
 
@@ -188,9 +201,7 @@ bool NsSaveService::restore(const core::BackupEntry& entry, std::uint64_t title_
     std::vector<std::string> skipped;
 
     for (const std::string& profileHex : entry.profiles) {
-        AccountUid uid;
-        std::sscanf(profileHex.c_str(), "%016lx%016lx",
-                    (unsigned long*)&uid.uid[0], (unsigned long*)&uid.uid[1]);
+        AccountUid uid = uid_from_hex(profileHex.c_str());
 
         // Mounting only succeeds for a profile that still exists and has a save
         // slot for this title. If not, skip it and report.
@@ -239,9 +250,7 @@ std::vector<std::uint8_t> NsSaveService::packageActiveSave(std::uint64_t title_i
     bool any        = false;
     bool readFailed = false;
     for (auto& p : all_profiles()) {
-        AccountUid uid;
-        std::sscanf(p.uid_hex.c_str(), "%016lx%016lx",
-                    (unsigned long*)&uid.uid[0], (unsigned long*)&uid.uid[1]);
+        AccountUid uid = uid_from_hex(p.uid_hex.c_str());
         if (R_FAILED(fsdevMountSaveData(kMount, title_id, uid)))
             continue; // no save for this profile
         std::string mountRoot = std::string(kMount) + ":/";
