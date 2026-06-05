@@ -6,24 +6,22 @@
 
 #pragma once
 
-#include <atomic>
 #include <cstdint>
-#include <memory>
 #include <string>
 
 #include <borealis.hpp>
 
+#include "app/thomaz_activity.hpp"
 #include "core/mods/mod_browse.hpp"
 #include "platform/http_client.hpp"
 #include "platform/title.hpp"
 
 namespace thomaz {
 
-class ModBrowserActivity : public brls::Activity
+class ModBrowserActivity : public ThomazActivity
 {
   public:
     ModBrowserActivity(InstalledTitle title, IHttpClient* http);
-    ~ModBrowserActivity() override;
 
     CONTENT_FROM_XML_RES("activity/mod_browser.xml");
 
@@ -49,9 +47,6 @@ class ModBrowserActivity : public brls::Activity
     core::SearchPage lastPage;
     // 0 = unresolved => global free-text mode; nonzero = resolved game => Subfeed.
     std::uint64_t gameId = 0;
-
-    // Set false in the destructor so an in-flight async UI callback bails.
-    std::shared_ptr<std::atomic_bool> alive = std::make_shared<std::atomic_bool>(true);
 };
 
 } // namespace thomaz

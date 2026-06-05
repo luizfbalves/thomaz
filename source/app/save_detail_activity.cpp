@@ -42,11 +42,6 @@ SaveDetailActivity::SaveDetailActivity(InstalledTitle title, ISaveService* saveS
 {
 }
 
-SaveDetailActivity::~SaveDetailActivity()
-{
-    *this->alive = false;
-}
-
 void SaveDetailActivity::onContentAvailable()
 {
     install_header_username(this);
@@ -84,12 +79,15 @@ void SaveDetailActivity::refreshHistory()
 {
     std::string root = core::saves_root();
 
-    if (auto* lbl = (brls::Label*)this->getView("lastBackup"))
+    if (auto* lbl = dynamic_cast<brls::Label*>(this->getView("lastBackup")))
         lbl->setText(lastBackupText(core::last_backup_timestamp(root, this->title.title_id)));
 
-    brls::Box* box = (brls::Box*)this->getView("historyBox");
+    auto* box = dynamic_cast<brls::Box*>(this->getView("historyBox"));
     if (!box)
+    {
+        brls::Logger::error("historyBox missing or not a Box");
         return;
+    }
 
     // If focus currently sits on a row we're about to destroy, move it to a
     // stable view first — freeing the focused view dangles Borealis' focus
@@ -162,22 +160,22 @@ void SaveDetailActivity::doBackup()
 
     ISaveService* svc = this->saveService;
     InstalledTitle t  = this->title;
-    auto alive        = this->alive;
 
-    brls::async([this, svc, t, alive]() {
-        std::string err;
-        bool ok = svc->backup(t, &err);
-        brls::sync([this, alive, ok, err]() {
-            if (!alive->load())
-                return;
+    auto result = std::make_shared<std::pair<bool, std::string>>();
+    this->runAsync(
+        [svc, t, result]() {
+            result->second = {};
+            result->first  = svc->backup(t, &result->second);
+        },
+        [this, result]() {
             if (auto* spinner = this->getView("spinner"))
                 spinner->setVisibility(brls::Visibility::GONE);
-            brls::Application::notify(ok ? "thomaz/saves/backup_ok"_i18n
-                                         : ("thomaz/saves/backup_fail"_i18n + std::string(": ") + err));
-            if (ok)
+            brls::Application::notify(result->first
+                ? "thomaz/saves/backup_ok"_i18n
+                : ("thomaz/saves/backup_fail"_i18n + std::string(": ") + result->second));
+            if (result->first)
                 this->refreshHistory();
         });
-    });
 }
 
 void SaveDetailActivity::performRestore(const core::BackupEntry& entry)
@@ -188,21 +186,22 @@ void SaveDetailActivity::performRestore(const core::BackupEntry& entry)
     ISaveService* svc   = this->saveService;
     std::uint64_t tid   = this->title.title_id;
     core::BackupEntry e = entry;
-    auto alive          = this->alive;
-    brls::async([this, svc, e, tid, alive]() {
-        std::string err;
-        bool ok = svc->restore(e, tid, &err);
-        brls::sync([this, alive, ok, err]() {
-            if (!alive->load())
-                return;
+
+    auto result = std::make_shared<std::pair<bool, std::string>>();
+    this->runAsync(
+        [svc, e, tid, result]() {
+            result->second = {};
+            result->first  = svc->restore(e, tid, &result->second);
+        },
+        [this, result]() {
             if (auto* spinner = this->getView("spinner"))
                 spinner->setVisibility(brls::Visibility::GONE);
-            brls::Application::notify(ok ? "thomaz/saves/restore_ok"_i18n
-                                         : ("thomaz/saves/restore_fail"_i18n + std::string(": ") + err));
-            if (ok)
+            brls::Application::notify(result->first
+                ? "thomaz/saves/restore_ok"_i18n
+                : ("thomaz/saves/restore_fail"_i18n + std::string(": ") + result->second));
+            if (result->first)
                 this->refreshHistory();
         });
-    });
 }
 
 void SaveDetailActivity::doRestore(const core::BackupEntry& entry)
@@ -257,31 +256,32 @@ void SaveDetailActivity::doUpload() {
     std::string token = sess ? sess->token : "";
     ICloudSaveClient* c = this->cloudSaves;
     std::uint64_t tid   = this->title.title_id;
-    auto alive          = this->alive;
 
-    brls::async([this, c, alive, token, tid]() {
-        // Fresh status decides clean push vs conflict.
-        CloudStatus s = c->getStatus(token, tid);
-        brls::sync([this, alive, s, tid]() {
-            if (!alive->load()) return;
-            if (!s.ok) {
+    auto status = std::make_shared<CloudStatus>();
+    this->runAsync(
+        [c, token, tid, status]() {
+            // Fresh status decides clean push vs conflict.
+            *status = c->getStatus(token, tid);
+        },
+        [this, status, tid]() {
+            if (!status->ok) {
                 this->cloudBusy.store(false);
-                if (s.error == kCloudAuthExpired) this->showCloudLoggedOut();
-                this->setCloudStatusText(this->cloudErrorText(s.error));
+                if (status->error == kCloudAuthExpired) this->showCloudLoggedOut();
+                this->setCloudStatusText(this->cloudErrorText(status->error));
                 return;
             }
             int synced = load_synced_revision(tid);
-            core::SyncSituation sit = core::classify(s.exists, s.revision, synced);
-            core::PushPlan plan = core::plan_push(sit, s.revision);
+            core::SyncSituation sit = core::classify(status->exists, status->revision, synced);
+            core::PushPlan plan = core::plan_push(sit, status->revision);
             if (plan.isConflict) {
                 this->cloudBusy.store(false); // wait on the user's choice
                 int rev = plan.revision;
                 brls::Dialog* dlg = new brls::Dialog("thomaz/saves/cloud_conflict_body"_i18n);
-                dlg->addButton("thomaz/saves/cloud_send_mine"_i18n, [this, alive, rev]() {
+                dlg->addButton("thomaz/saves/cloud_send_mine"_i18n, [this, alive = this->alive, rev]() {
                     if (!alive->load()) return;
                     this->pushAtRevision(rev);
                 });
-                dlg->addButton("thomaz/saves/cloud_keep_cloud"_i18n, [this, alive]() {
+                dlg->addButton("thomaz/saves/cloud_keep_cloud"_i18n, [this, alive = this->alive]() {
                     if (!alive->load()) return;
                     this->doDownload();
                 });
@@ -291,7 +291,6 @@ void SaveDetailActivity::doUpload() {
             // Clean push (NoCloud -> rev 0, InSync -> current rev).
             this->pushAtRevision(plan.revision);
         });
-    });
 }
 
 void SaveDetailActivity::pushAtRevision(int revision) {
@@ -304,23 +303,29 @@ void SaveDetailActivity::pushAtRevision(int revision) {
     ISaveService* svc   = this->saveService;
     std::uint64_t tid   = this->title.title_id;
     std::string label   = this->title.name;
-    auto alive          = this->alive;
 
-    brls::async([this, c, svc, alive, token, tid, label, revision]() {
-        std::string err;
-        std::vector<std::uint8_t> blob = svc->packageActiveSave(tid, &err);
-        if (blob.empty()) {
-            brls::sync([this, alive]() {
-                if (!alive->load()) return;
+    // push_result: first=blobEmpty, second=CloudPush (valid only when !first)
+    auto push_result = std::make_shared<std::pair<bool, CloudPush>>();
+    this->runAsync(
+        [c, svc, token, tid, label, revision, push_result]() {
+            std::string err;
+            std::vector<std::uint8_t> blob = svc->packageActiveSave(tid, &err);
+            if (blob.empty()) {
+                push_result->first = true; // blob empty — signal error path
+                return;
+            }
+            push_result->first  = false;
+            push_result->second = c->push(token, tid, blob, label, revision);
+        },
+        [this, push_result, tid]() {
+            if (push_result->first) {
+                // blob packaging failed
                 this->cloudBusy.store(false);
                 this->setCloudStatusText("thomaz/saves/cloud_err_generic"_i18n);
                 brls::Application::notify("thomaz/saves/cloud_err_generic"_i18n);
-            });
-            return;
-        }
-        CloudPush r = c->push(token, tid, blob, label, revision);
-        brls::sync([this, alive, r, tid]() {
-            if (!alive->load()) return;
+                return;
+            }
+            const CloudPush& r = push_result->second;
             this->cloudBusy.store(false);
             if (r.ok) {
                 save_synced_revision(tid, r.newRevision);
@@ -337,7 +342,6 @@ void SaveDetailActivity::pushAtRevision(int revision) {
             this->setCloudStatusText(errText);
             brls::Application::notify(errText);
         });
-    });
 }
 
 void SaveDetailActivity::doDownload() {
@@ -351,52 +355,55 @@ void SaveDetailActivity::doDownload() {
     ICloudSaveClient* c = this->cloudSaves;
     ISaveService* svc   = this->saveService;
     std::uint64_t tid   = this->title.title_id;
-    auto alive          = this->alive;
 
-    brls::async([this, c, svc, alive, token, tid]() {
-        CloudPull p = c->pull(token, tid);
+    struct DownloadResult {
+        CloudPull pull;
         std::string importErr;
         bool imported = false;
-        core::BackupEntry newEntry;   // the backup the import created
+        core::BackupEntry newEntry;
         bool haveNew = false;
-        if (p.ok && p.exists) {
-            // Snapshot existing backups so we can pin EXACTLY the one the import
-            // creates — robust even if the system clock was set back (newest-by-
-            // timestamp could otherwise resolve to an older, future-dated backup).
-            std::set<std::string> beforeTs;
-            for (const auto& b : core::list_backups(core::saves_root(), tid))
-                beforeTs.insert(b.timestamp);
-            imported = svc->importPackageAsBackup(tid, p.blob, &importErr);
-            if (imported) {
-                for (const auto& b : core::list_backups(core::saves_root(), tid)) {
-                    if (beforeTs.find(b.timestamp) == beforeTs.end()) {
-                        newEntry = b;
-                        haveNew  = true;
-                        break;
+    };
+    auto dl = std::make_shared<DownloadResult>();
+    this->runAsync(
+        [c, svc, token, tid, dl]() {
+            dl->pull = c->pull(token, tid);
+            if (dl->pull.ok && dl->pull.exists) {
+                // Snapshot existing backups so we can pin EXACTLY the one the import
+                // creates — robust even if the system clock was set back (newest-by-
+                // timestamp could otherwise resolve to an older, future-dated backup).
+                std::set<std::string> beforeTs;
+                for (const auto& b : core::list_backups(core::saves_root(), tid))
+                    beforeTs.insert(b.timestamp);
+                dl->imported = svc->importPackageAsBackup(tid, dl->pull.blob, &dl->importErr);
+                if (dl->imported) {
+                    for (const auto& b : core::list_backups(core::saves_root(), tid)) {
+                        if (beforeTs.find(b.timestamp) == beforeTs.end()) {
+                            dl->newEntry = b;
+                            dl->haveNew  = true;
+                            break;
+                        }
                     }
                 }
             }
-        }
-
-        brls::sync([this, alive, p, imported, importErr, tid, newEntry, haveNew]() {
-            if (!alive->load()) return;
+        },
+        [this, dl, tid]() {
             this->cloudBusy.store(false);
-            if (!p.ok) {
-                if (p.error == kCloudAuthExpired) this->showCloudLoggedOut();
-                this->setCloudStatusText(this->cloudErrorText(p.error));
+            if (!dl->pull.ok) {
+                if (dl->pull.error == kCloudAuthExpired) this->showCloudLoggedOut();
+                this->setCloudStatusText(this->cloudErrorText(dl->pull.error));
                 return;
             }
-            if (!p.exists) {
+            if (!dl->pull.exists) {
                 this->setCloudStatusText("thomaz/saves/cloud_status_none"_i18n);
                 return;
             }
-            if (!imported) {
+            if (!dl->imported) {
                 this->setCloudStatusText("thomaz/saves/cloud_err_generic"_i18n);
-                brls::Application::notify(importErr.empty()
-                    ? "thomaz/saves/cloud_err_generic"_i18n : importErr);
+                brls::Application::notify(dl->importErr.empty()
+                    ? "thomaz/saves/cloud_err_generic"_i18n : dl->importErr);
                 return;
             }
-            save_synced_revision(tid, p.revision);
+            save_synced_revision(tid, dl->pull.revision);
             brls::Application::notify("thomaz/saves/cloud_download_ok"_i18n);
             this->refreshHistory();      // the new backup now shows in the list
             this->refreshCloudStatus();  // now in sync
@@ -404,10 +411,10 @@ void SaveDetailActivity::doDownload() {
             // Offer to restore the backup we just imported (pinned above). If we
             // couldn't identify it, skip the prompt rather than risk restoring the
             // wrong save — the user can still restore manually from the history.
-            if (haveNew) {
-                core::BackupEntry entry = newEntry;
+            if (dl->haveNew) {
+                core::BackupEntry entry = dl->newEntry;
                 brls::Dialog* dlg = new brls::Dialog("thomaz/saves/cloud_restore_q"_i18n);
-                dlg->addButton("thomaz/saves/action_restore"_i18n, [this, alive, entry]() {
+                dlg->addButton("thomaz/saves/action_restore"_i18n, [this, alive = this->alive, entry]() {
                     if (!alive->load()) return;
                     this->performRestore(entry);
                 });
@@ -415,11 +422,10 @@ void SaveDetailActivity::doDownload() {
                 dlg->open();
             }
         });
-    });
 }
 
 void SaveDetailActivity::setCloudStatusText(const std::string& text) {
-    if (auto* lbl = (brls::Label*)this->getView("cloudStatus"))
+    if (auto* lbl = dynamic_cast<brls::Label*>(this->getView("cloudStatus")))
         lbl->setText(text);
 }
 
@@ -471,19 +477,20 @@ void SaveDetailActivity::refreshCloudStatus() {
     std::string token = sess ? sess->token : "";
     ICloudSaveClient* c = this->cloudSaves;
     std::uint64_t tid   = this->title.title_id;
-    auto alive          = this->alive;
 
-    brls::async([this, c, alive, token, tid]() {
-        CloudStatus s = c->getStatus(token, tid);
-        brls::sync([this, alive, s, tid]() {
-            if (!alive->load()) return;
-            if (!s.ok) {
-                if (s.error == kCloudAuthExpired) this->showCloudLoggedOut();
-                this->setCloudStatusText(this->cloudErrorText(s.error));
+    auto status = std::make_shared<CloudStatus>();
+    this->runAsync(
+        [c, token, tid, status]() {
+            *status = c->getStatus(token, tid);
+        },
+        [this, status, tid]() {
+            if (!status->ok) {
+                if (status->error == kCloudAuthExpired) this->showCloudLoggedOut();
+                this->setCloudStatusText(this->cloudErrorText(status->error));
                 return;
             }
             int synced = load_synced_revision(tid);
-            core::SyncSituation sit = core::classify(s.exists, s.revision, synced);
+            core::SyncSituation sit = core::classify(status->exists, status->revision, synced);
             std::string text;
             if (sit == core::SyncSituation::NoCloud) {
                 text = "thomaz/saves/cloud_status_none"_i18n;
@@ -493,12 +500,11 @@ void SaveDetailActivity::refreshCloudStatus() {
                                       : "thomaz/saves/cloud_status_synced"_i18n;
                 auto pos = key.find("{{n}}");
                 if (pos != std::string::npos)
-                    key.replace(pos, 5, std::to_string(s.revision));
+                    key.replace(pos, 5, std::to_string(status->revision));
                 text = key;
             }
             this->setCloudStatusText(text);
         });
-    });
 }
 
 } // namespace thomaz

@@ -28,11 +28,6 @@ ModBrowserActivity::ModBrowserActivity(InstalledTitle title, IHttpClient* http)
 {
 }
 
-ModBrowserActivity::~ModBrowserActivity()
-{
-    *this->alive = false; // tell an in-flight UI callback to bail
-}
-
 void ModBrowserActivity::onContentAvailable()
 {
     install_header_username(this);
@@ -44,33 +39,32 @@ void ModBrowserActivity::onContentAvailable()
     // keyboard only opens as a fallback when the game isn't found.
     if (auto* spinner = this->getView("spinner"))
         spinner->setVisibility(brls::Visibility::VISIBLE);
-    if (auto* emptyLabel = (brls::Label*)this->getView("emptyLabel"))
+    if (auto* emptyLabel = dynamic_cast<brls::Label*>(this->getView("emptyLabel")))
     {
         emptyLabel->setText("mods/resolving"_i18n);
         emptyLabel->setVisibility(brls::Visibility::VISIBLE);
     }
 
-    auto alive       = this->alive;
     IHttpClient* http = this->http; // owned by main(), app-lifetime
     std::uint64_t tid = this->title.title_id; // copy — worker must not touch `this`
     std::string name  = this->title.name;
 
-    brls::async([this, alive, http, tid, name]() {
-        core::UrlFetcher fetch = [http](const std::string& url) -> std::optional<std::string> {
-            HttpResponse r = http->get(url);
-            return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
-        };
-        core::GameResolve g = core::resolve_game(tid, name, fetch);
-        core::BrowseResult mods;
-        if (g.status == core::GameResolveStatus::Ok)
-            mods = core::list_game_mods(g.game_id, "", 1, fetch);
-
-        brls::sync([this, alive, g, mods]() {
-            if (!alive->load())
-                return; // activity was popped while we were resolving
-            this->onResolved(g, mods);
+    // Results shared between the worker and onSync via shared_ptr to avoid
+    // capture-by-reference dangling across the async boundary.
+    auto results = std::make_shared<std::pair<core::GameResolve, core::BrowseResult>>();
+    this->runAsync(
+        [http, tid, name, results]() {
+            core::UrlFetcher fetch = [http](const std::string& url) -> std::optional<std::string> {
+                HttpResponse r = http->get(url);
+                return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
+            };
+            results->first = core::resolve_game(tid, name, fetch);
+            if (results->first.status == core::GameResolveStatus::Ok)
+                results->second = core::list_game_mods(results->first.game_id, "", 1, fetch);
+        },
+        [this, results]() {
+            this->onResolved(results->first, results->second);
         });
-    });
 }
 
 void ModBrowserActivity::onResolved(const core::GameResolve& g, const core::BrowseResult& mods)
@@ -81,7 +75,7 @@ void ModBrowserActivity::onResolved(const core::GameResolve& g, const core::Brow
     if (g.status == core::GameResolveStatus::NetworkError)
     {
         brls::Application::notify("mods/search_error"_i18n);
-        if (auto* emptyLabel = (brls::Label*)this->getView("emptyLabel"))
+        if (auto* emptyLabel = dynamic_cast<brls::Label*>(this->getView("emptyLabel")))
         {
             emptyLabel->setText("mods/search_error"_i18n);
             emptyLabel->setVisibility(brls::Visibility::VISIBLE);
@@ -96,7 +90,7 @@ void ModBrowserActivity::onResolved(const core::GameResolve& g, const core::Brow
         // handler), so runGlobalSearch() may be called directly.
         this->gameId = 0;
         this->setResolvedLabel(true, "");
-        if (auto* emptyLabel = (brls::Label*)this->getView("emptyLabel"))
+        if (auto* emptyLabel = dynamic_cast<brls::Label*>(this->getView("emptyLabel")))
         {
             emptyLabel->setText("mods/game_not_found"_i18n);
             emptyLabel->setVisibility(brls::Visibility::VISIBLE);
@@ -132,9 +126,12 @@ void ModBrowserActivity::onResolved(const core::GameResolve& g, const core::Brow
 
 void ModBrowserActivity::setResolvedLabel(bool manual, const std::string& gameName)
 {
-    auto* lbl = (brls::Label*)this->getView("resolvedLabel");
+    auto* lbl = dynamic_cast<brls::Label*>(this->getView("resolvedLabel"));
     if (!lbl)
+    {
+        brls::Logger::error("resolvedLabel missing or not a Label");
         return;
+    }
     if (manual)
     {
         lbl->setText("mods/manual_search_label"_i18n);
@@ -158,24 +155,22 @@ void ModBrowserActivity::runGameSearch(const std::string& query)
         spinner->setVisibility(brls::Visibility::VISIBLE);
 
     IHttpClient* client = this->http; // owned by main(), app-lifetime
-    auto alive          = this->alive;
     std::uint64_t gid   = this->gameId; // copy — worker must not touch `this`
     std::string q       = query;
     int page            = this->page;
 
-    brls::async([this, alive, client, gid, q, page]() {
-        core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
-            HttpResponse r = client->get(url);
-            return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
-        };
-        core::BrowseResult res = core::list_game_mods(gid, q, page, fetch);
-
-        brls::sync([this, alive, res]() {
-            if (!alive->load())
-                return; // activity was popped while we were loading
-            this->populate(res);
+    auto res = std::make_shared<core::BrowseResult>();
+    this->runAsync(
+        [client, gid, q, page, res]() {
+            core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
+                HttpResponse r = client->get(url);
+                return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
+            };
+            *res = core::list_game_mods(gid, q, page, fetch);
+        },
+        [this, res]() {
+            this->populate(*res);
         });
-    });
 }
 
 void ModBrowserActivity::runGlobalSearch()
@@ -184,29 +179,32 @@ void ModBrowserActivity::runGlobalSearch()
         spinner->setVisibility(brls::Visibility::VISIBLE);
 
     IHttpClient* client = this->http; // owned by main(), app-lifetime
-    auto alive          = this->alive;
     std::string q       = this->query;
     int page            = this->page;
 
-    brls::async([this, alive, client, q, page]() {
-        core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
-            HttpResponse r = client->get(url);
-            return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
-        };
-        core::BrowseResult res = core::search_mods(q, 0, page, fetch);
-
-        brls::sync([this, alive, res]() {
-            if (!alive->load())
-                return; // activity was popped while we were loading
-            this->populate(res);
+    auto res = std::make_shared<core::BrowseResult>();
+    this->runAsync(
+        [client, q, page, res]() {
+            core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
+                HttpResponse r = client->get(url);
+                return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
+            };
+            *res = core::search_mods(q, 0, page, fetch);
+        },
+        [this, res]() {
+            this->populate(*res);
         });
-    });
 }
 
 void ModBrowserActivity::populate(const core::BrowseResult& result)
 {
-    auto* resultsBox = (brls::Box*)this->getView("resultsBox");
-    auto* emptyLabel = (brls::Label*)this->getView("emptyLabel");
+    auto* resultsBox = dynamic_cast<brls::Box*>(this->getView("resultsBox"));
+    auto* emptyLabel = dynamic_cast<brls::Label*>(this->getView("emptyLabel"));
+    if (!resultsBox)
+    {
+        brls::Logger::error("resultsBox missing or not a Box");
+        return;
+    }
 
     if (auto* spinner = this->getView("spinner"))
         spinner->setVisibility(brls::Visibility::GONE); // search finished
@@ -218,9 +216,6 @@ void ModBrowserActivity::populate(const core::BrowseResult& result)
     }
 
     this->lastPage = result.page;
-
-    if (!resultsBox)
-        return;
 
     resultsBox->clearViews();
 

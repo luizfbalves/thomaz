@@ -1,11 +1,12 @@
 #pragma once
 
-#include <borealis.hpp>
 #include <atomic>
-#include <memory>
 #include <string>
 #include <vector>
 
+#include <borealis.hpp>
+
+#include "app/thomaz_activity.hpp"
 #include "core/backup_store.hpp"
 #include "platform/save_service.hpp"
 #include "platform/title.hpp"
@@ -16,12 +17,11 @@ namespace thomaz {
 
 // Screen 2: shows one game's last-backup date, a "back up now" button, and the
 // list of existing backups, each restorable.
-class SaveDetailActivity : public brls::Activity
+class SaveDetailActivity : public ThomazActivity
 {
   public:
     SaveDetailActivity(InstalledTitle title, ISaveService* saveService,
                        ICloudSaveClient* cloudSaves, IAuthClient* feed);
-    ~SaveDetailActivity() override;
 
     CONTENT_FROM_XML_RES("activity/save_detail.xml");
 
@@ -57,7 +57,6 @@ class SaveDetailActivity : public brls::Activity
     ISaveService* saveService;
     ICloudSaveClient* cloudSaves;
     IAuthClient* feed;
-    std::shared_ptr<std::atomic<bool>> alive = std::make_shared<std::atomic<bool>>(true);
 };
 
 } // namespace thomaz
