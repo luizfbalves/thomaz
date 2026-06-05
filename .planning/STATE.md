@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v0.4
 milestone_name: Extração de Temas
 status: executing
-last_updated: "2026-06-05T14:56:14.136Z"
+last_updated: "2026-06-05T16:08:57.450Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 5
-  completed_plans: 5
-  percent: 100
+  total_plans: 9
+  completed_plans: 6
+  percent: 67
 ---
 
 # Project State
@@ -21,17 +21,17 @@ progress:
 alone — no second app — because thomaz extracts the firmware base layouts on-device,
 keyless to the user (no `prod.keys` file required).
 
-**Current focus:** Phase 01 — privileged-extraction-spike
+**Current focus:** Phase 02 — full-extraction-engine
 (Option A, GPLv2) to extract home-menu base `.szs` into `/themes/systemData/`, feeding
 Phase B's existing "Aplicar Tema".
 
 ## Current Position
 
-Phase: 01 (privileged-extraction-spike) — EXECUTING
-Plan: 5 of 5
+Phase: 02 (full-extraction-engine) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
 Last activity: 2026-06-05
-Progress: [████████░░] 80%
+Progress: [███████░░░] 67%
 
 ## Roadmap Summary
 
@@ -64,6 +64,10 @@ Progress: [████████░░] 80%
 - [Phase ?]: KeyDerivationOutput name avoids grep collision with libnx Result type
 - [Phase ?]: SPL key sources pinned to Atmosphère 1.7.1 (b39e29d) — provenance in-code for plan 05 doc
 
+- [Phase 02 Plan 01]: `common` arm in `target_map()` uses title-ID `0100000000001000` (qlaunch) and szs `common.szs`, confirmed against `ThemeTargetInfo::QlaunchCommon` in `lib/switchthemes/Common.cpp`
+- [Phase 02 Plan 01]: `ExtractAllResult` is additive alongside existing `ExtractResult`; `extract_base_layout` preserved for live caller in `theme_detail_activity.cpp`
+- [Phase 02 Plan 01]: `ExtractAllResult` contract — `ok=false` only on systemic abort; `failed_parts` collects per-part warnings; `ok=false` implies `written_parts` is empty
+
 ### De-risking rationale
 
 - Highest hardware unknowns sequenced FIRST in Phase 1: (a) do the pinned SPL public
@@ -93,8 +97,8 @@ Progress: [████████░░] 80%
 
 ## Session Continuity
 
-Last completed: plan 05 Task 1 — docs/title-takeover.md + THIRD_PARTY.md SPL block (b7d3548).
-Next step: run the hardware spike → approve Task 2 → Phase 01 complete → Phase 02 planning.
+Last completed: 02-01-PLAN.md — target_map() common arm (f71ae0e) + ExtractAllResult interface contract (ee5af63). REQUIREMENTS.md: EXTRACT-01/02/03 marked complete.
+Next step: Execute Phase 02 Plan 02 (NCA filter widening to /lyt/ prefix).
 
 Key files for Phase 1:
 

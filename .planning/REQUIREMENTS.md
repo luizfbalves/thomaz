@@ -7,9 +7,9 @@ Approach locked: **Option A** (port exelix BIS + SPL + hactool, GPLv2).
 ## v0.4 Requirements
 
 ### Extraction Engine (EXTRACT)
-- [ ] **EXTRACT-01**: User can extract the qlaunch home-menu layouts (ResidentMenu, Entrance, Flaunch, Set, Notification, common) from the running firmware to the SD card
-- [ ] **EXTRACT-02**: User can extract the player-select (Psl) layout
-- [ ] **EXTRACT-03**: User can extract the MyPage layout
+- [x] **EXTRACT-01**: User can extract the qlaunch home-menu layouts (ResidentMenu, Entrance, Flaunch, Set, Notification, common) from the running firmware to the SD card
+- [x] **EXTRACT-02**: User can extract the player-select (Psl) layout
+- [x] **EXTRACT-03**: User can extract the MyPage layout
 - [x] **EXTRACT-04**: Extraction succeeds without the user supplying a `prod.keys` file (NCA header key derived on-device via SPL)
 
 ### App Integration (INTEG)
@@ -42,9 +42,9 @@ Approach locked: **Option A** (port exelix BIS + SPL + hactool, GPLv2).
 | EXTRACT-04 | Phase 1 | Complete |
 | TAKEOVER-01 | Phase 1 | Complete |
 | TAKEOVER-02 | Phase 1 | Complete |
-| EXTRACT-01 | Phase 2 | Pending |
-| EXTRACT-02 | Phase 2 | Pending |
-| EXTRACT-03 | Phase 2 | Pending |
+| EXTRACT-01 | Phase 2 | Complete |
+| EXTRACT-02 | Phase 2 | Complete |
+| EXTRACT-03 | Phase 2 | Complete |
 | INTEG-01 | Phase 3 | Pending |
 | INTEG-02 | Phase 3 | Pending |
 | INTEG-03 | Phase 3 | Pending |
