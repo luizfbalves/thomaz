@@ -123,16 +123,22 @@ TEST_CASE("parse_pack_detail builds gallery: one item per member preview") {
         {"hexId":"9A6","name":"Home","target":"ResidentMenu","downloadUrl":"u1",
          "screenshotPreview":{"hdUrl":"h1.png","thumbUrl":"t1.png"}},
         {"hexId":"9A7","name":"Lock","target":"Entrance","downloadUrl":"u2",
-         "screenshotPreview":{"hdUrl":"h2.png","thumbUrl":"t2.png"}}
+         "screenshotPreview":{"hdUrl":"h2.png","thumbUrl":"t2.png"}},
+        {"hexId":"9A8","name":"","target":"News","downloadUrl":"u3",
+         "screenshotPreview":{"jpgThumbUrl":"j3.jpg"}}
       ]}}}})json";
     bool found = false;
     ThemeDetail d = parse_pack_detail(P, &found);
     REQUIRE(found);
-    REQUIRE(d.gallery.size() == 2);
+    REQUIRE(d.gallery.size() == 3);
     CHECK(d.gallery[0].label == "Home");
     CHECK(d.gallery[0].url == "h1.png");
     CHECK(d.gallery[1].label == "Lock");
     CHECK(d.gallery[1].thumb_url == "t2.png");
+    // empty name falls back to target; jpgThumbUrl-only fills both url and thumb
+    CHECK(d.gallery[2].label == "News");
+    CHECK(d.gallery[2].url == "j3.jpg");
+    CHECK(d.gallery[2].thumb_url == "j3.jpg");
     // members are still expanded into parts (download path unchanged)
-    CHECK(d.parts.size() == 2);
+    CHECK(d.parts.size() == 3);
 }
