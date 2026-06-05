@@ -27,6 +27,15 @@ model RefreshToken {
   @@index([userId])
 }
 
+model RevokedToken {
+  jti       String   @id
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
 /// Cloud save sync metadata (opaque blob stored on disk; E2E encryption is client-side).
 model SaveSlot {
   id        String   @id @default(cuid())
