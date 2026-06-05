@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Remove Community Feature** - Strip posts/feed/comments/likes from API and client; preserve auth/session infrastructure shared with cloud saves (completed 2026-06-04)
 - [ ] **Phase 2: API Security + Regression Tests** - Harden the live API against the remaining HIGH-severity security issues and co-ship regression tests
 - [x] **Phase 3: C++ Platform Hardening** - Fix isolated C++ platform-layer issues (fs_util extraction, TLS warning, cloudBusy atomicity) and their host tests (all 4 plans built + automated verification passed; awaiting human UAT for TLS banner visual rendering) (completed 2026-06-05)
-- [ ] **Phase 4: C++ Activity Hardening** - Refactor all activities to the runAsync base-class pattern, replace unsafe casts, add curl cancellation, and cover the conflict path
+- [x] **Phase 4: C++ Activity Hardening** - Refactor all activities to the runAsync base-class pattern, replace unsafe casts, add curl cancellation, and cover the conflict path (completed 2026-06-05)
 
 ## Phase Details
 
@@ -122,7 +122,7 @@ Plans:
 - [x] 04-05-PLAN.md — Extend test_save_sync.cpp with the classify→plan_push conflict decision-composition cases [TEST-04] (Wave 1, parallel)
 - [x] 04-02-PLAN.md — Single-pass migrate the 4 DEBT-03/CONC-02 shared activities (game_list, save_manager, save_detail, mod_browser): base-swap + alive removal + runAsync + null-guarded dynamic_cast [CONC-02, DEBT-03] (Wave 2)
 - [x] 04-03-PLAN.md — Migrate the remaining 9 alive-guarded activities to ThomazActivity + runAsync (no casts); mod_manager is base-swap-only [CONC-02] (Wave 2, parallel)
-- [ ] 04-04-PLAN.md — CONC-03 curl cancellation across BOTH surfaces (mod_download.cpp + http_client_curl.cpp); add HttpRequest.cancelled; thread the base cancelled flag from activities [CONC-03] (Wave 3)
+- [x] 04-04-PLAN.md — CONC-03 curl cancellation across BOTH surfaces (mod_download.cpp + http_client_curl.cpp); add HttpRequest.cancelled; thread the base cancelled flag from activities [CONC-03] (Wave 3)
 
 **Planning flags:**
 
@@ -143,4 +143,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Remove Community Feature | 3/3 | Complete   | 2026-06-04 |
 | 2. API Security + Regression Tests | 1/3 | In Progress|  |
 | 3. C++ Platform Hardening | 4/4 | Complete    | 2026-06-05 |
-| 4. C++ Activity Hardening | 3/5 | In Progress|  |
+| 4. C++ Activity Hardening | 5/5 | Complete   | 2026-06-05 |

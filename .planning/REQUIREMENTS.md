@@ -26,7 +26,7 @@ The posts/feed/comments/likes community feature is being removed entirely. Its i
 
 - [x] **CONC-01**: `cloudBusy` is `std::atomic<bool>` with a documented threading contract; the concurrent-operation guard behaves as before. *(AC-6A)*
 - [x] **CONC-02**: A shared `runAsync` wrapper on an activity base class auto-captures the `alive` guard; existing async call sites (`save_detail`, `mod_browser`, `theme_browser`) migrate to it so the use-after-free guard can't be forgotten. *(AC-6B)*
-- [ ] **CONC-03**: In-flight curl requests are aborted on activity destruction via a shared `cancelled` flag checked in a `CURLOPT_XFERINFOFUNCTION` callback; happy-path requests are unaffected. *(AC-6C)*
+- [x] **CONC-03**: In-flight curl requests are aborted on activity destruction via a shared `cancelled` flag checked in a `CURLOPT_XFERINFOFUNCTION` callback; happy-path requests are unaffected. *(AC-6C)*
 
 ### Tech Debt
 
@@ -85,7 +85,7 @@ Explicitly excluded — see PROJECT.md and FEATURES.md anti-features.
 | DEBT-02 | Phase 3 | Complete |
 | TEST-03 | Phase 3 | Complete |
 | CONC-02 | Phase 4 | Complete |
-| CONC-03 | Phase 4 | Pending |
+| CONC-03 | Phase 4 | Complete |
 | DEBT-03 | Phase 4 | Complete |
 | TEST-04 | Phase 4 | Complete |
 
