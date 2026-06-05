@@ -39,7 +39,7 @@ The posts/feed/comments/likes community feature is being removed entirely. Its i
 
 - [x] **TEST-01**: A regression test asserts no save-blob URL is publicly accessible (guards SEC-01 / RM-02 — no static route exposes saves). *(AC-1.1 test, HIGH)*
 - [x] **TEST-02**: API tests cover the saves `PUT` revision path — `revision_required` (400), `revision_conflict` (409), new-slot create (200), matching-revision update (200). *(AC-T, HIGH)*
-- [ ] **TEST-03**: A host test covers the TLS fail-safe branch (`ca_ok == false`) so a regression that silently disables verification fails CI. *(AC-4 test)*
+- [x] **TEST-03**: A host test covers the TLS fail-safe branch (`ca_ok == false`) so a regression that silently disables verification fails CI. *(AC-4 test)*
 - [ ] **TEST-04**: The cloud-save upload conflict-resolution path is covered (host doctest for the conflict/`plan_push` branch and/or the `runAsync`-dropped-callback semantics). *(CONCERNS Test Gaps)*
 
 ## v2 Requirements
@@ -83,7 +83,7 @@ Explicitly excluded — see PROJECT.md and FEATURES.md anti-features.
 | CONC-01 | Phase 3 | Pending |
 | DEBT-01 | Phase 3 | Complete |
 | DEBT-02 | Phase 3 | Complete |
-| TEST-03 | Phase 3 | Pending |
+| TEST-03 | Phase 3 | Complete |
 | CONC-02 | Phase 4 | Pending |
 | CONC-03 | Phase 4 | Pending |
 | DEBT-03 | Phase 4 | Pending |
