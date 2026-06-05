@@ -22,7 +22,8 @@ Verified by a clean desktop build (`-DUSE_SDL2=ON`, zero new warnings) and the h
 
 ### TLS fail-safe warning (SEC-03)
 - **D-01:** When `ca_ok == false` and HTTPS drops to `VERIFYPEER 0`, show a **persistent on-screen warning**, not log-only. `brls::Logger::warning` alone is insufficient — SEC-03 requires on-screen visibility.
-- **D-02:** Placement is **global, at the top of the app** — a fixed banner/label in the main `brls::Application` UI shell, visible across all screens while the insecure state persists (not a one-time dialog, not per-network-screen). Maximum visibility; touches the root UI setup.
+- **D-02:** Placement is **app-wide** — visible across all screens while the insecure state persists (not a one-time dialog, not per-network-screen). Maximum visibility.
+- **D-02a (realization, resolved post-research):** There is **no single `brls::Application` shell** — each activity builds its own `AppletFrame`. The app-wide banner is realized via a **shared helper** following the existing `install_header_username` precedent (`source/app/app_header.cpp`): a helper called from each activity's `onContentAvailable` that injects the warning into the AppletFrame header when a process-wide `tls_insecure` flag is set. Touches ~14 activity files; uses the established codebase pattern rather than a custom always-on overlay. (Research Open Question 1 / Assumption A4 — confirmed by user.)
 - **D-03:** The fail-safe networking behavior is **unchanged** — still degrades to no-verification rather than bricking all HTTPS (REQUIREMENTS SEC-03 locks this). The warning is additive; it does not block usage.
 
 ### fs_util consolidation scope (DEBT-01/DEBT-02)
