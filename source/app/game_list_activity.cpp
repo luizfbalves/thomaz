@@ -18,7 +18,9 @@
 
 #include "core/cheat_db.hpp"
 #include "core/db_paths.hpp"
+#include "core/title_filter.hpp"
 #include "platform/cheat_store.hpp"
+#include "platform/title_visibility_store.hpp"
 
 using namespace brls::literals;
 
@@ -59,6 +61,21 @@ void GameListActivity::onContentAvailable()
                         this->target == Target::Mods ? "thomaz/help/mods_list"
                                                       : "thomaz/help/cheats_list");
 
+    // Load persisted visibility preferences.
+    store_.load();
+
+    // Button X on the frame: toggle global show_hidden → rebuild list.
+    if (auto* frame = this->getView("gameListFrame")) {
+        frame->registerAction(
+            "thomaz/games/toggle_show_hidden"_i18n, brls::BUTTON_X,
+            [this](brls::View*) {
+                store_.toggle_show_hidden();
+                store_.save();
+                this->rebuildList();
+                return true;
+            }, false);
+    }
+
     // Reading each installed title's control data (name + 128KB icon) off the
     // NAND is slow enough to freeze the push animation if done inline. Do it on
     // a worker thread while the XML spinner shows, then build the rows on the UI
@@ -71,40 +88,27 @@ void GameListActivity::onContentAvailable()
             *titles = svc->listInstalled();
         },
         [this, titles]() {
-            this->populate(*titles);
+            allTitles_ = *titles;
+            this->rebuildList();
         });
 }
 
-void GameListActivity::populate(const std::vector<InstalledTitle>& titles)
+void GameListActivity::rebuildList()
 {
     auto* listBox = dynamic_cast<brls::Box*>(this->getView("gameListBox"));
-    if (!listBox)
-    {
-        brls::Logger::error("gameListBox missing or not a Box");
-        return;
-    }
     auto* emptyLabel = dynamic_cast<brls::Label*>(this->getView("emptyLabel"));
-    if (!emptyLabel)
-    {
-        brls::Logger::error("emptyLabel missing or not a Label");
+    if (!listBox || !emptyLabel)
         return;
-    }
 
+    // Hide spinner once data is available (idempotent — GONE on already-GONE is a no-op).
     if (auto* spinner = this->getView("spinner"))
-        spinner->setVisibility(brls::Visibility::GONE); // load finished
+        spinner->setVisibility(brls::Visibility::GONE);
 
-    if (titles.empty())
-    {
-        // Show empty state, hide the list container.
-        emptyLabel->setVisibility(brls::Visibility::VISIBLE);
-        listBox->setVisibility(brls::Visibility::GONE);
-        return;
-    }
+    // Clear existing rows and cheat-badge tracking.
+    listBox->clearViews(true);
+    this->hasCheatBadges.clear();
 
-    // Hide empty label.
-    emptyLabel->setVisibility(brls::Visibility::GONE);
-
-    // Entry to the "clear cheats" screen (cheats mode only).
+    // Entry to the "clear cheats" screen (cheats mode only) — always at top.
     if (this->target == Target::Cheats)
     {
         ITitleService* svc = this->titleService;
@@ -131,8 +135,18 @@ void GameListActivity::populate(const std::vector<InstalledTitle>& titles)
         listBox->addView(clearEntry);
     }
 
-    for (const auto& title : titles)
+    int visibleCount = 0;
+
+    for (const auto& title : allTitles_)
     {
+        bool eh = core::effectively_hidden(title, store_.force_hidden(), store_.force_shown());
+
+        // When show_hidden is off, skip entries that are effectively hidden.
+        if (!store_.show_hidden() && eh)
+            continue;
+
+        ++visibleCount;
+
         // Build a focusable row: a Box with a name label and a version label.
         brls::Box* row = new brls::Box(brls::Axis::ROW);
         row->setWidth(brls::View::AUTO);
@@ -175,6 +189,12 @@ void GameListActivity::populate(const std::vector<InstalledTitle>& titles)
         nameLabel->setText(title.name);
         nameLabel->setFontSize(18.0f);
         row->addView(nameLabel);
+
+        // "Hidden" badge — shown when the title is effectively hidden but show_hidden is on.
+        if (eh && store_.show_hidden()) {
+            row->addView(makeBadge("thomaz/games/badge_hidden"_i18n,
+                                   nvgRGBA(0x80, 0x80, 0x80, 0x40), nvgRGB(0xC0, 0xC0, 0xC0)));
+        }
 
         // Cheats-specific badges (skipped in Mods mode).
         if (this->target == Target::Cheats)
@@ -222,7 +242,29 @@ void GameListActivity::populate(const std::vector<InstalledTitle>& titles)
         // Respond to touch (Switch) and mouse (desktop), not just the A button.
         row->addGestureRecognizer(new brls::TapGestureRecognizer(row));
 
+        // Button Y per row: toggle the title's visibility override → persist → rebuild.
+        InstalledTitle rowTitleCopy = title;
+        bool isHidden = eh;
+        row->registerAction(
+            isHidden ? "thomaz/games/unhide"_i18n : "thomaz/games/hide"_i18n,
+            brls::BUTTON_Y,
+            [this, rowTitleCopy](brls::View*) {
+                store_.toggle_title(rowTitleCopy);
+                store_.save();
+                this->rebuildList();
+                return true;
+            }, false);
+
         listBox->addView(row);
+    }
+
+    // Show empty state when no titles are visible; otherwise show the list.
+    if (visibleCount == 0 && allTitles_.empty()) {
+        emptyLabel->setVisibility(brls::Visibility::VISIBLE);
+        listBox->setVisibility(brls::Visibility::GONE);
+    } else {
+        emptyLabel->setVisibility(brls::Visibility::GONE);
+        listBox->setVisibility(brls::Visibility::VISIBLE);
     }
 
     // Reveal "has cheats" badges once the db index is available.
