@@ -111,7 +111,11 @@
     "empty": "No games found — run on a Switch to see your games.",
     "coming_soon": "Cheats: coming soon",
     "badge_has_cheats": "Has cheats",
-    "badge_active": "Active"
+    "badge_active": "Active",
+    "hide": "Hide",
+    "unhide": "Show",
+    "toggle_show_hidden": "Hidden",
+    "badge_hidden": "Hidden"
   },
   "clear": {
     "entry": "Clear cheats",

@@ -111,7 +111,11 @@
     "empty": "Nenhum jogo encontrado — rode no Switch para ver seus jogos.",
     "coming_soon": "Cheats: em breve",
     "badge_has_cheats": "Tem cheat",
-    "badge_active": "Ativado"
+    "badge_active": "Ativado",
+    "hide": "Ocultar",
+    "unhide": "Mostrar",
+    "toggle_show_hidden": "Ocultos",
+    "badge_hidden": "Oculto"
   },
   "clear": {
     "entry": "Limpar trapaças",

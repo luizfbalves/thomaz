@@ -1,4 +1,10 @@
 {
+    "games": {
+        "hide": "Masquer",
+        "unhide": "Afficher",
+        "toggle_show_hidden": "Masqués",
+        "badge_hidden": "Masqué"
+    },
     "saves": {
         "title": "Gestionnaire de sauvegardes",
         "subtitle": "Sauvegardez et restaurez vos sauvegardes de jeux",

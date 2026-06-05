@@ -1,4 +1,10 @@
 {
+    "games": {
+        "hide": "隐藏",
+        "unhide": "显示",
+        "toggle_show_hidden": "隐藏项目",
+        "badge_hidden": "已隐藏"
+    },
     "saves": {
         "title": "存档管理器",
         "subtitle": "备份和还原游戏存档",
