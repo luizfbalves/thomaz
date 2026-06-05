@@ -1,5 +1,6 @@
 #pragma once
 #include <curl/curl.h>
+#include <atomic>
 #include <cstdio>
 #include "platform/tls_policy.hpp"
 
@@ -10,13 +11,17 @@ namespace thomaz {
 // The SEC-03 UI banner reads this via tls_is_insecure() to warn the user.
 // Lives OUTSIDE #ifdef __SWITCH__ so the host build can inspect it (always false
 // on desktop because the desktop branch never sets it).
-inline bool& tls_insecure_flag() {
-    static bool f = false;
+// IN-04: atomic so the worker-thread setter (apply_curl_tls, via brls::async)
+// and the UI-thread reader (install_tls_warning_banner) do not data-race. It is
+// a one-way latch so the race was benign in practice, but a plain bool is still
+// UB per the C++ memory model — matching the cloudBusy std::atomic migration.
+inline std::atomic<bool>& tls_insecure_flag() {
+    static std::atomic<bool> f{false};
     return f;
 }
 
 inline bool tls_is_insecure() {
-    return tls_insecure_flag();
+    return tls_insecure_flag().load();
 }
 
 // Enable TLS certificate verification on a curl easy handle.
