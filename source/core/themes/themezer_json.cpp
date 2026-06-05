@@ -1,5 +1,6 @@
 #include "core/themes/themezer_json.hpp"
 #include <nlohmann/json.hpp>
+#include <utility>
 
 namespace thomaz::core {
 
@@ -69,15 +70,15 @@ const std::pair<const char*, const char*> kAssetImages[] = {
 
 // Theme gallery = rendered preview, then each non-null asset image.
 void build_theme_gallery(const json& node, ThemeDetail& d) {
-    if (node.contains("screenshotPreview")) {
+    if (node.contains("screenshotPreview") && node["screenshotPreview"].is_object()) {
         ImgUrls p = image_sizes_of(node["screenshotPreview"]);
         if (!p.hd.empty()) d.gallery.push_back({ p.hd, p.thumb, "Preview" });
     }
     if (node.contains("assets") && node["assets"].is_object()) {
         const json& a = node["assets"];
-        for (const auto& pair : kAssetImages) {
-            std::string url = str_field(a, pair.second);
-            if (!url.empty()) d.gallery.push_back({ url, url, pair.first });
+        for (const auto& asset : kAssetImages) {
+            std::string url = str_field(a, asset.second);
+            if (!url.empty()) d.gallery.push_back({ url, url, asset.first });
         }
     }
 }
