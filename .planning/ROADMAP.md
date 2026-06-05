@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Remove Community Feature** - Strip posts/feed/comments/likes from API and client; preserve auth/session infrastructure shared with cloud saves (completed 2026-06-04)
 - [ ] **Phase 2: API Security + Regression Tests** - Harden the live API against the remaining HIGH-severity security issues and co-ship regression tests
-- [x] **Phase 3: C++ Platform Hardening** - Fix isolated C++ platform-layer issues (fs_util extraction, TLS warning, cloudBusy atomicity) and their host tests (completed 2026-06-05)
+- [ ] **Phase 3: C++ Platform Hardening** - Fix isolated C++ platform-layer issues (fs_util extraction, TLS warning, cloudBusy atomicity) and their host tests (all 4 plans built + automated verification passed; awaiting human UAT for TLS banner visual rendering)
 - [ ] **Phase 4: C++ Activity Hardening** - Refactor all activities to the runAsync base-class pattern, replace unsafe casts, add curl cancellation, and cover the conflict path
 
 ## Phase Details
@@ -112,5 +112,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Remove Community Feature | 3/3 | Complete   | 2026-06-04 |
 | 2. API Security + Regression Tests | 1/3 | In Progress|  |
-| 3. C++ Platform Hardening | 4/4 | Complete   | 2026-06-05 |
+| 3. C++ Platform Hardening | 4/4 | Verifying (UAT) | - |
 | 4. C++ Activity Hardening | 0/? | Not started | - |
