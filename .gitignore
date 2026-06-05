@@ -63,6 +63,10 @@ tests/run
 !/resources/xml/activity/theme_detail.xml
 !/resources/xml/activity/system.xml
 !/resources/xml/activity/image_viewer.xml
+# Vendored qlaunch theme IPS patches (exelix11/theme-patches)
+!/resources/theme-patches/
+!/resources/theme-patches/*.ips
+!/resources/theme-patches/PROVENANCE.txt
 
 # Desktop index cache (downloaded switch-cheats-db index)
 thomaz-cache/

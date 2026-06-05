@@ -4,6 +4,7 @@
 #include "platform/themes/theme_download.hpp"   // nxtheme_filename
 #include "platform/themes/active_theme_store.hpp"
 #include "platform/themes/theme_compat.hpp"     // init_engine_firmware
+#include "platform/themes/qlaunch_patches.hpp"   // install_qlaunch_patches
 #include "apply_facade.hpp"
 
 #include <fstream>
@@ -61,6 +62,19 @@ InstallResult install_theme(const thomaz::core::ThemeDetail& detail,
     // run (the engine defaults hos::Version to 0.0.0 = pre-5.0, which disables
     // every firmware fix). No-op on desktop.
     init_engine_firmware();
+
+    // On firmware 20.0+ a themed (larger-than-stock) qlaunch SZS crashes the
+    // Home Menu on boot unless the qlaunch memory-budget IPS patch is present.
+    // The stock installer downloads it; we ship it bundled and install it here.
+    // Idempotent — only the patch matching this console's qlaunch is applied.
+    int patches = install_qlaunch_patches();
+#ifdef __SWITCH__
+    if (patches == 0)
+        res.warnings.push_back("could not install qlaunch theme patch — the "
+                               "Home Menu may crash on reboot");
+#else
+    (void)patches;
+#endif
 
     std::string folder = theme_folder(detail.entry);
     std::vector<std::string> written;        // for rollback
