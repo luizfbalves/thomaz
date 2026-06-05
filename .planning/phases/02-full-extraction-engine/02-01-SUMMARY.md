@@ -106,6 +106,16 @@ None — no external service configuration required.
 - Desktop build contract preserved: fake no-op present, header carries no Switch symbols
 - Host doctest suite: 181 tests passing
 
+## Self-Check: PASSED
+
+- source/platform/themes/cfw_paths.cpp: FOUND
+- tests/test_cfw_paths.cpp: FOUND
+- source/platform/themes/firmware_extract.hpp: FOUND
+- source/platform/themes/firmware_extract_fake.cpp: FOUND
+- .planning/phases/02-full-extraction-engine/02-01-SUMMARY.md: FOUND
+- Commit f71ae0e: FOUND
+- Commit ee5af63: FOUND
+
 ---
 *Phase: 02-full-extraction-engine*
 *Completed: 2026-06-05*
