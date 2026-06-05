@@ -108,7 +108,29 @@ export async function authRoutes(
       return reply.status(400).send(authError("invalid_body"));
     }
 
-    await revokeRefreshToken(app.prisma, parsed.data.refreshToken);
+    // Best-effort access-token revocation (D-01) — never throws to the client.
+    // No authenticate preHandler: a missing/expired/invalid bearer does not 401 (D-01).
+    try {
+      const decoded = await request.jwtVerify<JwtPayload>();
+      if (decoded.jti && decoded.exp) {
+        await app.prisma.revokedToken.deleteMany({
+          where: { expiresAt: { lt: new Date() } }, // D-09 lazy sweep
+        });
+        await app.prisma.revokedToken.upsert({
+          where: { jti: decoded.jti },
+          create: {
+            jti: decoded.jti,
+            userId: decoded.sub,
+            expiresAt: new Date(decoded.exp * 1000), // D-08
+          },
+          update: {}, // D-02/Pitfall-3: upsert survives double-logout P2002
+        });
+      }
+    } catch {
+      // missing/expired/invalid/no-jti bearer → do nothing, still 200 (D-01)
+    }
+
+    await revokeRefreshToken(app.prisma, parsed.data.refreshToken); // D-02 unchanged
     return { ok: true };
   });
 }

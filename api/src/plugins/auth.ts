@@ -44,6 +44,20 @@ export async function registerAuth(
       } catch {
         return reply.status(401).send({ ok: false, error: "unauthorized" });
       }
+      const { jti } = request.user as JwtPayload;
+      if (!jti) return; // D-05/L-02: pre-deploy token, allow with no DB hit
+      try {
+        const revoked = await app.prisma.revokedToken.findUnique({
+          where: { jti },
+        });
+        if (revoked) {
+          return reply
+            .status(401)
+            .send({ ok: false, error: "unauthorized" }); // D-03 generic
+        }
+      } catch (err) {
+        request.log.warn({ err }, "revocation lookup failed; allowing"); // D-06 fail-open
+      }
     },
   );
 
