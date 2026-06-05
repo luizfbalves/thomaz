@@ -57,12 +57,14 @@ Plans:
   2. On hardware, the same run extracts the Psl layout from title `…1007` and the MyPage layout from title `…1013`.
   3. Every extracted `.szs` lands directly in `/themes/systemData/` (flat layout, adapted from exelix's `extracted/{qlaunch,...}/` subdirs) with the exact filenames `target_map()` resolves to.
   4. Pure parsing/target-table logic (title-ID → szs-name mapping, path resolution) is covered by host doctest where it does not touch privileged services.
-**Plans**: 3 plans
+**Plans**: 4 plans
+**UI hint**: no
 
 Plans:
-- [ ] 02-01-PLAN.md — Add `common` to target_map(), declare ExtractAllResult + extract_all_base_layouts() in firmware_extract.hpp, add desktop stub, extend cfw_paths doctest — Wave 1
-- [ ] 02-02-PLAN.md — Widen nca_romfs_filter to /lyt/ prefix; implement extract_all_base_layouts() multi-title driver (three titles, best-effort per-part, D-02/D-02a, D-04 structural validation, D-03 flat overwrite) — Wave 2
-- [ ] 02-03-PLAN.md — Hardware verify: run extract_all_base_layouts() on device, confirm all 8 szs in /themes/systemData/ — Wave 3 (checkpoint)
+- [ ] 02-01-PLAN.md — Add `common` to `target_map()` (D-01a) + extend `test_cfw_paths` doctest; declare `ExtractAllResult` + `extract_all_base_layouts()` in the neutral `firmware_extract.hpp` and add the desktop no-op (interface contract) — Wave 1
+- [ ] 02-02-PLAN.md — Extract D-04 structural validation into a neutral `szs_validate.{hpp,cpp}` (Yaz0+SARC) + host doctest; bump `tests/Makefile` to C++20 with SarcLib so success criterion 4 covers validation — Wave 1
+- [ ] 02-03-PLAN.md — Widen `nca_romfs_filter` to a `/lyt/` directory prefix (D-01); implement `extract_all_base_layouts()` single-session multi-title best-effort driver (three titles, D-02/D-02a, D-04 validate, D-03 flat overwrite) — Wave 2
+- [ ] 02-04-PLAN.md — Hardware verify: run `extract_all_base_layouts()` under title takeover, confirm all six qlaunch layouts + Psl + MyPage land flat in `/themes/systemData/` (success criteria 1-3) — Wave 3 (checkpoint)
 
 ### Phase 3: Theme UI Integration
 **Goal**: Surface extraction as a first-class one-time action in the theme UI, wired so a successful run immediately unblocks "Aplicar Tema", with visible already-extracted/re-extract state, a recorded firmware version, and clear success/failure messaging.
@@ -102,6 +104,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Privileged Extraction Spike | 5/5 | Complete   | 2026-06-05 |
-| 2. Full Extraction Engine | 0/3 | Not started | - |
+| 2. Full Extraction Engine | 0/4 | Not started | - |
 | 3. Theme UI Integration | 0/3 | Not started | - |
 | 4. Forwarder (Optional) | 0/1 | Not started | - |
