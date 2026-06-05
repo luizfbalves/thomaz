@@ -9,9 +9,19 @@ namespace thomaz {
 
 namespace {
 
+// WR-06: use ::lstat (does NOT follow symlinks) rather than ::stat. copy_tree is
+// now a general-purpose host/desktop utility, so a directory symlink inside a
+// source tree must not be followed — that could recurse outside the intended
+// tree or loop forever if it points at an ancestor. On the Switch FAT
+// filesystem symlinks do not exist, so this is behaviour-preserving there.
 bool is_dir(const std::string& path) {
     struct stat st;
-    return ::stat(path.c_str(), &st) == 0 && S_ISDIR(st.st_mode);
+    return ::lstat(path.c_str(), &st) == 0 && S_ISDIR(st.st_mode);
+}
+
+bool is_symlink(const std::string& path) {
+    struct stat st;
+    return ::lstat(path.c_str(), &st) == 0 && S_ISLNK(st.st_mode);
 }
 
 // Copy a single file from src to dst. On open failure for dst, removes any
@@ -72,6 +82,11 @@ bool copy_tree(const std::string& src_dir, const std::string& dst_dir, std::stri
             continue;
         std::string src = src_dir + "/" + name;
         std::string dst = dst_dir + "/" + name;
+        // WR-06: skip symlinks entirely. With is_dir using lstat, a dir symlink
+        // is no longer a directory here; explicitly skipping any symlink also
+        // avoids copying a symlink's target as a regular file (escape/loop guard).
+        if (is_symlink(src))
+            continue;
         if (is_dir(src)) {
             if (!copy_tree(src, dst, err)) {
                 ok = false;
