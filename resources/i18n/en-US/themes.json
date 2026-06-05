@@ -26,7 +26,7 @@
     "pack_parts": "This pack includes:",
     "download": "Download",
     "downloading": "Downloading…",
-    "download_ok": "Saved to sd:/themes/. Install it with NXThemes Installer.",
+    "download_ok": "Saved to sd:/themes/.",
     "download_fail": "Download failed",
     "error_network": "Couldn't reach Themezer. Check your connection.",
     "apply": "Apply Theme",
