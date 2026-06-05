@@ -42,9 +42,17 @@
 - No prebuilt `.a` blob committed (D-06 reproducibility).
 
 ## SPL key sources (Atmosphère)
-- Source: https://github.com/Atmosphere-NX/Atmosphere (FS crypto config)
-- Pinned release + firmware version: to be recorded after hardware validation spike
-  (see TAKEOVER-02 doc; provisioned in plan 01-05 after first hardware run).
-- These are PUBLIC key sources (header_kek_source, header_key_source,
-  key_area_key_application_source) used to derive per-console keys on-device via
-  SPL. They are never decrypted keys and do not constitute Nintendo IP.
+- Source: https://github.com/Atmosphere-NX/Atmosphere (FS crypto configuration)
+- Pinned release: **1.7.1** — https://github.com/Atmosphere-NX/Atmosphere/releases/tag/1.7.1
+- Pinned commit: **b39e29d**
+- Files in-tree: `source/platform/themes/key_loader_switch.cpp` (lines 17–42)
+- License: GPLv2-or-later (Atmosphère project). The key *sources* themselves are
+  PUBLIC data copied from Nintendo firmware FS `.rodata` and mirrored by Atmosphère;
+  they are not copyrightable key material.
+- These are PUBLIC key sources (`header_kek_source`, `header_key_source`,
+  `key_area_key_application_source`) used to derive per-console NCA header keys
+  on-device via SPL hardware slots. They are never decrypted keys and do not
+  constitute secret Nintendo IP (EXTRACT-04).
+- Validated firmware version (major.minor.micro): **Pendente — a registrar após a
+  primeira execução em hardware (`setsysGetFirmwareVersion`)** — see
+  `docs/title-takeover.md` Proveniência section.
