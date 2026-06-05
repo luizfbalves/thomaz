@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 3 context gathered
-last_updated: "2026-06-05T13:17:00.711Z"
-last_activity: 2026-06-05
+status: executing
+stopped_at: "03-01 Tasks 1+2 complete; at checkpoint Task 3 human-verify desktop build"
+last_updated: "2026-06-05T15:21:00Z"
+last_activity: "2026-06-05 -- Phase 03 Plan 01 Tasks 1+2 complete; awaiting desktop build verification"
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 6
+  total_plans: 10
   completed_plans: 6
   percent: 50
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-04)
 
 **Core value:** Every issue in CONCERNS.md resolved (or explicitly deferred) without regressing existing behavior — verified by host tests and a clean desktop build
-**Current focus:** Phase 02 — api-security-regression-tests
+**Current focus:** Phase 03 — c-platform-hardening
 
 ## Current Position
 
-Phase: 3
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-06-05
+Phase: 03 (c-platform-hardening) — EXECUTING
+Plan: 1 of 4 (Tasks 1+2 complete; at checkpoint Task 3)
+Status: Awaiting desktop build verification (checkpoint:human-verify)
+Last activity: 2026-06-05 -- Phase 03 Plan 01 Tasks 1+2 complete
 
 Progress: [██████████] 100%
 
@@ -76,6 +76,7 @@ Recent decisions affecting current work:
 - [02-02]: JwtPayload jti/exp optional (L-02) — pre-deploy tokens without jti pass blocklist unblocked, no DB hit
 - [02-02]: Blocklist fail-open (D-06) — findUnique DB error → log.warn + allow; availability over strict revocation
 - [02-02]: Logout upsert over create (Pitfall 3) — double-logout idempotent; no preHandler or authRateLimit added (D-01/Pitfall 4)
+- [03-01]: Canonical ensure_parent_dirs is substring-at-slash from cheat_store.cpp; ghost-file-removal folded into copy_file from save_service_switch.cpp; save_service_switch 2-arg callers migrated to 3-arg with nullptr
 
 ### Pending Todos
 
@@ -97,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-05T13:17:00.706Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-c-platform-hardening/03-CONTEXT.md
+Last session: 2026-06-05T15:21:00Z
+Stopped at: Phase 03 Plan 01 Tasks 1+2 done; checkpoint Task 3 (desktop build human-verify)
+Resume file: .planning/phases/03-c-platform-hardening/03-01-PLAN.md
