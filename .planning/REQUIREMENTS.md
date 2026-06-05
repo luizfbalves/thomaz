@@ -10,7 +10,7 @@ Approach locked: **Option A** (port exelix BIS + SPL + hactool, GPLv2).
 - [ ] **EXTRACT-01**: User can extract the qlaunch home-menu layouts (ResidentMenu, Entrance, Flaunch, Set, Notification, common) from the running firmware to the SD card
 - [ ] **EXTRACT-02**: User can extract the player-select (Psl) layout
 - [ ] **EXTRACT-03**: User can extract the MyPage layout
-- [ ] **EXTRACT-04**: Extraction succeeds without the user supplying a `prod.keys` file (NCA header key derived on-device via SPL)
+- [x] **EXTRACT-04**: Extraction succeeds without the user supplying a `prod.keys` file (NCA header key derived on-device via SPL)
 
 ### App Integration (INTEG)
 - [ ] **INTEG-01**: User can start extraction from an "Extrair layouts do firmware" action in the theme UI
@@ -39,7 +39,7 @@ Approach locked: **Option A** (port exelix BIS + SPL + hactool, GPLv2).
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| EXTRACT-04 | Phase 1 | Pending |
+| EXTRACT-04 | Phase 1 | Complete |
 | TAKEOVER-01 | Phase 1 | Pending |
 | TAKEOVER-02 | Phase 1 | Pending |
 | EXTRACT-01 | Phase 2 | Pending |

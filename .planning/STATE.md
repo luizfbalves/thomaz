@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v0.4
 milestone_name: Extração de Temas
-status: Roadmap drafted, awaiting approval
-last_updated: "2026-06-04T23:05:20.794Z"
-last_activity: 2026-06-04 — Roadmap created (4 phases, coarse granularity)
+status: executing
+last_updated: "2026-06-05T00:03:00.194Z"
+last_activity: 2026-06-05
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 12
-  completed_plans: 0
-  percent: 0
+  total_plans: 5
+  completed_plans: 1
+  percent: 20
 ---
 
 # Project State
@@ -21,17 +21,17 @@ progress:
 alone — no second app — because thomaz extracts the firmware base layouts on-device,
 keyless to the user (no `prod.keys` file required).
 
-**Current focus:** v0.4 Extração de Temas — port exelix's BIS+SPL+hactool mechanism
+**Current focus:** Phase 01 — privileged-extraction-spike
 (Option A, GPLv2) to extract home-menu base `.szs` into `/themes/systemData/`, feeding
 Phase B's existing "Aplicar Tema".
 
 ## Current Position
 
-Phase: 1 — Privileged Extraction Spike (not started)
-Plan: —
-Status: Roadmap drafted, awaiting approval
-Last activity: 2026-06-04 — Roadmap created (4 phases, coarse granularity)
-Progress: [          ] 0% — 0/4 phases, 0/12 plans
+Phase: 01 (privileged-extraction-spike) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-06-05
+Progress: [██░░░░░░░░] 20%
 
 ## Roadmap Summary
 
