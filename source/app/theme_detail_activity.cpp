@@ -404,37 +404,47 @@ void ThemeDetailActivity::doRemove() {
     });
 }
 
-// On-device firmware base-layout extraction (privileged SPL→hactool chain,
-// Phase 1 spike). Runs once per missing target, writes to sd:/themes/systemData
-// so a subsequent Apply finds the base layouts. Requires Application mode
-// (title takeover); extract_base_layout() returns the relaunch prompt otherwise.
+// On-device firmware base-layout extraction (Phase 2 full engine).
+// Calls extract_all_base_layouts() — the multi-title driver that opens one
+// privileged session and extracts every /lyt/*.szs from qlaunch (…1000),
+// Psl (…1007), and MyPage (…1013) into /themes/systemData/ in one pass.
+// Requires Application mode (title takeover); the applet gate inside
+// extract_all_base_layouts() returns ok=false with the relaunch prompt otherwise.
+//
+// [Phase 2 verification trigger] — temporary Phase 2 hardware gate.
+// printf logs the ExtractAllResult (written_parts count, failed_parts) to the
+// hactool log so the human can verify the on-device run without any Phase 3 UI.
+// Phase 3 (INTEG-01/05) will add the permanent "Extrair layouts do firmware"
+// action and user-facing progress/result messaging; this trigger will be
+// promoted or replaced at that point.
 void ThemeDetailActivity::doExtract() {
     if (!this->resolved || this->busy) return;
-
-    // The targets this theme/pack needs (mirrors theme_install's detail_targets).
-    std::vector<std::string> targets;
-    for (const auto& p : this->detail.parts)
-        if (!p.target.empty()) targets.push_back(p.target);
-    if (targets.empty()) {
-        brls::Application::notify("themes/extract_no_targets"_i18n);
-        return;
-    }
 
     this->busy = true;
     brls::Application::notify("themes/extracting"_i18n);
 
     auto alive = this->alive;
-    brls::async([this, alive, targets]() {
-        ExtractResult last{ true, "" };
-        for (const auto& t : targets) {
-            last = extract_base_layout(t);
-            if (!last.ok) break;   // stop on first failure (e.g. applet mode)
-        }
-        brls::sync([this, alive, last]() {
+    brls::async([this, alive]() {
+        // Phase 2 full engine: extract all layouts from all three titles in one run.
+        ExtractAllResult res = extract_all_base_layouts();
+
+        // Log the ExtractAllResult summary for hardware verification (Task 2 / Plan 04).
+        std::printf("[doExtract] extract_all_base_layouts: ok=%d written=%zu failed=%zu\n",
+                    static_cast<int>(res.ok),
+                    res.written_parts.size(),
+                    res.failed_parts.size());
+        if (!res.systemic_error.empty())
+            std::printf("[doExtract] systemic_error: %s\n", res.systemic_error.c_str());
+        for (const auto& f : res.failed_parts)
+            std::printf("[doExtract] failed_part: %s\n", f.c_str());
+        for (const auto& w : res.written_parts)
+            std::printf("[doExtract] written_part: %s\n", w.c_str());
+
+        brls::sync([this, alive, res]() {
             if (!alive->load()) return;
             this->busy = false;
-            if (!last.ok) {
-                brls::Application::notify("themes/extract_fail"_i18n + std::string(": ") + last.error);
+            if (!res.ok) {
+                brls::Application::notify("themes/extract_fail"_i18n + std::string(": ") + res.systemic_error);
                 return;
             }
             brls::Application::notify("themes/extract_ok"_i18n);
