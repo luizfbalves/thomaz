@@ -21,7 +21,23 @@ export async function buildApp(
   const env = loadConfig();
   await ensureUploadDir(env);
 
-  const app = Fastify({ logger: false });
+  const redact = {
+    paths: ["req.headers.authorization", "req.headers.cookie"],
+    remove: true,
+  };
+  const envToLogger = {
+    development: {
+      redact,
+      transport: {
+        target: "pino-pretty",
+        options: { translateTime: "HH:MM:ss Z", ignore: "pid,hostname" },
+      },
+    },
+    production: { redact }, // object (NOT `true`) so redact applies — Pitfall 2 / D-11
+    test: false, // D-10: keeps Vitest suite silent
+  } as const;
+
+  const app = Fastify({ logger: envToLogger[env.NODE_ENV] });
 
   await registerDb(app);
   await registerAuth(app, env);
