@@ -18,6 +18,7 @@
 #include "app/theme.hpp"
 #include "app/animated_box.hpp"
 #include "app/home_activity.hpp"
+#include "app/boot_activity.hpp"
 #include "platform/app_settings.hpp"
 #include "platform/http_client_curl.hpp"
 #include "platform/self_update.hpp"
@@ -107,9 +108,17 @@ int main(int argc, char* argv[])
     // Quit the app with the + (START) button from any activity.
     brls::Application::setGlobalQuit(true);
 
-    brls::Application::pushActivity(
-        new thomaz::HomeActivity(titleService.get(), httpClient.get(), saveService.get(),
-                                 feedClient.get(), cloudSaveClient.get()));
+    if (restoredSession.has_value()) {
+        // Session already restored — skip boot screen, go directly to home.
+        brls::Application::pushActivity(
+            new thomaz::HomeActivity(titleService.get(), httpClient.get(), saveService.get(),
+                                     feedClient.get(), cloudSaveClient.get()));
+    } else {
+        // No saved session — show boot screen (login or guest).
+        brls::Application::pushActivity(
+            new thomaz::BootActivity(titleService.get(), httpClient.get(), saveService.get(),
+                                     feedClient.get(), cloudSaveClient.get()));
+    }
 
     while (brls::Application::mainLoop())
         ;
