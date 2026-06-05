@@ -16,14 +16,25 @@ aes_ctx_t *new_aes_ctx(const void *key, unsigned int key_size, aes_mode_t mode) 
     mbedtls_cipher_init(&ctx->cipher_dec);
     mbedtls_cipher_init(&ctx->cipher_enc);
 
-    if (mbedtls_cipher_setup(&ctx->cipher_dec, mbedtls_cipher_info_from_type(mode))
-        || mbedtls_cipher_setup(&ctx->cipher_enc, mbedtls_cipher_info_from_type(mode))) {
-        FATAL_ERROR("Failed to set up AES context!");
+    const mbedtls_cipher_info_t *_info = mbedtls_cipher_info_from_type(mode);
+    if (_info == NULL) {
+        fprintf(stderr, "AES setup: no cipher_info for mode=%d key_bits=%u\n", (int)mode, key_size * 8);
+    }
+    if (mbedtls_cipher_setup(&ctx->cipher_dec, _info)
+        || mbedtls_cipher_setup(&ctx->cipher_enc, _info)) {
+        fprintf(stderr, "Failed to set up AES context! mode=%d key_bits=%u info=%p\n",
+                (int)mode, key_size * 8, (void*)_info);
+        exit(EXIT_FAILURE);
     }
 
-    if (mbedtls_cipher_setkey(&ctx->cipher_dec, key, key_size * 8, AES_DECRYPT)
-        || mbedtls_cipher_setkey(&ctx->cipher_enc, key, key_size * 8, AES_ENCRYPT)) {
-        FATAL_ERROR("Failed to set key for AES context!");
+    int _rkd = mbedtls_cipher_setkey(&ctx->cipher_dec, key, key_size * 8, AES_DECRYPT);
+    int _rke = mbedtls_cipher_setkey(&ctx->cipher_enc, key, key_size * 8, AES_ENCRYPT);
+    if (_rkd || _rke) {
+        /* Diagnostic: print the cipher mode + the mbedtls error codes so a setkey
+         * failure (e.g. unavailable cipher mode in the trimmed build) is precise. */
+        fprintf(stderr, "Failed to set key for AES context! mode=%d key_bits=%u dec=-0x%04x enc=-0x%04x\n",
+                (int)mode, key_size * 8, (unsigned)(-_rkd), (unsigned)(-_rke));
+        exit(EXIT_FAILURE);
     }
 
     return ctx;
