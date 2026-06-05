@@ -68,15 +68,15 @@ ExtractResult extract_base_layout(const std::string& target) {
     }
 
     // -------------------------------------------------------------------------
-    // (2) Resolve the target via cfw_paths::target_map.
+    // (2) Resolve the target via target_map (thomaz namespace, cfw_paths.hpp).
     // -------------------------------------------------------------------------
-    auto tm = cfw_paths::target_map(target);
+    auto tm = target_map(target);
     if (!tm) {
         return {false, "Unknown extraction target: " + target};
     }
     // The filter list for the NCA extraction: one RomFS path.
     std::vector<std::string> filter_list = {"/lyt/" + tm->szs};
-    std::string out_path = cfw_paths::base_szs_path(target);
+    std::string out_path = base_szs_path(target);
     if (out_path.empty()) {
         return {false, "Could not resolve output path for target: " + target};
     }

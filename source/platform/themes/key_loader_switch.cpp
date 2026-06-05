@@ -230,7 +230,7 @@ std::string resolve_nca_path(const std::string& title_id_hex) {
 
     char raw_path[FS_MAX_PATH] = {};
     Result rc = lrLrResolveProgramPath(&resolver, title_id, raw_path);
-    lrLrClose(&resolver);
+    serviceClose(&resolver.s);   // libnx has no lrLrClose; the resolver wraps a Service
     lrExit();
 
     if (R_FAILED(rc)) {

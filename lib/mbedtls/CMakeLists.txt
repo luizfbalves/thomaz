@@ -15,9 +15,14 @@ cmake_minimum_required(VERSION 3.10)
 
 set(THOMAZ_MBEDTLS_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-# Collect only the crypto + x509 + TLS source files we need.
-# Use the list from library/CMakeLists.txt as the authoritative source.
-# We include all of library/*.c and let the config header disable unused modules.
+# hactool only uses the mbedtls cipher (AES), CMAC, MD/HMAC and bignum (MPI/RSA)
+# layers — see `grep mbedtls_ lib/hactool`. It needs NO TLS, x509, PK-parse, or
+# networking. We therefore compile ONLY the crypto translation units (plus their
+# direct deps). This deliberately excludes:
+#   - net_sockets.c — has a hard `#error` on non-Unix/Windows platforms (Switch),
+#   - ssl_*.c / x509*.c / certs.c / pkcs11.c / debug.c — TLS+PKI, unused by hactool.
+# The stock config.h still *declares* those modules, but with their sources absent
+# and nothing referencing their symbols the static lib links clean.
 file(GLOB THOMAZ_MBEDTLS_SRC
     ${THOMAZ_MBEDTLS_DIR}/library/aes.c
     ${THOMAZ_MBEDTLS_DIR}/library/aesni.c
@@ -56,7 +61,6 @@ file(GLOB THOMAZ_MBEDTLS_SRC
     ${THOMAZ_MBEDTLS_DIR}/library/md4.c
     ${THOMAZ_MBEDTLS_DIR}/library/md5.c
     ${THOMAZ_MBEDTLS_DIR}/library/memory_buffer_alloc.c
-    ${THOMAZ_MBEDTLS_DIR}/library/net_sockets.c
     ${THOMAZ_MBEDTLS_DIR}/library/nist_kw.c
     ${THOMAZ_MBEDTLS_DIR}/library/oid.c
     ${THOMAZ_MBEDTLS_DIR}/library/padlock.c
@@ -77,35 +81,9 @@ file(GLOB THOMAZ_MBEDTLS_SRC
     ${THOMAZ_MBEDTLS_DIR}/library/sha256.c
     ${THOMAZ_MBEDTLS_DIR}/library/sha512.c
     ${THOMAZ_MBEDTLS_DIR}/library/threading.c
-    ${THOMAZ_MBEDTLS_DIR}/library/timing.c
     ${THOMAZ_MBEDTLS_DIR}/library/version.c
     ${THOMAZ_MBEDTLS_DIR}/library/version_features.c
     ${THOMAZ_MBEDTLS_DIR}/library/xtea.c
-    # x509
-    ${THOMAZ_MBEDTLS_DIR}/library/certs.c
-    ${THOMAZ_MBEDTLS_DIR}/library/pkcs11.c
-    ${THOMAZ_MBEDTLS_DIR}/library/x509.c
-    ${THOMAZ_MBEDTLS_DIR}/library/x509_create.c
-    ${THOMAZ_MBEDTLS_DIR}/library/x509_crl.c
-    ${THOMAZ_MBEDTLS_DIR}/library/x509_crt.c
-    ${THOMAZ_MBEDTLS_DIR}/library/x509_csr.c
-    ${THOMAZ_MBEDTLS_DIR}/library/x509write_crt.c
-    ${THOMAZ_MBEDTLS_DIR}/library/x509write_csr.c
-    # TLS
-    ${THOMAZ_MBEDTLS_DIR}/library/debug.c
-    ${THOMAZ_MBEDTLS_DIR}/library/net_sockets.c
-    ${THOMAZ_MBEDTLS_DIR}/library/ssl_cache.c
-    ${THOMAZ_MBEDTLS_DIR}/library/ssl_ciphersuites.c
-    ${THOMAZ_MBEDTLS_DIR}/library/ssl_cli.c
-    ${THOMAZ_MBEDTLS_DIR}/library/ssl_cookie.c
-    ${THOMAZ_MBEDTLS_DIR}/library/ssl_msg.c
-    ${THOMAZ_MBEDTLS_DIR}/library/ssl_srv.c
-    ${THOMAZ_MBEDTLS_DIR}/library/ssl_ticket.c
-    ${THOMAZ_MBEDTLS_DIR}/library/ssl_tls.c
-    ${THOMAZ_MBEDTLS_DIR}/library/ssl_tls13_keys.c
-    ${THOMAZ_MBEDTLS_DIR}/library/ssl_tls13_server.c
-    ${THOMAZ_MBEDTLS_DIR}/library/ssl_tls13_client.c
-    ${THOMAZ_MBEDTLS_DIR}/library/ssl_tls13_generic.c
 )
 
 # Remove duplicates (net_sockets.c was listed twice above)

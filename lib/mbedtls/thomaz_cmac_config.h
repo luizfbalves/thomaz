@@ -34,4 +34,10 @@
  * platform I/O in self-test paths on Switch. */
 #undef MBEDTLS_SELF_TEST
 
+/* Drop the TCP/IP sockets module: net_sockets.c has a hard `#error` on any
+ * platform that is not Unix or Windows (Switch/devkitA64), and hactool needs no
+ * networking. Its source is also excluded from the build (see CMakeLists.txt);
+ * undefining the symbol keeps the config consistent with the trimmed sources. */
+#undef MBEDTLS_NET_C
+
 #endif /* THOMAZ_CMAC_CONFIG_H */
