@@ -119,7 +119,7 @@ Plans:
 Plans:
 
 - [x] 04-01-PLAN.md — Create ThomazActivity base (alive+cancelled+runAsync) + pure Borealis-free thomaz::core::run_if_alive helper + TEST-04b dropped-callback doctest [CONC-02, TEST-04] (Wave 1)
-- [ ] 04-05-PLAN.md — Extend test_save_sync.cpp with the classify→plan_push conflict decision-composition cases [TEST-04] (Wave 1, parallel)
+- [x] 04-05-PLAN.md — Extend test_save_sync.cpp with the classify→plan_push conflict decision-composition cases [TEST-04] (Wave 1, parallel)
 - [ ] 04-02-PLAN.md — Single-pass migrate the 4 DEBT-03/CONC-02 shared activities (game_list, save_manager, save_detail, mod_browser): base-swap + alive removal + runAsync + null-guarded dynamic_cast [CONC-02, DEBT-03] (Wave 2)
 - [ ] 04-03-PLAN.md — Migrate the remaining 9 alive-guarded activities to ThomazActivity + runAsync (no casts); mod_manager is base-swap-only [CONC-02] (Wave 2, parallel)
 - [ ] 04-04-PLAN.md — CONC-03 curl cancellation across BOTH surfaces (mod_download.cpp + http_client_curl.cpp); add HttpRequest.cancelled; thread the base cancelled flag from activities [CONC-03] (Wave 3)

@@ -25,7 +25,7 @@ The posts/feed/comments/likes community feature is being removed entirely. Its i
 ### Concurrency
 
 - [x] **CONC-01**: `cloudBusy` is `std::atomic<bool>` with a documented threading contract; the concurrent-operation guard behaves as before. *(AC-6A)*
-- [ ] **CONC-02**: A shared `runAsync` wrapper on an activity base class auto-captures the `alive` guard; existing async call sites (`save_detail`, `mod_browser`, `theme_browser`) migrate to it so the use-after-free guard can't be forgotten. *(AC-6B)*
+- [x] **CONC-02**: A shared `runAsync` wrapper on an activity base class auto-captures the `alive` guard; existing async call sites (`save_detail`, `mod_browser`, `theme_browser`) migrate to it so the use-after-free guard can't be forgotten. *(AC-6B)*
 - [ ] **CONC-03**: In-flight curl requests are aborted on activity destruction via a shared `cancelled` flag checked in a `CURLOPT_XFERINFOFUNCTION` callback; happy-path requests are unaffected. *(AC-6C)*
 
 ### Tech Debt
@@ -40,7 +40,7 @@ The posts/feed/comments/likes community feature is being removed entirely. Its i
 - [x] **TEST-01**: A regression test asserts no save-blob URL is publicly accessible (guards SEC-01 / RM-02 — no static route exposes saves). *(AC-1.1 test, HIGH)*
 - [x] **TEST-02**: API tests cover the saves `PUT` revision path — `revision_required` (400), `revision_conflict` (409), new-slot create (200), matching-revision update (200). *(AC-T, HIGH)*
 - [x] **TEST-03**: A host test covers the TLS fail-safe branch (`ca_ok == false`) so a regression that silently disables verification fails CI. *(AC-4 test)*
-- [ ] **TEST-04**: The cloud-save upload conflict-resolution path is covered (host doctest for the conflict/`plan_push` branch and/or the `runAsync`-dropped-callback semantics). *(CONCERNS Test Gaps)*
+- [x] **TEST-04**: The cloud-save upload conflict-resolution path is covered (host doctest for the conflict/`plan_push` branch and/or the `runAsync`-dropped-callback semantics). *(CONCERNS Test Gaps)*
 
 ## v2 Requirements
 
@@ -84,10 +84,10 @@ Explicitly excluded — see PROJECT.md and FEATURES.md anti-features.
 | DEBT-01 | Phase 3 | Complete |
 | DEBT-02 | Phase 3 | Complete |
 | TEST-03 | Phase 3 | Complete |
-| CONC-02 | Phase 4 | Pending |
+| CONC-02 | Phase 4 | Complete |
 | CONC-03 | Phase 4 | Pending |
 | DEBT-03 | Phase 4 | Pending |
-| TEST-04 | Phase 4 | Pending |
+| TEST-04 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 18 total
