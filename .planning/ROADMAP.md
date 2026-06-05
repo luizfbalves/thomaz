@@ -4,6 +4,7 @@
 
 - ✅ **v1.0 Hardening** — Phases 1-4 (shipped 2026-06-05)
 - 🟡 **v0.5.0 Theme Extraction** — Phases 1-2 shipped 2026-06-05; Phases 3-4 open
+- 🟢 **v1.1 Switch-Only Simplification** — Phases 5-7 (active, started 2026-06-05)
 
 ## Phases
 
@@ -38,6 +39,47 @@ On-device extraction of the firmware home-menu base `.szs` layouts into `/themes
 
 </details>
 
+### 🟢 v1.1 Switch-Only Simplification (Phases 5-7) — ACTIVE
+
+Remove the desktop (PC/SDL2/GLFW) build target entirely so the source tree targets only Nintendo Switch, cutting the platform-abstraction surface that existed solely to run the GUI on PC — with **zero change to the shipped `.nro`**. Sequenced for safety: collapse the source selection seams first (so `*_switch` impls are sole before the build stops offering a desktop branch), then strip the build system, then clean docs and run the final combined gate. Verified by a green host doctest suite (`tests/Makefile`) and a clean Switch build (`scripts/build-switch.sh`).
+
+- [ ] **Phase 5: Collapse Source Seams to Switch-Only** — Delete the 5 desktop stub pairs and collapse every `__SWITCH__` selection seam so the `*_switch` impls are the sole implementations
+- [ ] **Phase 6: Strip Desktop from Build System** — Remove the `PLATFORM_DESKTOP` path from CMake, delete the desktop helper scripts, and prove the Switch build still produces `thomaz.nro`
+- [ ] **Phase 7: Docs Cleanup & Final Verification Gate** — Update comments/docs to describe a Switch-only tree and re-confirm both verification gates (host doctest + Switch build) are green
+
+## Phase Details
+
+### Phase 5: Collapse Source Seams to Switch-Only
+**Goal**: The `source/` tree compiles and reasons as a single Switch target — every desktop platform stub is gone and every implementation-selection seam unconditionally uses the Switch path, with the host doctest suite still green.
+**Depends on**: Phase 4 (v1.0 — last shipped phase; this milestone continues numbering)
+**Requirements**: SIMPL-01, SIMPL-02, SIMPL-03
+**Success Criteria** (what must be TRUE):
+  1. The 5 desktop stub pairs are deleted — `find source/platform -name '*_fake*'` returns only `saves/fake_cloud_save_client.{cpp,hpp}` (the retained doctest double); `save_service_fake`, `title_service_fake`, `fake_auth_client`, `themes/firmware_extract_fake`, and `sysmod/sysmod_store_fake` no longer exist.
+  2. No desktop selection branch survives: `grep -rn 'ifndef __SWITCH__\|#else' source/` shows no remaining `*_fake`-vs-`*_switch` seam, and each affected `*_switch` impl is the sole implementation behind its interface (the `#ifdef __SWITCH__ … #endif` guards around always-Switch code may stay or be dropped, but no `#else`/`#ifndef __SWITCH__` desktop branch remains).
+  3. No `source/` file references a deleted stub or a desktop-only symbol/include — `grep -rnE 'PLATFORM_DESKTOP|SDL2|GLFW|_fake' source/` returns nothing except the retained `fake_cloud_save_client` references.
+  4. `tests/Makefile` still builds and `make -C tests test` passes unchanged, confirming core + platform-neutral logic is unregressed and `saves/fake_cloud_save_client.*` is still compiled by the suite.
+**Plans**: TBD
+
+### Phase 6: Strip Desktop from Build System
+**Goal**: The build system offers only the Switch toolchain — CMake has no `PLATFORM_DESKTOP` path, the desktop helper scripts are gone, and a clean Switch build still produces `thomaz.nro`.
+**Depends on**: Phase 5 (source seams must be Switch-only before the build stops offering a desktop branch, so the tree is never left unbuildable mid-phase)
+**Requirements**: BUILD-01, BUILD-02, BUILD-03
+**Success Criteria** (what must be TRUE):
+  1. No `PLATFORM_DESKTOP` token remains in `CMakeLists.txt` — `grep -n 'PLATFORM_DESKTOP' CMakeLists.txt` returns nothing; the `elseif (PLATFORM_DESKTOP)` link branch and the `PLATFORM_DESKTOP` packaging branch are removed, and dual-target comments are gone.
+  2. The desktop helper scripts are removed — `scripts/build-desktop.sh` and `scripts/run-desktop.sh` no longer exist in the repo.
+  3. A clean Switch build via `scripts/build-switch.sh` (devkitPro Docker) succeeds end-to-end and produces `build_switch/thomaz.nro`.
+**Plans**: TBD
+
+### Phase 7: Docs Cleanup & Final Verification Gate
+**Goal**: Repository docs and code comments describe a Switch-only tree with the host-doctest + Switch-build verification flow, and both single-target gates are confirmed green together.
+**Depends on**: Phase 6
+**Requirements**: DOC-01, VERIF-01
+**Success Criteria** (what must be TRUE):
+  1. No doc or comment instructs or implies a desktop PC build — the `CMakeLists.txt` header comment, README/build docs, and any `AGENTS.md`/`CLAUDE.md` build notes describe a Switch-only tree and the host-doctest + `build-switch.sh` verification flow; a grep for desktop-build instructions (`build-desktop`, `PLATFORM_DESKTOP`, "desktop PC") in tracked docs returns nothing stale.
+  2. The host doctest suite passes — `make -C tests test` is green and still compiles the retained `saves/fake_cloud_save_client.*` test double.
+  3. The Switch build is clean — `scripts/build-switch.sh` produces `build_switch/thomaz.nro` after all removals, with the two single-target gates (host doctest + Switch build) standing as the milestone's verification flow.
+**Plans**: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status   | Completed  |
@@ -50,3 +92,8 @@ On-device extraction of the firmware home-menu base `.szs` layouts into `/themes
 | 2. Full Extraction Engine          | v0.5.0 | 4/4 | Complete | 2026-06-05 |
 | 3. Theme UI Integration            | v0.5.0 | 0/3 | Carried forward | - |
 | 4. Forwarder (Optional)            | v0.5.0 | 0/1 | Carried forward | - |
+| 5. Collapse Source Seams to Switch-Only | v1.1 | 0/0 | Not started | - |
+| 6. Strip Desktop from Build System      | v1.1 | 0/0 | Not started | - |
+| 7. Docs Cleanup & Final Verification Gate | v1.1 | 0/0 | Not started | - |
+</content>
+</invoke>

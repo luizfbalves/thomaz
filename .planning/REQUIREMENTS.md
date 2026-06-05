@@ -46,18 +46,18 @@
 
 ## Traceability
 
-<!-- Filled by the roadmapper: REQ-ID → Phase mapping. -->
-
 | REQ-ID | Phase |
 |--------|-------|
-| BUILD-01 | _TBD_ |
-| BUILD-02 | _TBD_ |
-| BUILD-03 | _TBD_ |
-| SIMPL-01 | _TBD_ |
-| SIMPL-02 | _TBD_ |
-| SIMPL-03 | _TBD_ |
-| VERIF-01 | _TBD_ |
-| DOC-01 | _TBD_ |
+| SIMPL-01 | Phase 5 |
+| SIMPL-02 | Phase 5 |
+| SIMPL-03 | Phase 5 |
+| BUILD-01 | Phase 6 |
+| BUILD-02 | Phase 6 |
+| BUILD-03 | Phase 6 |
+| DOC-01 | Phase 7 |
+| VERIF-01 | Phase 7 |
 
 ---
 *Created: 2026-06-05 — v1.1 Switch-Only Simplification*
+*Traceability filled: 2026-06-05 — roadmap Phases 5-7*
+</content>
