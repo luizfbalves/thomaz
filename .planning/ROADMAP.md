@@ -143,4 +143,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Remove Community Feature | 3/3 | Complete   | 2026-06-04 |
 | 2. API Security + Regression Tests | 1/3 | In Progress|  |
 | 3. C++ Platform Hardening | 4/4 | Complete    | 2026-06-05 |
-| 4. C++ Activity Hardening | 5/5 | Complete   | 2026-06-05 |
+| 4. C++ Activity Hardening | 6/6 | Complete   | 2026-06-05 |

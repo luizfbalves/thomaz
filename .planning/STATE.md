@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-06-05T18:16:40.479Z"
+status: executing
+stopped_at: Completed 04-06-PLAN.md
+last_updated: "2026-06-05T18:47:09.008Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 4
   completed_phases: 4
-  total_plans: 15
-  completed_plans: 15
+  total_plans: 16
+  completed_plans: 16
   percent: 100
 ---
 
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-06-04)
 ## Current Position
 
 Phase: 04 (c-activity-hardening) — EXECUTING
-Plan: 5 of 5
-Status: Phase complete — ready for verification
+Plan: 2 of 6
+Status: Ready to execute
 Last activity: 2026-06-05
 
 Progress: [██████████] 100%
@@ -64,6 +64,7 @@ Progress: [██████████] 100%
 | Phase 04-c-activity-hardening P05 | 3min | 1 tasks | 1 files |
 | Phase 04-c-activity-hardening P02 | 20min | 2 tasks | 8 files |
 | Phase 04-c-activity-hardening P04 | 25min | 2 tasks | 11 files |
+| Phase 04-c-activity-hardening P06 | 10min | 4 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,8 @@ Recent decisions affecting current work:
 - [Phase ?]: [04-02]: shared_ptr<T> result struct for runAsync data handoff — worker writes into it, onSync reads it; cleaner than captures across async boundary
 - [Phase ?]: [04-02]: Non-async alive captures in IME/dialog callbacks preserved — these are UI-event closures not brls::async sites; alive resolved via ThomazActivity inheritance
 - [Phase ?]: [04-02]: DEBT-03 null-guard early returns added for all bare-assignment casts; redundant downstream null checks removed for simplicity
+- [Phase ?]: [04-06]: makeFetcher extended in-place per file (not shared helper) — separate anonymous-namespace copies for theme_detail and theme_browser; low churn, no header change
+- [Phase ?]: [04-06]: CONC-03 SATISFIED — D-03 fully closed: all activity-owned network transfers abort in-flight on activity destruction
 
 ### Pending Todos
 
@@ -113,6 +116,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-05T18:16:40.470Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-06-05T18:47:09.000Z
+Stopped at: Completed 04-06-PLAN.md
 Resume file: None
