@@ -34,5 +34,12 @@ target_include_directories(hactool
 # not affected.
 target_compile_options(hactool PRIVATE -Wno-error)
 
+# Library-safety: force-include hactool_recover.h into every hactool TU so its
+# process-killing exit() calls become a recoverable longjmp back to the C++
+# wrapper, instead of terminating the whole app on a parse/key error (the
+# vendored fork is full of exit(EXIT_FAILURE) + FATAL_ERROR). hactool_recover.c
+# (picked up by the GLOB above) provides the jmp_buf + recovery function.
+target_compile_options(hactool PRIVATE -include ${HACTOOL_DIR}/source/hactool_recover.h)
+
 # hactool is a C library; no C++ standard required here.
 # The C++ facade (firmware_extract_switch.cpp) links against this target.

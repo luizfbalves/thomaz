@@ -16,6 +16,15 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <setjmp.h>
+#include <sys/stat.h>
+
+// hactool recovery hooks (lib/hactool/source/hactool_recover.c). hactool aborts
+// the whole process via exit() on any parse/key error; arming this jmp_buf turns
+// that exit() into a longjmp back to the setjmp() below so we report a clean
+// error instead of crashing the app.
+extern "C" jmp_buf      g_hactool_recover_jmp;
+extern "C" volatile int g_hactool_recover_active;
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -134,16 +143,33 @@ NcaExtractResult extract_szs_from_nca(
     tool_ctx.settings.extraction_file_stream_cb = nca_on_file_dumped;
     tool_ctx.settings.extra_context             = &cap_ctx;
 
-    // --- Run the extraction ---------------------------------------------------
+    // --- Capture hactool's stderr to an SD log (diagnostics) ------------------
+    // hactool reports errors via fprintf(stderr) right before exit(); on Switch
+    // stderr normally goes nowhere. Redirect it to a file so a failure (e.g.
+    // "Invalid NCA header! Are keys correct?") is readable back on screen.
+    const char* kErrLog = "/switch/thomaz/hactool.log";
+    ::mkdir("/switch", 0777);
+    ::mkdir("/switch/thomaz", 0777);
+    std::fflush(stderr);
+    std::freopen(kErrLog, "w", stderr);
+
+    // --- Run the extraction under a recovery guard ----------------------------
     // Source: exelix hactool.cpp @ 2618b0c — RESEARCH Pattern 4.
-    // nca_init:               parses + decrypts the NCA header.
-    // nca_process:            walks sections; for each RomFS entry that passes
-    //                         romfs_filter, calls extraction_file_stream_cb with
-    //                         the decrypted in-memory buffer.
-    // nca_free_section_contexts: releases per-section allocations.
-    nca_init(&nca_ctx);
-    nca_process(&nca_ctx);
-    nca_free_section_contexts(&nca_ctx);
+    // nca_init:    parses + decrypts the NCA header (exit()s on a bad key).
+    // nca_process: walks sections; for each RomFS entry that passes romfs_filter,
+    //              calls extraction_file_stream_cb with the decrypted buffer.
+    // hactool's exit() on error longjmps back to the setjmp below (see
+    // hactool_recover.*), so a wrong key surfaces as an error, not an app crash.
+    bool aborted = false;
+    g_hactool_recover_active = 1;
+    if (setjmp(g_hactool_recover_jmp) == 0) {
+        nca_init(&nca_ctx);
+        nca_process(&nca_ctx);
+        nca_free_section_contexts(&nca_ctx);
+    } else {
+        aborted = true;   // hactool called exit() — recovered here (sections leaked)
+    }
+    g_hactool_recover_active = 0;
 
     // --- Wipe the header key immediately (T-01-10) ----------------------------
     std::memset(tool_ctx.settings.keyset.header_key, 0, 0x20);
@@ -151,12 +177,37 @@ NcaExtractResult extract_szs_from_nca(
     std::fclose(nca_file);
     nca_file = nullptr;
 
+    // Read back the captured hactool stderr (last chunk) for the error message.
+    std::fflush(stderr);
+    std::string hactool_err;
+    if (FILE* ef = std::fopen(kErrLog, "rb")) {
+        char ebuf[512];
+        size_t n = std::fread(ebuf, 1, sizeof(ebuf) - 1, ef);
+        ebuf[n] = '\0';
+        std::fclose(ef);
+        // Trim trailing whitespace/newlines for a tidy on-screen message.
+        hactool_err.assign(ebuf, n);
+        while (!hactool_err.empty() &&
+               (hactool_err.back() == '\n' || hactool_err.back() == '\r' ||
+                hactool_err.back() == ' '))
+            hactool_err.pop_back();
+    }
+
+    // --- hactool aborted (bad key, corrupt NCA, etc.) -------------------------
+    if (aborted) {
+        std::string msg = "hactool aborted during NCA decode";
+        if (!hactool_err.empty()) msg += ": " + hactool_err;
+        return {{}, msg};
+    }
+
     // --- Validate output (T-01-09 integrity) ----------------------------------
     // An empty map means the decrypt failed, the NCA had no RomFS, or the
     // filter matched nothing. Return a clear error rather than an empty success.
     if (captured.empty()) {
-        return {{}, "extract_szs_from_nca: extraction returned no files — "
-                    "decrypt may have failed or filter matched nothing in RomFS"};
+        std::string msg = "extract_szs_from_nca: extraction returned no files — "
+                          "decrypt may have failed or filter matched nothing in RomFS";
+        if (!hactool_err.empty()) msg += " [" + hactool_err + "]";
+        return {{}, msg};
     }
 
     return {std::move(captured), {}};
