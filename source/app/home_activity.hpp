@@ -26,6 +26,10 @@ class HomeActivity : public brls::Activity
 
     void onContentAvailable() override;
 
+    // Re-renders the "@username" in the header. Called after a login completed
+    // on the boot screen, since Home is built before that login happens.
+    void refreshHeaderUsername();
+
   private:
     ITitleService* titleService;
     IHttpClient* http;

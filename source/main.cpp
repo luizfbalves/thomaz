@@ -108,16 +108,21 @@ int main(int argc, char* argv[])
     // Quit the app with the + (START) button from any activity.
     brls::Application::setGlobalQuit(true);
 
-    if (restoredSession.has_value()) {
-        // Session already restored — skip boot screen, go directly to home.
+    // HomeActivity is always the base/root activity. popActivity refuses to pop
+    // the root, so the boot screen must sit ON TOP of Home (not replace it) —
+    // otherwise its buttons can't navigate away. (boot-root-pop)
+    auto* home =
+        new thomaz::HomeActivity(titleService.get(), httpClient.get(), saveService.get(),
+                                 feedClient.get(), cloudSaveClient.get());
+    brls::Application::pushActivity(home);
+
+    // No saved session → cover Home with the boot welcome screen (login or
+    // continue as guest). Pushed with NONE so Home never flashes underneath;
+    // choosing an option simply pops the boot screen to reveal Home.
+    if (!restoredSession.has_value()) {
         brls::Application::pushActivity(
-            new thomaz::HomeActivity(titleService.get(), httpClient.get(), saveService.get(),
-                                     feedClient.get(), cloudSaveClient.get()));
-    } else {
-        // No saved session — show boot screen (login or guest).
-        brls::Application::pushActivity(
-            new thomaz::BootActivity(titleService.get(), httpClient.get(), saveService.get(),
-                                     feedClient.get(), cloudSaveClient.get()));
+            new thomaz::BootActivity(feedClient.get(), home),
+            brls::TransitionAnimation::NONE);
     }
 
     while (brls::Application::mainLoop())
