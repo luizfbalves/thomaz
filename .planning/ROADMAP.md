@@ -44,7 +44,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 01-01-PLAN.md: Re-vendor the hactool fork + a CMAC-enabled `mbedtls` (`MBEDTLS_CMAC_C`, built from source); wire both as Switch-only CMake static libs (correct link order) and re-add `THIRD_PARTY.md` attribution — Wave 1
 - [x] 01-02-PLAN.md: Port `key_loader` (`__SWITCH__`) — pmdmnt/spl/splCrypto init, raw BIS System mount, `lr` title→NCA resolve, SPL header-key derivation from pinned public sources (keyless, EXTRACT-04) — Wave 2
-- [ ] 01-03-PLAN.md: Port a minimal `hactool` facade — in-memory NCA RomFS read with a `/lyt/*.szs` filename filter, keyed by the SPL-derived header key — Wave 2
+- [x] 01-03-PLAN.md: Port a minimal `hactool` facade — in-memory NCA RomFS read with a `/lyt/*.szs` filename filter, keyed by the SPL-derived header key — Wave 2
 - [ ] 01-04-PLAN.md: Add the `platform/themes` extraction entry point with a `*_switch.cpp` real impl + `*_fake.cpp` desktop no-op; applet-vs-Application gate (TAKEOVER-01) → compose key_loader + hactool → validate → write to canonical SD path; on-hardware spike run — Wave 3
 - [ ] 01-05-PLAN.md: Document the title-takeover launch path (TAKEOVER-02) and record firmware/key-source provenance from the on-hardware spike — Wave 4
 
@@ -101,7 +101,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Privileged Extraction Spike | 2/5 | In Progress|  |
+| 1. Privileged Extraction Spike | 3/5 | In Progress|  |
 | 2. Full Extraction Engine | 0/3 | Not started | - |
 | 3. Theme UI Integration | 0/3 | Not started | - |
 | 4. Forwarder (Optional) | 0/1 | Not started | - |
