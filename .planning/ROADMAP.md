@@ -53,7 +53,7 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md — Add RevokedToken model + hand-numbered migration (applied to test DB) and replace logger:false with the envToLogger map + pino-pretty devDep [DEBT-04] (Wave 1)
-- [ ] 02-02-PLAN.md — Mint jti on both access-token signers, enforce the jti-gated fail-open blocklist in authenticate, and add best-effort revoke + lazy sweep to /auth/logout [SEC-02] (Wave 2)
+- [x] 02-02-PLAN.md — Mint jti on both access-token signers, enforce the jti-gated fail-open blocklist in authenticate, and add best-effort revoke + lazy sweep to /auth/logout [SEC-02] (Wave 2)
 - [ ] 02-03-PLAN.md — Regression tests: TEST-01 save-blob 404 guard, TEST-02 revision_required branch, SEC-02 revoked-token rejection [SEC-01, TEST-01, TEST-02] (Wave 3)
 
 **Planning flags:**

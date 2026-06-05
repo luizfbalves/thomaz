@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 context gathered
-last_updated: "2026-06-05T00:44:48.564Z"
+stopped_at: Completed 02-02-PLAN.md — jti minting + revocation blocklist
+last_updated: "2026-06-05T00:53:00.867Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 6
-  completed_plans: 4
-  percent: 67
+  completed_plans: 5
+  percent: 83
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-04)
 ## Current Position
 
 Phase: 02 (api-security-regression-tests) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-06-05
 
-Progress: [███████░░░] 67%
+Progress: [████████░░] 83%
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Progress: [███████░░░] 67%
 | Phase 01-remove-community-feature P02 | 308 | 2 tasks | 24 files |
 | Phase 01-remove-community-feature P03 | 12 | 2 tasks | 3 files |
 | Phase 02-api-security-regression-tests P01 | 15 | 2 tasks | 4 files |
+| Phase 02-api-security-regression-tests P02 | 4 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,10 @@ Recent decisions affecting current work:
 - Intentional trade-offs preserved: 365-day JWT lifetime, TLS fail-safe behavior — safety nets only
 - [Phase ?]: D-07 compliance
 - [Phase ?]: Pitfall 2 compliance
+- [02-02]: fast-jwt jti sign option (not jwtid) — @fastify/jwt 9.x uses fast-jwt; { jti: randomUUID() } in jwtSign options injects jti claim
+- [02-02]: JwtPayload jti/exp optional (L-02) — pre-deploy tokens without jti pass blocklist unblocked, no DB hit
+- [02-02]: Blocklist fail-open (D-06) — findUnique DB error → log.warn + allow; availability over strict revocation
+- [02-02]: Logout upsert over create (Pitfall 3) — double-logout idempotent; no preHandler or authRateLimit added (D-01/Pitfall 4)
 
 ### Pending Todos
 
@@ -90,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-05T00:44:48.556Z
+Last session: 2026-06-05T00:53:00.858Z
 Stopped at: Phase 2 context gathered
 Resume file: None
