@@ -33,7 +33,7 @@ The posts/feed/comments/likes community feature is being removed entirely. Its i
 - [ ] **DEBT-01**: `ensure_parent_dirs` exists in exactly one shared `source/platform/fs_util` helper; the duplicated copies are removed (behavioral equivalence with the `theme_install.cpp` variant verified first). *(CONCERNS Tech Debt)*
 - [ ] **DEBT-02**: `copy_tree` exists in exactly one shared platform utility; the duplicate copy is removed (second copy location confirmed first). *(CONCERNS Tech Debt)*
 - [ ] **DEBT-03**: C-style view casts in the flagged activities are replaced with null-guarded `dynamic_cast` / `brls::View::cast<T>()`; a mistyped/wrong-type view ID fails safely instead of crashing later. *(CONCERNS Tech Debt)*
-- [ ] **DEBT-04**: API production logging is enabled via an `envToLogger` map — logger on for production/development, off for test; existing test suite stays clean and no secrets/PII (Authorization headers, emails) are logged. *(AC-L)*
+- [x] **DEBT-04**: API production logging is enabled via an `envToLogger` map — logger on for production/development, off for test; existing test suite stays clean and no secrets/PII (Authorization headers, emails) are logged. *(AC-L)*
 
 ### Testing
 
@@ -76,7 +76,7 @@ Explicitly excluded — see PROJECT.md and FEATURES.md anti-features.
 | RM-04 | Phase 1 | Complete |
 | SEC-01 | Phase 2 | Pending |
 | SEC-02 | Phase 2 | Pending |
-| DEBT-04 | Phase 2 | Pending |
+| DEBT-04 | Phase 2 | Complete |
 | TEST-01 | Phase 2 | Pending |
 | TEST-02 | Phase 2 | Pending |
 | SEC-03 | Phase 3 | Pending |

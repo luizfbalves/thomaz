@@ -52,7 +52,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Add RevokedToken model + hand-numbered migration (applied to test DB) and replace logger:false with the envToLogger map + pino-pretty devDep [DEBT-04] (Wave 1)
+- [x] 02-01-PLAN.md — Add RevokedToken model + hand-numbered migration (applied to test DB) and replace logger:false with the envToLogger map + pino-pretty devDep [DEBT-04] (Wave 1)
 - [ ] 02-02-PLAN.md — Mint jti on both access-token signers, enforce the jti-gated fail-open blocklist in authenticate, and add best-effort revoke + lazy sweep to /auth/logout [SEC-02] (Wave 2)
 - [ ] 02-03-PLAN.md — Regression tests: TEST-01 save-blob 404 guard, TEST-02 revision_required branch, SEC-02 revoked-token rejection [SEC-01, TEST-01, TEST-02] (Wave 3)
 
@@ -105,6 +105,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Remove Community Feature | 3/3 | Complete   | 2026-06-04 |
-| 2. API Security + Regression Tests | 0/3 | Not started | - |
+| 2. API Security + Regression Tests | 1/3 | In Progress|  |
 | 3. C++ Platform Hardening | 0/? | Not started | - |
 | 4. C++ Activity Hardening | 0/? | Not started | - |
