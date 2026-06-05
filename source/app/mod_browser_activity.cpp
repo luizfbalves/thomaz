@@ -261,7 +261,7 @@ void ModBrowserActivity::populate(const core::BrowseResult& result)
                         return;
                     this->query = q;
                     this->page  = 1;
-                    brls::sync([this, q]() { this->runGameSearch(q); });
+                    brls::sync([this, alive, q]() { if (!alive->load()) return; this->runGameSearch(q); });
                 },
                 "mods/game_search"_i18n, "mods/search_hint"_i18n, 64);
             return true;
@@ -338,13 +338,14 @@ void ModBrowserActivity::populate(const core::BrowseResult& result)
         moreLabel->setFontSize(16.0f);
         moreRow->addView(moreLabel);
 
-        moreRow->registerClickAction([this](brls::View*) {
+        moreRow->registerClickAction([this, alive = this->alive](brls::View*) {
             this->page++;
             // Deferred: this rebuild runs from inside a view-click handler, so it
             // MUST be wrapped in brls::sync to avoid destroying the row mid-event
             // (use-after-free). M1 lesson. Game mode pages the Subfeed; otherwise
             // the global free-text search.
-            brls::sync([this]() {
+            brls::sync([this, alive]() {
+                if (!alive->load()) return;
                 if (this->gameId != 0)
                     this->runGameSearch(this->query);
                 else

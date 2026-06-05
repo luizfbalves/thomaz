@@ -50,19 +50,19 @@ void ThemeBrowserActivity::onContentAvailable() {
     install_tls_warning_banner(this);
 
     if (auto* tp = this->getView("tabPacks")) {
-        tp->registerClickAction([this](brls::View*) {
+        tp->registerClickAction([this, alive = this->alive](brls::View*) {
             this->packsMode = true; this->target = "";
             if (auto* pb = this->getView("partButton")) pb->setVisibility(brls::Visibility::GONE);
-            brls::sync([this]() { this->reload(); });
+            brls::sync([this, alive]() { if (!alive->load()) return; this->reload(); });
             return true;
         });
         tp->addGestureRecognizer(new brls::TapGestureRecognizer(tp));
     }
     if (auto* tt = this->getView("tabThemes")) {
-        tt->registerClickAction([this](brls::View*) {
+        tt->registerClickAction([this, alive = this->alive](brls::View*) {
             this->packsMode = false;
             if (auto* pb = this->getView("partButton")) pb->setVisibility(brls::Visibility::VISIBLE);
-            brls::sync([this]() { this->reload(); });
+            brls::sync([this, alive]() { if (!alive->load()) return; this->reload(); });
             return true;
         });
         tt->addGestureRecognizer(new brls::TapGestureRecognizer(tt));
@@ -227,9 +227,9 @@ void ThemeBrowserActivity::populate(const core::BrowsePage& pg) {
         lbl->setText("themes/load_more"_i18n);
         lbl->setFontSize(16.0f);
         more->addView(lbl);
-        more->registerClickAction([this](brls::View*) {
+        more->registerClickAction([this, alive = this->alive](brls::View*) {
             int next = this->page + 1;
-            brls::sync([this, next]() { this->runQuery(next); });
+            brls::sync([this, alive, next]() { if (!alive->load()) return; this->runQuery(next); });
             return true;
         });
         more->addGestureRecognizer(new brls::TapGestureRecognizer(more));
@@ -244,7 +244,7 @@ void ThemeBrowserActivity::openSearch() {
         [this, alive = this->alive](std::string q) {
             if (!alive->load()) return;
             this->query = q;
-            brls::sync([this]() { this->reload(); });
+            brls::sync([this, alive]() { if (!alive->load()) return; this->reload(); });
         },
         "themes/search"_i18n, "themes/search_hint"_i18n, 64);
 }

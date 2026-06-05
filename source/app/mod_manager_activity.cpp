@@ -96,8 +96,8 @@ void ModManagerActivity::refreshList()
         importLabel->setFontSize(18.0f);
         importLabel->setTextColor(nvgRGB(0xFF, 0xFF, 0xFF));
         importBtn->addView(importLabel);
-        importBtn->registerClickAction([this](brls::View*) {
-            brls::sync([this]() { this->importFlow(); });
+        importBtn->registerClickAction([this, alive = this->alive](brls::View*) {
+            brls::sync([this, alive]() { if (!alive->load()) return; this->importFlow(); });
             return true;
         });
         importBtn->addGestureRecognizer(new brls::TapGestureRecognizer(importBtn));
@@ -146,7 +146,7 @@ void ModManagerActivity::refreshList()
 
         // Active toggle for this mod.
         auto* cell = new brls::BooleanCell();
-        cell->init(modName, mod.active, [this, tid, modName, cell](bool on) {
+        cell->init(modName, mod.active, [this, alive = this->alive, tid, modName, cell](bool on) {
             if (on)
             {
                 ModActionResult r = enable_mod(tid, modName);
@@ -168,7 +168,7 @@ void ModManagerActivity::refreshList()
                 }
             }
             // Reflect one-active-per-game across rows.
-            brls::sync([this]() { this->refreshList(); });
+            brls::sync([this, alive]() { if (!alive->load()) return; this->refreshList(); });
         });
         cell->addGestureRecognizer(new brls::TapGestureRecognizer(cell));
         listBox->addView(cell);
@@ -290,8 +290,8 @@ void ModManagerActivity::importFlow()
         backLabel->setFontSize(16.0f);
         backLabel->setGrow(1.0f);
         backRow->addView(backLabel);
-        backRow->registerClickAction([this](brls::View*) {
-            brls::sync([this]() { this->refreshList(); });
+        backRow->registerClickAction([this, alive = this->alive](brls::View*) {
+            brls::sync([this, alive]() { if (!alive->load()) return; this->refreshList(); });
             return true;
         });
         backRow->addGestureRecognizer(new brls::TapGestureRecognizer(backRow));
