@@ -118,7 +118,7 @@ Plans:
 
 Plans:
 
-- [ ] 04-01-PLAN.md — Create ThomazActivity base (alive+cancelled+runAsync) + pure Borealis-free thomaz::core::run_if_alive helper + TEST-04b dropped-callback doctest [CONC-02, TEST-04] (Wave 1)
+- [x] 04-01-PLAN.md — Create ThomazActivity base (alive+cancelled+runAsync) + pure Borealis-free thomaz::core::run_if_alive helper + TEST-04b dropped-callback doctest [CONC-02, TEST-04] (Wave 1)
 - [ ] 04-05-PLAN.md — Extend test_save_sync.cpp with the classify→plan_push conflict decision-composition cases [TEST-04] (Wave 1, parallel)
 - [ ] 04-02-PLAN.md — Single-pass migrate the 4 DEBT-03/CONC-02 shared activities (game_list, save_manager, save_detail, mod_browser): base-swap + alive removal + runAsync + null-guarded dynamic_cast [CONC-02, DEBT-03] (Wave 2)
 - [ ] 04-03-PLAN.md — Migrate the remaining 9 alive-guarded activities to ThomazActivity + runAsync (no casts); mod_manager is base-swap-only [CONC-02] (Wave 2, parallel)
@@ -143,4 +143,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Remove Community Feature | 3/3 | Complete   | 2026-06-04 |
 | 2. API Security + Regression Tests | 1/3 | In Progress|  |
 | 3. C++ Platform Hardening | 4/4 | Complete    | 2026-06-05 |
-| 4. C++ Activity Hardening | 0/5 | Not started | - |
+| 4. C++ Activity Hardening | 1/5 | In Progress|  |

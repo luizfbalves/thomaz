@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
+status: executing
 stopped_at: Phase 4 context gathered
-last_updated: "2026-06-05T16:56:34.151Z"
+last_updated: "2026-06-05T17:35:07.433Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
-  percent: 75
+  total_plans: 15
+  completed_plans: 11
+  percent: 73
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-04)
 
 **Core value:** Every issue in CONCERNS.md resolved (or explicitly deferred) without regressing existing behavior — verified by host tests and a clean desktop build
-**Current focus:** Phase 03 — c-platform-hardening
+**Current focus:** Phase 04 — c-activity-hardening
 
 ## Current Position
 
-Phase: 4
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 04 (c-activity-hardening) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
 Last activity: 2026-06-05
 
-Progress: [██████████] 100%
+Progress: [███████░░░] 73%
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Progress: [██████████] 100%
 | Phase 02-api-security-regression-tests P02 | 4 | 2 tasks | 4 files |
 | Phase 02-api-security-regression-tests P03 | 5min | 2 tasks | 1 files |
 | Phase 03-c-platform-hardening P04 | 5min | 1 tasks | 2 files |
+| Phase 04-c-activity-hardening P01 | 3min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,9 @@ Recent decisions affecting current work:
 - [Phase ?]: [03-03] SEC-03 banner wiring: red 0xFF5555 at hint_box index 0; save_detail_activity.hpp untouched for Plan 04 boundary
 - [Phase ?]: [03-04]: CONC-01 atomicize cloudBusy: std::atomic<bool>{false}, load/store all 10 sites, no compare_exchange — preserves check-then-set semantics verbatim
 - [Phase ?]: [03-04]: S2 boundary enforced: alive member not touched; Phase 4 CONC-02 owns it
+- [04-01]: runAsync uses template form (not std::function) — moves worker/onSync into lambda; avoids allocation overhead
+- [04-01]: cancelledFlag() returns shared_ptr<atomic<bool>> directly — Plan 04 CONC-03 uses this to thread the flag into platform curl calls
+- [04-01]: run_if_alive null-guard branch implemented — returns false/drops onSync when alive is nullptr
 
 ### Pending Todos
 
@@ -103,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-05T16:56:34.146Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-c-activity-hardening/04-CONTEXT.md
+Last session: 2026-06-05T17:35:07.424Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: None
