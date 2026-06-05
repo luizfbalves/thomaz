@@ -34,7 +34,7 @@ class SaveDetailActivity : public ThomazActivity
     void performRestore(const core::BackupEntry& entry);
     void doDelete(const core::BackupEntry& entry);   // confirm, then remove the backup
 
-    void doUpload();        // cloud upload flow (see pushAtRevision)
+    void doUpload(bool autoRetry = false); // cloud upload flow (see pushAtRevision)
     void pushAtRevision(int revision);
     void doDownload();      // cloud download flow -> local backup + restore prompt
     void refreshCloudStatus();
@@ -52,6 +52,14 @@ class SaveDetailActivity : public ThomazActivity
     // .store() to write at every site; do NOT use compare_exchange — the existing
     // check-then-set semantics must be preserved verbatim.
     std::atomic<bool> cloudBusy{false}; // guards against concurrent upload/download
+
+    // WR-05: cap the conflict→doUpload→pushAtRevision auto-retry chain. A backend
+    // that persistently reports `conflict` (or two revisions that never reconcile)
+    // would otherwise spin an unbounded, user-invisible request loop. Counts the
+    // automatic re-uploads triggered by a push conflict; reset on a user-initiated
+    // upload and on a successful push. Main-thread only (same contract as cloudBusy).
+    static constexpr int kMaxConflictRetries = 2;
+    int cloudConflictRetries = 0;
 
     InstalledTitle title;
     ISaveService* saveService;

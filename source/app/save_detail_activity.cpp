@@ -246,9 +246,12 @@ void SaveDetailActivity::doDelete(const core::BackupEntry& entry)
     dialog->open();
 }
 
-void SaveDetailActivity::doUpload() {
+void SaveDetailActivity::doUpload(bool autoRetry) {
     if (this->cloudBusy.load()) return;
     if (!this->requireSession()) return;
+    // A user-initiated upload starts a fresh retry budget; an auto-retry from a
+    // push conflict preserves the running count (WR-05).
+    if (!autoRetry) this->cloudConflictRetries = 0;
     this->cloudBusy.store(true);
     this->setCloudStatusText("thomaz/saves/cloud_uploading"_i18n);
 
@@ -334,13 +337,23 @@ void SaveDetailActivity::pushAtRevision(int revision) {
             const CloudPush& r = push_result->second;
             this->cloudBusy.store(false);
             if (r.ok) {
+                this->cloudConflictRetries = 0; // WR-05: clean push resets the budget
                 save_synced_revision(tid, r.newRevision);
                 brls::Application::notify("thomaz/saves/cloud_upload_ok"_i18n);
                 this->refreshCloudStatus();
                 return;
             }
             if (r.conflict) {
-                this->doUpload(); // lost a race — re-fetches status; may re-prompt if still behind
+                // WR-05: cap the automatic conflict→re-upload chain so a backend
+                // that never reconciles cannot spin an unbounded request loop.
+                if (this->cloudConflictRetries >= kMaxConflictRetries) {
+                    this->cloudConflictRetries = 0;
+                    this->setCloudStatusText("thomaz/saves/cloud_err_generic"_i18n);
+                    brls::Application::notify("thomaz/saves/cloud_err_generic"_i18n);
+                    return;
+                }
+                ++this->cloudConflictRetries;
+                this->doUpload(/*autoRetry=*/true); // lost a race — re-fetches status; may re-prompt if still behind
                 return;
             }
             auto errText = this->cloudErrorText(r.error);
