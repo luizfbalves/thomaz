@@ -25,6 +25,25 @@ target_include_directories(hactool
         ${HACTOOL_DIR}/include
     PRIVATE
         ${HACTOOL_DIR}/source
+        # CRITICAL (Pitfall 1, the real root cause): hactool's C TUs include
+        # <mbedtls/cipher.h> with angle brackets. Without this -I, that resolves
+        # to the devkitPro PORTLIB mbedtls headers (different config) while the
+        # linked implementation is OUR mbedtls. The mbedtls_cipher_context_t /
+        # cipher_base_t struct layouts then DISAGREE between caller (portlib
+        # header) and callee (our compiled .c), so cipher_setkey reads the wrong
+        # fields and AES-XTS decrypt setkey fails with -0x6100 (enc succeeds, dec
+        # fails — the on-hardware symptom). This -I is searched before the
+        # toolchain's -isystem portlib dir, so hactool now compiles against the
+        # SAME headers and config as the mbedtls library it actually links.
+        ${CMAKE_SOURCE_DIR}/lib/mbedtls/include
+)
+
+# Compile hactool against the SAME mbedtls user config the library was built
+# with (CMAC on, self-test off, etc.). Must match lib/mbedtls/CMakeLists.txt
+# exactly, or the config-gated struct fields drift again.
+target_compile_definitions(hactool
+    PRIVATE
+        MBEDTLS_USER_CONFIG_FILE="${CMAKE_SOURCE_DIR}/lib/mbedtls/thomaz_cmac_config.h"
 )
 
 # The hactool fork targets devkitA64 (armv8-a+crc+crypto). The upstream
