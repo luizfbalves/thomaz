@@ -343,4 +343,183 @@ describe("thomaz-api", () => {
       process.env.AUTH_RATE_MAX = prev;
     }
   });
+
+  // ── SEC-02: jti minting ───────────────────────────────────────────────────
+  // Helper: decode a JWT payload without verifying the signature
+  function decodeJwtPayload(token: string): Record<string, unknown> {
+    const seg = token.split(".")[1];
+    return JSON.parse(Buffer.from(seg, "base64url").toString("utf8")) as Record<string, unknown>;
+  }
+
+  it("SEC-02 T1: access token from register carries a non-empty jti and exp", async () => {
+    const user = `jti_reg_${Date.now()}`;
+    const reg = await app.inject({
+      method: "POST",
+      url: "/auth/register",
+      payload: { username: user, password: "password1" },
+    });
+    expect(reg.statusCode).toBe(200);
+    const { token } = reg.json() as { token: string };
+    const payload = decodeJwtPayload(token);
+    expect(typeof payload.jti).toBe("string");
+    expect((payload.jti as string).length).toBeGreaterThan(0);
+    expect(typeof payload.exp).toBe("number");
+  });
+
+  it("SEC-02 T1: access token from /auth/refresh carries a non-empty jti", async () => {
+    const user = `jti_refresh_${Date.now()}`;
+    const reg = await app.inject({
+      method: "POST",
+      url: "/auth/register",
+      payload: { username: user, password: "password1" },
+    });
+    const { refreshToken } = reg.json() as { refreshToken: string };
+    const refreshed = await app.inject({
+      method: "POST",
+      url: "/auth/refresh",
+      payload: { refreshToken },
+    });
+    expect(refreshed.statusCode).toBe(200);
+    const { token } = refreshed.json() as { token: string };
+    const payload = decodeJwtPayload(token);
+    expect(typeof payload.jti).toBe("string");
+    expect((payload.jti as string).length).toBeGreaterThan(0);
+  });
+
+  it("SEC-02 T1: two separately minted access tokens have different jti values", async () => {
+    const user = `jti_uniq_${Date.now()}`;
+    const r1 = await app.inject({
+      method: "POST",
+      url: "/auth/register",
+      payload: { username: user, password: "password1" },
+    });
+    const r2 = await app.inject({
+      method: "POST",
+      url: "/auth/login",
+      payload: { username: user, password: "password1" },
+    });
+    const p1 = decodeJwtPayload((r1.json() as { token: string }).token);
+    const p2 = decodeJwtPayload((r2.json() as { token: string }).token);
+    expect(p1.jti).not.toBe(p2.jti);
+  });
+
+  // ── SEC-02: blocklist enforcement ─────────────────────────────────────────
+  it("SEC-02 T2: logged-out access token is rejected; sibling token still works", async () => {
+    const user = `revoke_${Date.now()}`;
+    const pass = "password1";
+
+    // Register (gives tokenA1 + refreshA1)
+    const reg = await app.inject({
+      method: "POST",
+      url: "/auth/register",
+      payload: { username: user, password: pass },
+    });
+    const { token: tokenA1, refreshToken: refreshA1 } = reg.json() as {
+      token: string;
+      refreshToken: string;
+    };
+
+    // Login again (gives tokenA2 + refreshA2) — kept valid
+    const login = await app.inject({
+      method: "POST",
+      url: "/auth/login",
+      payload: { username: user, password: pass },
+    });
+    const { token: tokenA2, refreshToken: refreshA2 } = login.json() as {
+      token: string;
+      refreshToken: string;
+    };
+
+    // Logout with tokenA1 in Authorization header + refreshA1 in body
+    const logout = await app.inject({
+      method: "POST",
+      url: "/auth/logout",
+      headers: { authorization: `Bearer ${tokenA1}` },
+      payload: { refreshToken: refreshA1 },
+    });
+    expect(logout.statusCode).toBe(200);
+    expect(logout.json()).toEqual({ ok: true });
+
+    // tokenA1 → 401 (revoked)
+    const withRevoked = await app.inject({
+      method: "GET",
+      url: "/saves",
+      headers: { authorization: `Bearer ${tokenA1}` },
+    });
+    expect(withRevoked.statusCode).toBe(401);
+    expect(withRevoked.json()).toEqual({ ok: false, error: "unauthorized" });
+
+    // tokenA2 → 200 (not revoked)
+    const withValid = await app.inject({
+      method: "GET",
+      url: "/saves",
+      headers: { authorization: `Bearer ${tokenA2}` },
+    });
+    expect(withValid.statusCode).toBe(200);
+
+    // cleanup: logout tokenA2
+    await app.inject({
+      method: "POST",
+      url: "/auth/logout",
+      headers: { authorization: `Bearer ${tokenA2}` },
+      payload: { refreshToken: refreshA2 },
+    });
+  });
+
+  it("SEC-02 T2: POST /auth/logout with no bearer still returns 200", async () => {
+    const user = `logout_nobearer_${Date.now()}`;
+    const reg = await app.inject({
+      method: "POST",
+      url: "/auth/register",
+      payload: { username: user, password: "password1" },
+    });
+    const { refreshToken } = reg.json() as { refreshToken: string };
+
+    const logout = await app.inject({
+      method: "POST",
+      url: "/auth/logout",
+      payload: { refreshToken },
+    });
+    expect(logout.statusCode).toBe(200);
+    expect(logout.json()).toEqual({ ok: true });
+  });
+
+  it("SEC-02 T2: double logout with same token does not crash (200 both times)", async () => {
+    const user = `dbllogout_${Date.now()}`;
+    const reg = await app.inject({
+      method: "POST",
+      url: "/auth/register",
+      payload: { username: user, password: "password1" },
+    });
+    const { token, refreshToken } = reg.json() as {
+      token: string;
+      refreshToken: string;
+    };
+    // Extra refresh token to have something valid for second logout body
+    const login = await app.inject({
+      method: "POST",
+      url: "/auth/login",
+      payload: { username: user, password: "password1" },
+    });
+    const { refreshToken: refreshToken2 } = login.json() as {
+      refreshToken: string;
+    };
+
+    const first = await app.inject({
+      method: "POST",
+      url: "/auth/logout",
+      headers: { authorization: `Bearer ${token}` },
+      payload: { refreshToken },
+    });
+    expect(first.statusCode).toBe(200);
+
+    const second = await app.inject({
+      method: "POST",
+      url: "/auth/logout",
+      headers: { authorization: `Bearer ${token}` },
+      payload: { refreshToken: refreshToken2 },
+    });
+    expect(second.statusCode).toBe(200);
+    expect(second.json()).toEqual({ ok: true });
+  });
 });
