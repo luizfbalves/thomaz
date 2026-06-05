@@ -10,16 +10,28 @@ struct TlsPolicy {
     long verifyhost;  // CURLOPT_SSL_VERIFYHOST value (0=off, 2=full)
 };
 
+// Verification mode for the CA-absent branch. The default is Verify: a missing
+// CA bundle must NOT silently disable certificate validation.
+enum class TlsMode { Verify, InsecureAllowed };
+
 // Return the TLS verification policy for the given CA bundle availability.
-//   ca_present == true  → {verifypeer=1, verifyhost=2}  (full certificate verification)
-//   ca_present == false → {verifypeer=0, verifyhost=0}  (fail-safe: no verification)
+//   ca_present == true                       → {verifypeer=1, verifyhost=2}  (full verification)
+//   ca_present == false, mode==Verify        → {verifypeer=1, verifyhost=2}  (FAIL-CLOSED: the
+//                                              transfer fails loudly rather than transmitting
+//                                              over an unauthenticated connection)
+//   ca_present == false, mode==InsecureAllowed → {verifypeer=0, verifyhost=0}  (explicit, opt-in)
 //
-// LOCKED behavior (D-03/SEC-03): when the CA bundle is absent the app degrades to
-// no-verification rather than breaking all HTTPS networking (keeps the self-updater
-// alive on a packaging defect). The bundle is read-only in romfs, so this only
-// triggers on our own build error, not an attacker-removable file.
-inline TlsPolicy tls_policy(bool ca_present) {
-    return ca_present ? TlsPolicy{1L, 2L} : TlsPolicy{0L, 0L};
+// REVERSAL of D-06 fail-open (CR-01, user-authorized 2026-06-05): a missing CA
+// bundle previously degraded to no-verification ({0,0}), which let a network
+// attacker serve forged "HTTPS" content that the app then extracted/installed.
+// The default is now fail-closed: verification stays ON unless a caller
+// explicitly opts into InsecureAllowed for a narrowly-scoped channel. The bundle
+// is read-only in romfs, so a missing bundle is a packaging defect — the correct
+// response is a loud transfer failure, not silent downgrade to plaintext trust.
+inline TlsPolicy tls_policy(bool ca_present, TlsMode mode = TlsMode::Verify) {
+    if (ca_present)
+        return TlsPolicy{1L, 2L};
+    return (mode == TlsMode::InsecureAllowed) ? TlsPolicy{0L, 0L} : TlsPolicy{1L, 2L};
 }
 
 } // namespace thomaz

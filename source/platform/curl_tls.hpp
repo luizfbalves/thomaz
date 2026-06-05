@@ -21,11 +21,12 @@ inline bool tls_is_insecure() {
 
 // Enable TLS certificate verification on a curl easy handle.
 //   - Switch: verify against the CA bundle packed into romfs
-//     (resources/cacert.pem -> romfs:/cacert.pem). FAIL-SAFE: if that bundle
-//     can't be opened (a packaging/mount bug), degrade to NO verification
-//     instead of breaking ALL networking — including the self-updater that
-//     would be needed to ship a fix. The bundle is read-only in romfs, so this
-//     only triggers on our own build error, not an attacker-removable file.
+//     (resources/cacert.pem -> romfs:/cacert.pem). FAIL-CLOSED (CR-01,
+//     user-authorized D-06 reversal): if that bundle can't be opened (a
+//     packaging/mount bug), keep verification ON so the transfer fails loudly
+//     rather than silently downloading/installing attacker-forged content over
+//     an unauthenticated connection. A missing read-only romfs bundle is a build
+//     defect; the correct response is a visible failure, not a silent downgrade.
 //   - Desktop: verify against the system CA store.
 // Call once per handle, replacing any SSL_VERIFYPEER/VERIFYHOST the caller set.
 inline void apply_curl_tls(CURL* curl) {
@@ -45,12 +46,16 @@ inline void apply_curl_tls(CURL* curl) {
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, p.verifypeer);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, p.verifyhost);
     } else {
-        // Fail-safe: keep the app usable rather than bricking all HTTPS.
-        // Set the insecure latch so the SEC-03 banner can warn the user.
+        // FAIL-CLOSED: verification stays ON (tls_policy(false) defaults to
+        // TlsMode::Verify → {1,2}). The transfer will fail loudly. We do NOT set
+        // the insecure latch here: the insecure path is now an explicit, opt-in
+        // caller decision (TlsMode::InsecureAllowed) and no content-bearing
+        // download requests it. The SEC-03 banner therefore only renders if some
+        // future narrowly-scoped channel deliberately opts into the insecure mode
+        // and sets the latch itself.
         auto p = tls_policy(false);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, p.verifypeer);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, p.verifyhost);
-        tls_insecure_flag() = true;
     }
 #else
     auto p = tls_policy(true);
