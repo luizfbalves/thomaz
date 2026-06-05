@@ -8,6 +8,10 @@ ExtractResult extract_base_layout(const std::string& /*target*/) {
     return {false, "Firmware extraction is only available on Switch."};
 }
 
+ExtractAllResult extract_all_base_layouts() {
+    return {false, "Firmware extraction is only available on Switch.", {}, {}};
+}
+
 } // namespace thomaz
 
 #endif // !__SWITCH__
