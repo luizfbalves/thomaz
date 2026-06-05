@@ -4,14 +4,14 @@ milestone: v1.1
 milestone_name: Switch-Only Simplification
 status: executing
 stopped_at: v1.1 roadmap created (Phases 5-7); traceability + STATE updated
-last_updated: "2026-06-05T23:16:09.173Z"
+last_updated: "2026-06-05T23:19:20.681Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
-  percent: 25
+  completed_plans: 2
+  percent: 50
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 ## Current Position
 
 Phase: 05 (collapse-source-seams-switch-only) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-06-05
 
@@ -66,6 +66,7 @@ Roadmap: collapse source seams first (Phase 5), then strip the build system (Pha
 | Phase 04-c-activity-hardening P04 | 25min | 2 tasks | 11 files |
 | Phase 04-c-activity-hardening P06 | 10min | 4 tasks | 9 files |
 | Phase 05-collapse-source-seams-switch-only P01 | 5min | 2 tasks | 2 files |
+| Phase 05 P02 | 3min | 1 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,7 @@ Recent decisions affecting current work:
 - v1.1 keep: `saves/fake_cloud_save_client.*` is a doctest test double, NOT a desktop GUI stub — explicitly retained and still compiled by the suite
 - v1.1 removal surface (enumerated): 5 desktop stub pairs (`save_service_fake`, `title_service_fake`, `fake_auth_client`, `themes/firmware_extract_fake`, `sysmod/sysmod_store_fake`); ~32 files carry `__SWITCH__` seams — collapse the `#else`/`#ifndef __SWITCH__` desktop branch in each; `CMakeLists.txt` `PLATFORM_DESKTOP` link (~98-102) + packaging (~130-135) branches; delete `scripts/build-desktop.sh` + `scripts/run-desktop.sh`
 - [Phase ?]: Phase 05 Plan 01: collapsed the three consumer service/store factory seams in main.cpp + home_activity.cpp to Switch-only; stub-file deletion + interface-comment cleanup deferred to Plan 02 per RESEARCH Steps 3/5
+- [Phase ?]: Phase 05 Plan 02: deleted the 9 desktop stub files (SIMPL-01 complete); retained doctest double saves/fake_cloud_save_client.* preserved; 2 stale comment references deferred to SIMPL-03 sweep
 
 ### Pending Todos
 
@@ -115,7 +117,7 @@ All deferred UAT/verification items are on-hardware checks the host test suite c
 
 ## Session Continuity
 
-Last session: 2026-06-05T23:15:42.601Z
+Last session: 2026-06-05T23:19:03.508Z
 Stopped at: v1.1 roadmap created (Phases 5-7); traceability + STATE updated
 Resume file: None
 

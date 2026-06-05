@@ -16,7 +16,7 @@
 
 ### Source Simplification (SIMPL)
 
-- [ ] **SIMPL-01**: The five desktop platform stub pairs are deleted from `source/platform/`: `save_service_fake.{cpp,hpp}`, `title_service_fake.{cpp,hpp}`, `fake_auth_client.{cpp,hpp}`, `themes/firmware_extract_fake.cpp`, and `sysmod/sysmod_store_fake.{cpp,hpp}`.
+- [x] **SIMPL-01**: The five desktop platform stub pairs are deleted from `source/platform/`: `save_service_fake.{cpp,hpp}`, `title_service_fake.{cpp,hpp}`, `fake_auth_client.{cpp,hpp}`, `themes/firmware_extract_fake.cpp`, and `sysmod/sysmod_store_fake.{cpp,hpp}`.
 - [x] **SIMPL-02**: Every platform-selection seam that chose a `*_fake` vs `*_switch` implementation now unconditionally uses the Switch implementation — no `#if defined(__SWITCH__) … #else … #endif` desktop branch remains in any `source/` file, and each affected `*_switch` impl is the sole implementation behind its interface.
 - [x] **SIMPL-03**: No `source/` file references a deleted desktop stub or a desktop-only symbol/include (SDL2/GLFW/`PLATFORM_DESKTOP`-guarded code); a repo grep for desktop-only constructs in `source/` returns nothing.
 

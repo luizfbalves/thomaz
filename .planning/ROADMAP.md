@@ -61,7 +61,7 @@ Remove the desktop (PC/SDL2/GLFW) build target entirely so the source tree targe
 **Plans**: 4 plans
 Plans:
 - [x] 05-01-PLAN.md — Collapse main.cpp and home_activity.cpp factory/include seams (consumer edits before stub deletion)
-- [ ] 05-02-PLAN.md — Delete 9 desktop stub files from source/platform/
+- [x] 05-02-PLAN.md — Delete 9 desktop stub files from source/platform/
 - [ ] 05-03-PLAN.md — Collapse 22 remaining #else desktop branches across 12 files + clean 4 header comments
 - [ ] 05-04-PLAN.md — Run all 4 success-criterion greps and make -C tests test verification gate
 
