@@ -51,7 +51,20 @@ if (PLATFORM_SWITCH)
     # the zip/7zip/zstd/lz4 filters fail with undefined ZSTD_*/LZ4_* references.
     list(APPEND APP_PLATFORM_INCLUDE $ENV{DEVKITPRO}/portlibs/switch/include)
     link_directories($ENV{DEVKITPRO}/portlibs/switch/lib)
-    list(APPEND APP_PLATFORM_LIB curl mbedtls mbedx509 mbedcrypto
+
+    # Vendored hactool fork (exelix11, NCA/RomFS in-memory extraction) and
+    # CMAC-enabled Mbed TLS 2.28.10 (built from source — D-06). Both are
+    # Switch-only; desktop must not see these targets (D-08).
+    add_subdirectory(lib/hactool)
+    add_subdirectory(lib/mbedtls)
+    list(APPEND APP_PLATFORM_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/lib/hactool/include)
+
+    # Link order is load-bearing (GNU static linker resolves left-to-right).
+    # hactool + thomaz_mbedtls_cmac must precede the portlib mbedtls/mbedx509/mbedcrypto
+    # so hactool's mbedtls_cipher_cmac_* symbols resolve against the CMAC build,
+    # while curl continues to use the portlib mbedtls (Pitfall 1 — dual mbedtls).
+    list(APPEND APP_PLATFORM_LIB hactool thomaz_mbedtls_cmac
+                                 curl mbedtls mbedx509 mbedcrypto
                                  archive bz2 lzma zstd lz4 z)
 elseif (PLATFORM_DESKTOP)
     find_package(CURL REQUIRED)
