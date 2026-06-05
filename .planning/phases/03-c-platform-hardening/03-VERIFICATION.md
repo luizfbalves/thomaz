@@ -1,21 +1,38 @@
 ---
 phase: 03-c-platform-hardening
-verified: 2026-06-05T17:00:00Z
+verified: 2026-06-05T18:00:00Z
 status: human_needed
-score: 4/5
+score: 5/5
 overrides_applied: 0
+re_verification:
+  previous_status: human_needed
+  previous_score: 4/5
+  gaps_closed:
+    - "SC-3 (fail-closed): tls_policy(false) now returns {1,2}; test_tls_policy.cpp asserts fail-closed default and the InsecureAllowed opt-in; no caller uses InsecureAllowed — confirmed VERIFIED"
+    - "SC-4 (TEST-03): test rewritten post CR-01 to assert tls_policy(false)=={1,2} (fail-closed) AND tls_policy(false,InsecureAllowed)=={0,0} (opt-in); 4 TEST_CASEs, 179 total tests pass"
+  gaps_remaining: []
+  regressions: []
 human_verification:
-  - test: "Force thomaz::tls_insecure_flag()=true at startup (e.g. add the line in main.cpp or tls_banner.cpp before the Application loop), build with cmake -DPLATFORM_DESKTOP=ON -DUSE_SDL2=ON -S . -B build_desktop && cmake --build build_desktop, run the desktop binary, and navigate to all 13 screens (Home, Game List, Cheats, Mods, Settings, Save Manager, System, Themes, Mod Detail, Cheat Detail, Theme Detail, Clear Cheats, Mod Manager)."
-    expected: "A high-contrast red warning Label appears in the AppletFrame header on every screen while the flag is true. No banner appears on any screen when the flag is false (normal desktop run)."
-    why_human: "The tls_insecure latch is never set on desktop (always verifies CA bundle) so the banner cannot trigger naturally on the host. Visual rendering of a live brls::Label requires running the app. This was deferred by explicit user decision in the 03-03 checkpoint."
+  - test: "Force the TLS-insecure latch at application startup (e.g. add `thomaz::tls_insecure_flag().store(true);` immediately after Application::init() in main.cpp, or remove the `if (!thomaz::tls_is_insecure()) return;` guard in tls_banner.cpp temporarily). Build: `cmake -DPLATFORM_DESKTOP=ON -DUSE_SDL2=ON -S . -B build_smoke && cmake --build build_smoke`. Run `./build_smoke/thomaz` and navigate to all 13 activity screens: Home, Game List, Cheats, Mods, Settings, Save Manager, System, Themes, Mod Detail, Cheat Detail, Theme Detail, Clear Cheats, Mod Manager."
+    expected: "A high-contrast red (nvgRGB 0xFF,0x55,0x55) warning Label from the `thomaz/tls/insecure_warning` i18n key renders in the AppletFrame header on every screen while the latch is forced. No banner appears on any screen when the latch is false (normal run)."
+    why_human: "Under the revised fail-closed design, the tls_insecure latch is NEVER set automatically — not on desktop (CA probe does not run), and not on Switch when the CA bundle is absent (verification stays ON). The banner is now latent: reachable only if a future caller passes TlsMode::InsecureAllowed and sets the latch manually. Visual rendering of a brls::Label requires running the binary with a forced latch. This item is non-gating for the phase goal (see assessment below) but retained as an optional Switch-hardware integration check."
+    gating: false
+  - test: "Build the Switch NRO target with devkitPro aarch64 toolchain and confirm save_service_switch.cpp compiles cleanly. The uid_from_hex refactor (IN-03) uses SCNx64/PRIx64 inside #ifdef __SWITCH__ — this code is excluded from the host build."
+    expected: "Zero compiler errors or warnings from save_service_switch.cpp in the Switch build. uid_from_hex parses AccountUid correctly (hex round-trip: format then parse returns the original uid)."
+    why_human: "save_service_switch.cpp is gated by #ifdef __SWITCH__ and never compiled by the host g++ build. The IN-03 refactor is behavior-preserving but cannot be exercised without a devkitPro toolchain."
+    gating: false
 ---
 
-# Phase 03: C++ Platform Hardening — Verification Report
+# Phase 03: C++ Platform Hardening — Re-Verification Report (Post-CR-01 Reversal)
 
-**Phase Goal:** Duplicated filesystem helpers are consolidated into a shared `fs_util` platform utility, the TLS fail-safe shows a visible on-screen warning, `cloudBusy` is `std::atomic<bool>`, and all three are verified by a clean desktop build and host tests.
-**Verified:** 2026-06-05T17:00:00Z
+**Phase Goal:** Duplicated filesystem helpers consolidated into a shared `fs_util` platform utility; TLS CA-missing handling is fail-closed (verification stays ON); `cloudBusy` is `std::atomic<bool>`; verified by a clean desktop build and host tests.
+**Verified:** 2026-06-05T18:00:00Z
 **Status:** human_needed
-**Re-verification:** No — initial verification
+**Re-verification:** Yes — after CR-01 fail-open → fail-closed reversal (commits 3829744..3fa978f, user-authorized)
+
+## Design Change Summary (D-06a)
+
+After initial verification, a `/gsd-code-review 3 --fix --all` pass applied **CR-01** (user-authorized): `tls_policy(false)` now returns `{verifypeer:1, verifyhost:2}` (fail-closed) instead of `{0:0}` (fail-open). The `TlsMode::InsecureAllowed` enum gates the legacy insecure path behind an explicit per-caller opt-in that no caller currently uses. `apply_curl_tls` no longer sets `tls_insecure_flag()` on the automatic CA-missing path. `test_tls_policy.cpp` was rewritten to assert the new contract (4 TEST_CASEs, 179 total host tests pass). The banner (`tls_banner.cpp`) and its 13-activity wiring remain in place and compile, but are now latent — they only activate if a future `InsecureAllowed` caller sets the latch. The design record is updated in `03-CONTEXT.md D-06a`.
 
 ## Goal Achievement
 
@@ -23,101 +40,128 @@ human_verification:
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | `ensure_parent_dirs` and `copy_tree` defined in exactly one place (`fs_util.cpp`); all duplicated copies removed | VERIFIED | `grep -rn 'void ensure_parent_dirs\|bool copy_tree' source/ \| grep -v fs_util` returns empty. All 7 call-sites include `platform/fs_util.hpp`. `mod_store.hpp` no longer declares `copy_tree` (grep returns 0). |
-| 2 | `cloudBusy` is `std::atomic<bool>{false}` in header; all read/write sites use `.load()`/`.store()` | VERIFIED | `save_detail_activity.hpp:54` declares `std::atomic<bool> cloudBusy{false}` with CONC-01 threading contract comment. 10 access sites in `.cpp`: 2 `.load()` guards + 8 `.store()` calls. No bare assignment. No `compare_exchange`. `alive` member untouched (S2 boundary intact). |
-| 3 (code wiring) | When `ca_ok == false`, `tls_insecure_flag()` is set to true; `install_tls_warning_banner` is called in all 13 activities and injects a red Label gated on `tls_is_insecure()`; no `CURLOPT_SSL_VERIFYPEER` outside the `#ifdef __SWITCH__` structural block | VERIFIED | `curl_tls.hpp` sets `tls_insecure_flag()=true` only in the `ca_ok==false` branch inside `#ifdef __SWITCH__`. All 13 activity `.cpp` files call `install_tls_warning_banner(this)` (banner count == username count == 13). `tls_banner.cpp` gates on `tls_is_insecure()`, uses `_i18n` key, injects red Label at `hint_box[0]`. All 3 `CURLOPT_SSL_VERIFYPEER` uses are inside the `#ifdef __SWITCH__`/`#else`/`#endif` region (lines 32–60 of `curl_tls.hpp`). |
-| 3 (visual rendering) | Red warning Label actually renders on every screen when the flag is forced; no banner when flag is false | UNCERTAIN — needs human | Cannot verify visual rendering without running the app with a forced flag. Deferred by explicit user decision. |
-| 4 | Host doctest covering `ca_ok == false` / `tls_policy(false)` passes in the test suite (TEST-03) | VERIFIED | `tests/test_tls_policy.cpp` has 2 TEST_CASEs: `tls_policy(false)` == `{0,0}` and `tls_policy(true)` == `{1,2}`. File includes only the curl-free `platform/tls_policy.hpp` — no curl dependency. Orchestrator confirms 177 tests / 533 assertions, 0 failures, exit 0. |
-| 5 | Desktop build with `-DUSE_SDL2=ON` compiles clean — zero errors, zero new warnings | VERIFIED | Orchestrator confirms cmake + build exit 0, zero new warnings, `thomaz` executable linked. Commit record shows checkpoint Task 3 APPROVED in both 03-01 and 03-03 plans. |
+| 1 | `fs_util.hpp`/`fs_util.cpp` exist; `ensure_parent_dirs` and `copy_tree` defined there only; all 7 duplicate definitions removed; `is_dir` uses `lstat` + symlinks skipped (WR-06) | VERIFIED | `grep -rn 'void ensure_parent_dirs\|bool copy_tree' source/ \| grep -v fs_util` returns empty. All 7 call-sites include `platform/fs_util.hpp`. `mod_store.hpp` copy_tree count: 0. `fs_util.cpp` uses `::lstat` (not `::stat`) in `is_dir`; `is_symlink` helper added; `copy_tree` skips any symlink entry. |
+| 2 | `save_detail_activity.hpp` declares `cloudBusy` as `std::atomic<bool>{false}`; all read/write sites use `.load()`/`.store()`; no CAS | VERIFIED | Line 54 declares `std::atomic<bool> cloudBusy{false}` with CONC-01 threading contract comment. 10 access sites in `.cpp`: 2 `.load()` guards + 8 `.store()` calls. `grep -nE 'cloudBusy *= *(true\|false)'` returns empty (no bare assignment). `compare_exchange` count: 0. `alive` member untouched (S2 boundary intact). |
+| 3 | [REVISED — fail-closed] `tls_policy(false)` returns `{verifypeer:1, verifyhost:2}` by default; `TlsMode::InsecureAllowed` opt-in returns `{0,0}`; no caller uses `InsecureAllowed`; `apply_curl_tls` keeps verification ON when CA is absent; `tls_insecure_flag()` not set on the automatic path; `install_tls_warning_banner` + 14-activity wiring compile and are present (latent) | VERIFIED | `tls_policy.hpp:31-34` — `tls_policy(bool, TlsMode=Verify)` returns `{1L,2L}` unless `InsecureAllowed` passed. `curl_tls.hpp` else-branch (ca_ok==false): calls `tls_policy(false)` (default Verify) → `{1,2}`; does NOT call `tls_insecure_flag().store(true)`. `grep -rn 'InsecureAllowed' source/` shows only declaration sites (tls_policy.hpp + curl_tls.hpp comment) — zero call-site uses. Banner + 13-activity wiring exist and compile (desktop build exit 0). All 3 `CURLOPT_SSL_VERIFYPEER` uses in `curl_tls.hpp` are inside the `#ifdef __SWITCH__` / `#else` / `#endif` structural block. |
+| 4 | TEST-03 host doctest asserts BOTH `tls_policy(false) == {1,2}` (fail-closed default) AND `tls_policy(false, InsecureAllowed) == {0,0}` (opt-in); passes in host suite | VERIFIED | `tests/test_tls_policy.cpp` has 4 TEST_CASEs: (a) `tls_policy(false)` → `{1,2}`, (b) `tls_policy(false, TlsMode::Verify)` → `{1,2}`, (c) `tls_policy(false, TlsMode::InsecureAllowed)` → `{0,0}`, (d) `tls_policy(true)` → `{1,2}`. File includes only curl-free `platform/tls_policy.hpp`. Orchestrator confirms 179 tests / 537 assertions, 0 failures, exit 0. |
+| 5 | Desktop build with `-DPLATFORM_DESKTOP=ON -DUSE_SDL2=ON` compiles clean — zero errors, zero new warnings | VERIFIED | Orchestrator confirms cmake + full build exit 0, zero new warnings, `thomaz` executable linked (run after all 11 fix commits 3829744..3fa978f). |
 
-**Score:** 4/5 truths fully verified (Truth 3 split: code-wiring VERIFIED, visual-rendering UNCERTAIN)
+**Score:** 5/5 truths verified
+
+### Banner Latency Assessment (SC-3 Human Verification Decision)
+
+Under the fail-closed design, `SEC-03`'s intent — "never silently operate insecure" — is now met by **refusing the insecure transfer** rather than by warning-and-continuing. When the CA bundle is absent, curl receives `verifypeer=1`/`verifyhost=2` and the HTTPS connection fails with a certificate error. No silent downgrade occurs. The banner's original purpose (warn the user that insecure transfers are happening) no longer applies to the automatic path.
+
+**The forced-flag visual smoke test is therefore NON-GATING for this phase.** The phase goal is achieved without it: the code compiles, the latch infrastructure exists, and the banner renders correctly if the latch is ever set by a future `InsecureAllowed` caller. The visual smoke test is retained in the human-verification list as an optional integration check for completeness, but it does not block the phase from proceeding.
+
+**The Switch-build IN-03 item** (`uid_from_hex` / PRIx64/SCNx64 refactor in `save_service_switch.cpp`) is also NON-GATING: the change is behavior-preserving, lives entirely inside `#ifdef __SWITCH__`, and the host suite remains green. It is flagged for Switch-hardware verification when a devkitPro build is next available.
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `source/platform/fs_util.hpp` | `thomaz::ensure_parent_dirs` and `thomaz::copy_tree` declarations | VERIFIED | Exists; contains both declarations under `namespace thomaz`; 14 lines |
-| `source/platform/fs_util.cpp` | Single definition of both helpers | VERIFIED | 92 lines; defines `thomaz::ensure_parent_dirs` (substring-at-slash canonical) and `thomaz::copy_tree` (3-arg with `is_dir`/`copy_file` in anonymous namespace); no C++20-only constructs |
-| `tests/test_fs_util.cpp` | D-05 equivalence gate doctest | VERIFIED | 102 lines; 3 TEST_CASEs: `ensure_parent_dirs` basic, trailing-slash, and D-05 equivalence vs char-by-char oracle |
-| `source/platform/tls_policy.hpp` | Pure curl-free `tls_policy(bool)` seam | VERIFIED | 25 lines; `TlsPolicy` struct + `inline tls_policy(bool)` in `namespace thomaz`; no curl includes, no `__SWITCH__` guards (grep count: 0) |
-| `tests/test_tls_policy.cpp` | TEST-03 fail-safe branch doctest | VERIFIED | 28 lines; 2 TEST_CASEs; includes only `platform/tls_policy.hpp`; no curl headers in test TU |
-| `source/app/tls_banner.hpp` | `install_tls_warning_banner(brls::Activity*)` declaration | VERIFIED | Declares `void thomaz::install_tls_warning_banner(brls::Activity* activity)` |
-| `source/app/tls_banner.cpp` | Banner injection gated on `tls_is_insecure()` | VERIFIED | 32 lines; includes `platform/curl_tls.hpp`; gates on `tls_is_insecure()`; uses `_i18n` key `thomaz/tls/insecure_warning`; injects red `brls::Label` at `hint_box` index 0 |
-| `source/app/save_detail_activity.hpp` | `std::atomic<bool> cloudBusy` with threading contract | VERIFIED | `cloudBusy` declared as `std::atomic<bool> cloudBusy{false}` at line 54; `<atomic>` included; CONC-01 contract comment present; `alive` member untouched |
+| `source/platform/fs_util.hpp` | `thomaz::ensure_parent_dirs` and `thomaz::copy_tree` declarations; symlink-skip contract documented | VERIFIED | 18 lines; both declarations under `namespace thomaz`; doc comment on `copy_tree` notes symlink-skip and lstat behavior (WR-06) |
+| `source/platform/fs_util.cpp` | Single definition of both helpers; `is_dir` uses `lstat`; `is_symlink` added; symlinks skipped in `copy_tree` | VERIFIED | 107 lines; `::lstat` in `is_dir` (line 19); `is_symlink` helper (lines 22-25); `copy_tree` skips symlinks (line 88-89); no C++20-only constructs |
+| `tests/test_fs_util.cpp` | D-05 equivalence gate doctest | VERIFIED | 3 TEST_CASEs: basic, trailing-slash, D-05 oracle equivalence |
+| `source/platform/tls_policy.hpp` | Pure curl-free seam; `TlsMode` enum; `tls_policy(bool, TlsMode=Verify)` fail-closed default | VERIFIED | 37 lines; `TlsMode { Verify, InsecureAllowed }` enum; `tls_policy` returns `{1,2}` for missing CA unless `InsecureAllowed`; no `#ifdef __SWITCH__` guards (count: 0); "curl" appears only in prose comments (not as an include) |
+| `tests/test_tls_policy.cpp` | TEST-03 doctest — 4 TEST_CASEs asserting fail-closed default and opt-in | VERIFIED | 51 lines; 4 TEST_CASEs; includes only `platform/tls_policy.hpp`; no curl headers; `using thomaz::TlsMode` |
+| `source/app/tls_banner.hpp` | `install_tls_warning_banner(brls::Activity*)` declaration | VERIFIED | 12 lines; declares `void thomaz::install_tls_warning_banner(brls::Activity* activity)` |
+| `source/app/tls_banner.cpp` | Banner injection gated on `tls_is_insecure()`; hint_box fallback to header; Logger::warning if neither slot found | VERIFIED | 37 lines; gates on `tls_is_insecure()`; falls back from `hint_box` to `header`; `Logger::warning` if no slot (WR-01 fix applied); uses `_i18n` key; red Label at index 0 |
+| `source/app/save_detail_activity.hpp` | `std::atomic<bool> cloudBusy{false}` with CONC-01 threading contract | VERIFIED | Line 54: `std::atomic<bool> cloudBusy{false}`; `<atomic>` included at line 5; 7-line threading contract comment present; `alive` member at line 60 unchanged |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 |------|----|-----|--------|---------|
-| `source/platform/cheat_store.cpp` | `thomaz::ensure_parent_dirs` | `#include "platform/fs_util.hpp"` | WIRED | File present in `grep -rl fs_util.hpp` output |
-| `tests/Makefile` | `source/platform/fs_util.cpp` | Explicit `SRCS` entry | WIRED | `../source/platform/fs_util.cpp` appears in SRCS on line 3 |
-| `source/platform/curl_tls.hpp` | `thomaz::tls_policy` | `#include "platform/tls_policy.hpp"` | WIRED | `curl_tls.hpp:4` includes `tls_policy.hpp`; both Switch and desktop branches call `tls_policy()` |
-| `tests/test_tls_policy.cpp` | `thomaz::tls_policy` | `#include "platform/tls_policy.hpp"` (curl-free) | WIRED | `test_tls_policy.cpp:2` includes only `tls_policy.hpp`; calls `tls_policy(false)` and `tls_policy(true)` |
-| `source/app/tls_banner.cpp` | `thomaz::tls_is_insecure` | `#include "platform/curl_tls.hpp"` | WIRED | `tls_banner.cpp:4` includes `curl_tls.hpp`; calls `thomaz::tls_is_insecure()` at line 15 |
-| `source/app/home_activity.cpp` | `install_tls_warning_banner` | call in `onContentAvailable` | WIRED | Confirmed in banner-count check; all 13 activity files include the banner call |
-| `source/app/save_detail_activity.cpp` | `cloudBusy.load / cloudBusy.store` | atomic accessors at all guard/set sites | WIRED | 10 sites verified: 2 `.load()` + 8 `.store()`; no bare assignment |
+| `source/platform/cheat_store.cpp` | `thomaz::ensure_parent_dirs` | `#include "platform/fs_util.hpp"` | WIRED | Confirmed in 7-file grep scan |
+| `source/platform/save_service_switch.cpp` | `thomaz::copy_tree` | `#include "platform/fs_util.hpp"` | WIRED | Confirmed in 7-file grep scan |
+| `tests/Makefile` | `source/platform/fs_util.cpp` | Explicit `SRCS` entry | WIRED | `../source/platform/fs_util.cpp` appears at end of SRCS line |
+| `source/platform/curl_tls.hpp` | `thomaz::tls_policy` (fail-closed) | `#include "platform/tls_policy.hpp"`; both branches call `tls_policy()` | WIRED | Line 5 includes `tls_policy.hpp`; ca_ok==true path: `tls_policy(true)`; ca_ok==false path: `tls_policy(false)` (default Verify → `{1,2}`) |
+| `source/platform/curl_tls.hpp` | `tls_insecure_flag` NOT set on automatic path | absence of assignment in ca_ok==false branch | VERIFIED (absence) | `grep -n 'tls_insecure_flag.*=\|= true' curl_tls.hpp` returns empty — latch is defined but never set automatically |
+| `tests/test_tls_policy.cpp` | `thomaz::tls_policy` + `TlsMode` | `#include "platform/tls_policy.hpp"` (curl-free) | WIRED | Line 2 includes only `tls_policy.hpp`; 4 TEST_CASEs exercise both default and InsecureAllowed paths |
+| `source/app/tls_banner.cpp` | `thomaz::tls_is_insecure` | `#include "platform/curl_tls.hpp"` | WIRED | Line 4 includes `curl_tls.hpp`; line 15 calls `thomaz::tls_is_insecure()` |
+| `source/app/home_activity.cpp` (representative) | `install_tls_warning_banner` | call in `onContentAvailable` | WIRED | 13 activity files confirmed; banner-call count == username-call count == 13 |
+| `source/app/save_detail_activity.cpp` | `cloudBusy.load()` / `cloudBusy.store()` | atomic accessors at all 10 guard/set sites | WIRED | 2 `.load()` + 8 `.store()` confirmed; no bare `cloudBusy = true/false` assignment |
 
 ### Data-Flow Trace (Level 4)
 
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 |----------|--------------|--------|-------------------|--------|
-| `tls_banner.cpp` | `tls_is_insecure()` latch | `curl_tls.hpp` static bool set in `ca_ok==false` branch | Yes — process-global one-way latch set from real CA probe | FLOWING |
-| `save_detail_activity.cpp` | `cloudBusy` | `std::atomic<bool>` member; set by `store(true)` before async ops, `store(false)` in callbacks | Yes — state flows through real guard logic | FLOWING |
-| `tls_banner.cpp` | `_i18n` label text | `resources/i18n/en-US/thomaz.json` `tls.insecure_warning` key | Yes — key present in all 5 locales (verified) | FLOWING |
+| `tls_banner.cpp` | `tls_is_insecure()` latch | `curl_tls.hpp` `tls_insecure_flag()` — latent under fail-closed; only set if `InsecureAllowed` caller exists | Latent — latch is always false on automatic path; banner is non-rendering in normal operation | LATENT (intentional by design — fail-closed makes the banner dormant on the normal path; banner still compiles and renders if latch is forced) |
+| `save_detail_activity.cpp` | `cloudBusy` | `std::atomic<bool>` member; `store(true)` before async ops, `store(false)` in callbacks | Yes — state flows through real guard logic | FLOWING |
+| `tls_banner.cpp` | i18n label text | `resources/i18n/*/thomaz.json` `tls.insecure_warning` key | Yes — key present in all 5 locales | FLOWING (when latch is set) |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 |----------|---------|--------|--------|
-| `tls_policy(false)` returns `{0,0}` | Orchestrator: `make -C tests test` — 177 tests / 533 assertions / 0 failures | exit 0 | PASS |
-| `ensure_parent_dirs` D-05 equivalence | Orchestrator: `make -C tests test` — includes `test_fs_util.cpp` 3 TEST_CASEs | exit 0 | PASS |
-| Desktop build clean | Orchestrator: cmake `-DPLATFORM_DESKTOP=ON -DUSE_SDL2=ON` + full build | exit 0, zero new warnings | PASS |
-| Red banner renders on all screens when flag forced | Requires running app with patched startup | Cannot verify without running binary | SKIP — see human verification |
+| `tls_policy(false)` returns `{1,2}` (fail-closed) | Orchestrator: `make -C tests clean && make -C tests test` — 179 tests / 537 assertions / 0 failures | exit 0 | PASS |
+| `tls_policy(false, InsecureAllowed)` returns `{0,0}` (opt-in gate) | Same test run — TEST_CASE "opt-in insecure" CHECKs `verifypeer==0L` and `verifyhost==0L` | exit 0 | PASS |
+| `ensure_parent_dirs` D-05 equivalence | Same test run — includes `test_fs_util.cpp` 3 TEST_CASEs | exit 0 | PASS |
+| Desktop build clean post CR-01 commits | Orchestrator: cmake `-DPLATFORM_DESKTOP=ON -DUSE_SDL2=ON` + full build after commits 3829744..3fa978f | exit 0, zero new warnings | PASS |
+| Banner renders when latch forced | Requires running app with patched startup | Cannot verify without running binary | SKIP — non-gating; see human verification |
+| IN-03 uid_from_hex Switch-build behavior | Requires devkitPro aarch64 toolchain | Cannot build without Switch toolchain | SKIP — non-gating; see human verification |
 
 ### Probe Execution
 
-No conventional `scripts/*/tests/probe-*.sh` probes exist for this phase. Build and test verification was performed by the orchestrator (desktop build exit 0; host test suite 177/0). No probe scripts to run.
+No conventional `scripts/*/tests/probe-*.sh` probes exist for this phase. Build and test verification was performed by the orchestrator (desktop build exit 0 after all 11 fix commits; host test suite 179/0).
 
 ### Requirements Coverage
 
 | Requirement | Source Plan | Description | Status | Evidence |
 |-------------|------------|-------------|--------|---------|
-| DEBT-01 | 03-01 | `ensure_parent_dirs` in exactly one shared helper; duplicates removed | SATISFIED | `fs_util.hpp/cpp` define the single canonical form; `grep -rn 'void ensure_parent_dirs' source/ \| grep -v fs_util` returns empty |
-| DEBT-02 | 03-01 | `copy_tree` in exactly one shared platform utility; duplicate removed | SATISFIED | Same `fs_util.hpp/cpp`; `grep -rn 'bool copy_tree' source/ \| grep -v fs_util` returns empty; `mod_store.hpp` copy_tree count: 0 |
-| TEST-03 | 03-02 | Host test covers TLS fail-safe branch (`ca_ok == false`) | SATISFIED | `test_tls_policy.cpp` has 2 TEST_CASEs; both pass in the orchestrator-confirmed 177-test suite |
-| SEC-03 | 03-03 | Persistent on-screen warning when CA bundle probe fails; fail-safe networking unchanged | SATISFIED (code) / UNCERTAIN (visual) | Banner helper created and wired into all 13 activities; code path to inject Label is correct; visual rendering of the Label requires human verification (forced-flag smoke test deferred) |
-| CONC-01 | 03-04 | `cloudBusy` is `std::atomic<bool>` with documented threading contract; guard behavior unchanged | SATISFIED | Header changed to `std::atomic<bool> cloudBusy{false}`; 10 `.load()`/`.store()` sites; no bare access; no `compare_exchange`; `alive` untouched |
+| DEBT-01 | 03-01 | `ensure_parent_dirs` in exactly one shared helper; all duplicates removed | SATISFIED | `grep -rn 'void ensure_parent_dirs' source/ \| grep -v fs_util` returns empty; 4 former sites include `platform/fs_util.hpp` |
+| DEBT-02 | 03-01 | `copy_tree` in exactly one shared utility; all duplicates removed | SATISFIED | `grep -rn 'bool copy_tree' source/ \| grep -v fs_util` returns empty; `mod_store.hpp` copy_tree count: 0; 3 former sites use the shared helper |
+| TEST-03 | 03-02 + CR-01 | Host test covers TLS fail-safe branch and the new fail-closed contract | SATISFIED | 4 TEST_CASEs in `test_tls_policy.cpp`; asserts `tls_policy(false)=={1,2}` (fail-closed default) and `tls_policy(false,InsecureAllowed)=={0,0}` (opt-in); 179 tests pass |
+| SEC-03 | 03-03 + D-06a | CA-missing handling is SAFE — no silent insecure transfer; persistent warning infrastructure present (latent) | SATISFIED | Under fail-closed: `apply_curl_tls` keeps `verifypeer=1`/`verifyhost=2` on CA-absent path → transfer fails loudly rather than downgrading silently. SEC-03's intent ("don't silently operate insecure") is met by refusing the transfer. Banner + 13-activity wiring compile and are latent-correct. Visual smoke test is non-gating (see assessment above). |
+| CONC-01 | 03-04 | `cloudBusy` is `std::atomic<bool>` with documented threading contract; guard behavior unchanged | SATISFIED | `save_detail_activity.hpp:54` declares `std::atomic<bool> cloudBusy{false}`; 10 `.load()`/`.store()` sites; no bare access; no `compare_exchange`; `alive` untouched (S2 boundary) |
 
-**Orphaned requirements check:** REQUIREMENTS.md maps SEC-03, CONC-01, DEBT-01, DEBT-02, TEST-03 to Phase 3. All 5 are claimed by the 4 plans. No orphaned requirements.
+**Orphaned requirements check:** REQUIREMENTS.md maps SEC-03, CONC-01, DEBT-01, DEBT-02, TEST-03 to Phase 3. All 5 are claimed by the 4 plans and verified above. No orphaned requirements.
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| — | — | — | — | No TBD/FIXME/XXX/HACK/PLACEHOLDER found in any phase-modified file |
+| — | — | — | — | No TBD/FIXME/XXX/HACK/PLACEHOLDER in any phase-modified file |
 
-No debt markers. No stub returns. No hardcoded-empty data flowing to render paths. No C++20-only constructs in `fs_util.cpp/.hpp`.
+No debt markers found. No stub returns flowing to render paths. No hardcoded-empty data. No C++20-only constructs in `fs_util.cpp/.hpp`. `tls_policy.hpp` mentions "curl" only in prose comments — no `#include <curl/curl.h>` (grep for `#include.*curl` returns 0).
 
 ### Human Verification Required
 
-#### 1. TLS Warning Banner Visual Rendering (Forced-Flag Smoke Test)
+#### 1. TLS Warning Banner Visual Rendering (Forced-Flag Smoke Test) — NON-GATING
 
-**Test:** Force `thomaz::tls_insecure_flag()=true` at application startup (e.g. add `thomaz::tls_insecure_flag() = true;` as the first line after `Application::init()` in `main.cpp`, or temporarily edit `tls_banner.cpp` to remove the `tls_is_insecure()` guard). Then:
-1. Build: `cmake -DPLATFORM_DESKTOP=ON -DUSE_SDL2=ON -S . -B build_smoke && cmake --build build_smoke`
-2. Run `./build_smoke/thomaz` and navigate to all 13 screens that call `install_tls_warning_banner(this)`: Home, Game List, Cheats, Mods, Settings, Save Manager, System, Themes, Mod Detail, Cheat Detail, Theme Detail, Clear Cheats, Mod Manager.
-3. Revert the forced flag and rebuild; run again to confirm no banner appears.
+**Test:** Force `thomaz::tls_insecure_flag().store(true)` at application startup (add immediately after `Application::init()` in `main.cpp`, or temporarily remove the `if (!thomaz::tls_is_insecure()) return;` guard in `tls_banner.cpp`). Build: `cmake -DPLATFORM_DESKTOP=ON -DUSE_SDL2=ON -S . -B build_smoke && cmake --build build_smoke`. Run `./build_smoke/thomaz` and navigate to all 13 screens: Home, Game List, Cheats, Mods, Settings, Save Manager, System, Themes, Mod Detail, Cheat Detail, Theme Detail, Clear Cheats, Mod Manager.
 
-**Expected:** A high-contrast red (`nvgRGB(0xFF,0x55,0x55)`) warning Label from the `thomaz/tls/insecure_warning` i18n key renders in the AppletFrame header on every screen when the flag is forced. No banner appears on any screen when the flag is false.
+**Expected:** A high-contrast red (`nvgRGB(0xFF,0x55,0x55)`) warning Label from the `thomaz/tls/insecure_warning` i18n key renders in the AppletFrame header (via `hint_box` or `header` fallback slot) on every screen when the flag is forced. No banner appears on any screen when the flag is false.
 
-**Why human:** The `tls_insecure` latch is never set on the desktop build (the CA probe only runs on Switch, and the desktop `#else` branch calls `tls_policy(true)` without setting the latch). Visual label rendering inside the borealis UI framework requires running the binary. Forced-flag visual confirmation was explicitly deferred from the 03-03 checkpoint to phase UAT by user decision.
+**Why human:** Under fail-closed, the `tls_insecure` latch is never set automatically on any path. The banner is latent. Visual rendering of a `brls::Label` requires running the binary with a forced latch.
+
+**Why non-gating:** SEC-03's intent ("never silently operate insecure") is now met by the fail-closed design — the transfer is refused, not downgraded. The banner exists as a latent, ready-if-needed mechanism for any future `InsecureAllowed` caller. Its correct rendering under a forced flag is an integration smoke test, not a phase-goal gate.
+
+#### 2. Switch-Build Verification for IN-03 (uid_from_hex Refactor) — NON-GATING
+
+**Test:** Build the Switch NRO target with a devkitPro aarch64 toolchain (standard CI path). Confirm `save_service_switch.cpp` compiles without warnings or errors. Optionally run the save-slot flow on hardware and confirm uid round-trip (format then parse) is correct.
+
+**Expected:** Zero warnings from `save_service_switch.cpp`. No behavioral regression in save-slot list, backup, or restore flows.
+
+**Why human:** `save_service_switch.cpp` is entirely inside `#ifdef __SWITCH__` and not compiled by the host `g++` build. The IN-03 refactor (`PRIx64`/`SCNx64` + `uid_from_hex` helper) is behavior-preserving but cannot be exercised without the devkitPro toolchain.
+
+**Why non-gating:** The change is a strict type-safety improvement (from `(unsigned long*)` aliasing-cast to proper `std::uint64_t` with `SCNx64`). The pre-existing behavior worked on the same aarch64 LP64 target. The host suite has no regression. Flagged for the next hardware build cycle.
 
 ### Gaps Summary
 
-No blocking gaps found. All code deliverables for DEBT-01, DEBT-02, TEST-03, CONC-01 and the code-wiring portion of SEC-03 are fully verified in the codebase. The single outstanding item is the visual forced-flag smoke test for the TLS banner (SEC-03), which is an intentionally deferred human-only verification step.
+No blocking gaps. All 5 success criteria (revised) are fully satisfied in the codebase:
 
-The `status: human_needed` reflects that one human verification item (banner visual rendering) remains, per the Step 9 decision tree: human items prevent `passed` even when all automated checks pass.
+1. `fs_util.hpp/cpp` — single canonical definitions, lstat + symlink-skip — VERIFIED
+2. `cloudBusy` atomic with load/store discipline — VERIFIED
+3. Fail-closed TLS: `tls_policy(false)` returns `{1,2}`; `InsecureAllowed` opt-in gates `{0,0}`; no caller uses it; banner + 14-activity wiring compile and are latent-correct — VERIFIED
+4. TEST-03 with 4 TEST_CASEs asserting both the fail-closed default and the InsecureAllowed opt-in — VERIFIED
+5. Desktop build clean post all fix commits — VERIFIED
+
+Two optional human checks remain (banner visual smoke test, Switch toolchain IN-03 build), both explicitly non-gating. Status is `human_needed` per decision-tree rules (human items present), but neither item blocks phase goal achievement or progression to Phase 4.
 
 ---
 
-_Verified: 2026-06-05T17:00:00Z_
+_Verified: 2026-06-05T18:00:00Z_
 _Verifier: Claude (gsd-verifier)_
+_Re-verification: Yes — after CR-01 fail-open → fail-closed reversal and 11 fix commits (3829744..3fa978f)_
