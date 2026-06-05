@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Remove Community Feature** - Strip posts/feed/comments/likes from API and client; preserve auth/session infrastructure shared with cloud saves (completed 2026-06-04)
 - [ ] **Phase 2: API Security + Regression Tests** - Harden the live API against the remaining HIGH-severity security issues and co-ship regression tests
-- [ ] **Phase 3: C++ Platform Hardening** - Fix isolated C++ platform-layer issues (fs_util extraction, TLS warning, cloudBusy atomicity) and their host tests
+- [x] **Phase 3: C++ Platform Hardening** - Fix isolated C++ platform-layer issues (fs_util extraction, TLS warning, cloudBusy atomicity) and their host tests (completed 2026-06-05)
 - [ ] **Phase 4: C++ Activity Hardening** - Refactor all activities to the runAsync base-class pattern, replace unsafe casts, add curl cancellation, and cover the conflict path
 
 ## Phase Details
@@ -77,7 +77,7 @@ Plans:
 - [x] 03-01-PLAN.md — Create shared fs_util.{hpp,cpp}; migrate all 7 ensure_parent_dirs/copy_tree call-sites; update tests/Makefile SRCS; D-05 equivalence doctest [DEBT-01, DEBT-02] (Wave 1)
 - [x] 03-02-PLAN.md — Extract pure tls_policy(bool) seam + insecure latch in curl_tls.hpp; TEST-03 host doctest for the ca_present==false fail-safe branch [TEST-03] (Wave 1, parallel)
 - [x] 03-03-PLAN.md — install_tls_warning_banner shared helper + wire into 14 activities + i18n in 5 locales (persistent on-screen TLS warning) [SEC-03] (Wave 2)
-- [ ] 03-04-PLAN.md — Atomicize cloudBusy to std::atomic<bool> in save_detail_activity (load/store at all 11 sites); alive member untouched (S2) [CONC-01] (Wave 3)
+- [x] 03-04-PLAN.md — Atomicize cloudBusy to std::atomic<bool> in save_detail_activity (load/store at all 11 sites); alive member untouched (S2) [CONC-01] (Wave 3)
 
 **Planning flags:**
 - **Second `copy_tree` location (DEBT-02):** Research could not locate `save_service_switch.cpp` at the expected path. Verify at Phase 3 implementation start. If absent, DEBT-02 removes only the `mod_store.cpp` copy — still satisfies the requirement.
@@ -112,5 +112,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Remove Community Feature | 3/3 | Complete   | 2026-06-04 |
 | 2. API Security + Regression Tests | 1/3 | In Progress|  |
-| 3. C++ Platform Hardening | 3/4 | In Progress|  |
+| 3. C++ Platform Hardening | 4/4 | Complete   | 2026-06-05 |
 | 4. C++ Activity Hardening | 0/? | Not started | - |
