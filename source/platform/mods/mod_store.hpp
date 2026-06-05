@@ -5,11 +5,6 @@
 
 namespace thomaz {
 
-// Recursively copy `src_dir` into `dst_dir` (created if missing). Returns false
-// and sets *err on the first failure. Existing files at the destination are
-// overwritten.
-bool copy_tree(const std::string& src_dir, const std::string& dst_dir, std::string* err);
-
 // Recursively delete `dir` and everything under it. Returns true if `dir` no
 // longer exists afterwards (including when it never existed).
 bool remove_tree(const std::string& dir);

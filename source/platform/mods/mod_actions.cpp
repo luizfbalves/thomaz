@@ -4,6 +4,7 @@
 #include "core/mods/mod_paths.hpp"
 #include "platform/mods/archive_extractor.hpp"
 #include "platform/mods/mod_store.hpp"
+#include "platform/fs_util.hpp"
 
 namespace thomaz {
 

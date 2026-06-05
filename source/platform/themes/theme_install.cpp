@@ -4,6 +4,7 @@
 #include "platform/themes/theme_download.hpp"   // nxtheme_filename
 #include "platform/themes/active_theme_store.hpp"
 #include "apply_facade.hpp"
+#include "platform/fs_util.hpp"
 
 #include <fstream>
 #include <sys/stat.h>
@@ -32,15 +33,6 @@ bool write_file(const std::string& path, const std::vector<unsigned char>& data)
     if (!o) return false;
     if (!data.empty()) o.write((const char*)data.data(), (std::streamsize)data.size());
     return (bool)o;
-}
-
-// mkdir -p for the parent dirs of a file path (POSIX, FAT-safe).
-void ensure_parent_dirs(const std::string& file) {
-    std::string acc;
-    for (size_t i = 0; i < file.size(); ++i) {
-        acc.push_back(file[i]);
-        if (file[i] == '/' && acc.size() > 1) ::mkdir(acc.c_str(), 0777);
-    }
 }
 
 } // namespace

@@ -1,4 +1,5 @@
 #include "platform/mods/mod_download.hpp"
+#include "platform/fs_util.hpp"
 
 #include <curl/curl.h>
 #include "platform/curl_tls.hpp"
@@ -8,12 +9,6 @@
 namespace thomaz {
 
 namespace {
-
-void ensure_parent_dirs(const std::string& path) {
-    for (std::size_t i = 1; i < path.size(); ++i)
-        if (path[i] == '/')
-            ::mkdir(path.substr(0, i).c_str(), 0777); // ignore EEXIST
-}
 
 size_t writeToFile(char* ptr, size_t size, size_t nmemb, void* userdata) {
     auto* f = static_cast<std::FILE*>(userdata);

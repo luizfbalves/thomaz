@@ -1,4 +1,5 @@
 #include "platform/mods/mod_store.hpp"
+#include "platform/fs_util.hpp"
 
 #include <cstdio>
 #include <dirent.h>
@@ -14,64 +15,7 @@ bool is_dir(const std::string& path) {
     return ::stat(path.c_str(), &st) == 0 && S_ISDIR(st.st_mode);
 }
 
-bool copy_file(const std::string& src, const std::string& dst) {
-    std::FILE* in = std::fopen(src.c_str(), "rb");
-    if (!in)
-        return false;
-    std::FILE* out = std::fopen(dst.c_str(), "wb");
-    if (!out) {
-        std::fclose(in);
-        return false;
-    }
-    char buf[8192];
-    std::size_t n;
-    bool ok = true;
-    while ((n = std::fread(buf, 1, sizeof(buf), in)) > 0) {
-        if (std::fwrite(buf, 1, n, out) != n) {
-            ok = false;
-            break;
-        }
-    }
-    ok = (std::fclose(out) == 0) && ok;
-    std::fclose(in);
-    return ok;
-}
-
 } // namespace
-
-bool copy_tree(const std::string& src_dir, const std::string& dst_dir, std::string* err) {
-    ::mkdir(dst_dir.c_str(), 0777); // ignore EEXIST
-
-    DIR* d = ::opendir(src_dir.c_str());
-    if (!d) {
-        if (err)
-            *err = "cannot open " + src_dir;
-        return false;
-    }
-
-    bool ok = true;
-    while (struct dirent* e = ::readdir(d)) {
-        std::string name = e->d_name;
-        if (name == "." || name == "..")
-            continue;
-        std::string src = src_dir + "/" + name;
-        std::string dst = dst_dir + "/" + name;
-        if (is_dir(src)) {
-            if (!copy_tree(src, dst, err)) {
-                ok = false;
-                break;
-            }
-        } else if (!copy_file(src, dst)) {
-            if (err)
-                *err = "cannot copy " + src;
-            ok = false;
-            break;
-        }
-    }
-
-    ::closedir(d);
-    return ok;
-}
 
 bool remove_tree(const std::string& dir) {
     DIR* d = ::opendir(dir.c_str());

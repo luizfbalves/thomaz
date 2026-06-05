@@ -1,5 +1,6 @@
 #include "doctest.h"
 #include "platform/mods/mod_store.hpp"
+#include "platform/fs_util.hpp"
 
 #include <algorithm>
 #include <cstdio>

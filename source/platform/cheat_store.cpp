@@ -1,26 +1,11 @@
 #include "platform/cheat_store.hpp"
+#include "platform/fs_util.hpp"
 
 #include <cstdio>
 #include <dirent.h>
 #include <sys/stat.h>
 
 namespace thomaz {
-
-namespace {
-
-// mkdir -p for the directory portion of `path` (everything before the last '/').
-void ensure_parent_dirs(const std::string& path) {
-    // Walk each '/' boundary and create the directory up to that point.
-    for (std::size_t i = 1; i < path.size(); ++i) {
-        if (path[i] != '/')
-            continue;
-        std::string dir = path.substr(0, i);
-        if (!dir.empty())
-            ::mkdir(dir.c_str(), 0777); // ignore EEXIST and friends
-    }
-}
-
-} // namespace
 
 std::optional<std::string> read_text_file(const std::string& path) {
     std::FILE* f = std::fopen(path.c_str(), "rb");

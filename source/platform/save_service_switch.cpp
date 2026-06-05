@@ -16,6 +16,7 @@
 #include "platform/cheat_store.hpp" // write_text_file
 #include "core/saves/save_package.hpp"
 #include "platform/saves/save_backup_io.hpp"
+#include "platform/fs_util.hpp"
 
 namespace thomaz {
 
@@ -38,56 +39,6 @@ std::string uid_hex(AccountUid uid) {
     std::snprintf(buf, sizeof(buf), "%016lx%016lx",
                   (unsigned long)uid.uid[0], (unsigned long)uid.uid[1]);
     return buf;
-}
-
-// mkdir -p
-void make_dirs(const std::string& path) {
-    std::string acc;
-    for (size_t i = 0; i < path.size(); ++i) {
-        acc += path[i];
-        if (path[i] == '/' && acc.size() > 1)
-            ::mkdir(acc.c_str(), 0777);
-    }
-    ::mkdir(path.c_str(), 0777);
-}
-
-// Recursively copy everything under src dir into dst dir (both already exist).
-bool copy_tree(const std::string& src, const std::string& dst) {
-    DIR* d = ::opendir(src.c_str());
-    if (!d)
-        return false;
-    bool ok = true;
-    struct dirent* e;
-    while (ok && (e = ::readdir(d)) != nullptr) {
-        std::string name = e->d_name;
-        if (name == "." || name == "..")
-            continue;
-        std::string s = src + "/" + name;
-        std::string t = dst + "/" + name;
-        struct stat st;
-        if (::stat(s.c_str(), &st) != 0) { ok = false; break; }
-        if (S_ISDIR(st.st_mode)) {
-            ::mkdir(t.c_str(), 0777);
-            ok = copy_tree(s, t);
-        } else {
-            FILE* in = std::fopen(s.c_str(), "rb");
-            FILE* out = std::fopen(t.c_str(), "wb");
-            if (!in || !out) {
-                if (in) std::fclose(in);
-                if (out) { std::fclose(out); ::remove(t.c_str()); } // no ghost file
-                ok = false;
-                break;
-            }
-            char buf[8192];
-            size_t n;
-            while ((n = std::fread(buf, 1, sizeof(buf), in)) > 0)
-                if (std::fwrite(buf, 1, n, out) != n) { ok = false; break; }
-            std::fclose(in);
-            std::fclose(out);
-        }
-    }
-    ::closedir(d);
-    return ok;
 }
 
 // Recursively read every file under `src` into the package, prefixing each
@@ -201,9 +152,8 @@ bool NsSaveService::backup(const InstalledTitle& title, std::string* outError) {
             continue; // this profile has no save for this title
 
         std::string dst = dir + "/" + p.uid_hex;
-        make_dirs(dst);
         std::string mountRoot = std::string(kMount) + ":/";
-        if (copy_tree(mountRoot, dst))
+        if (copy_tree(mountRoot, dst, nullptr)) // copy_tree creates dst if missing
             savedProfiles.push_back(p.uid_hex);
         else
             anyFailure = true;
@@ -252,8 +202,8 @@ bool NsSaveService::restore(const core::BackupEntry& entry, std::uint64_t title_
         std::string mountRoot = std::string(kMount) + ":/";
         std::string src       = entry.path + "/" + profileHex;
 
-        clear_tree(mountRoot);                 // wipe current save contents
-        bool ok = copy_tree(src, mountRoot);   // write backup files back in
+        clear_tree(mountRoot);                      // wipe current save contents
+        bool ok = copy_tree(src, mountRoot, nullptr); // write backup files back in
         if (ok && R_SUCCEEDED(fsdevCommitDevice(kMount))) // commit, or it is discarded
             done.push_back(profileHex);
         else

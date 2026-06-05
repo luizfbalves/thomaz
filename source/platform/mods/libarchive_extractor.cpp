@@ -1,5 +1,6 @@
 #include "platform/mods/archive_extractor.hpp"
 #include "core/mods/mod_install.hpp" // is_safe_archive_path
+#include "platform/fs_util.hpp"
 
 #include <archive.h>
 #include <archive_entry.h>
@@ -9,13 +10,6 @@
 namespace thomaz {
 
 namespace {
-
-void ensure_parent_dirs(const std::string& path) {
-    for (std::size_t i = 1; i < path.size(); ++i) {
-        if (path[i] == '/')
-            ::mkdir(path.substr(0, i).c_str(), 0777); // ignore EEXIST
-    }
-}
 
 struct ArchiveCloser {
     struct archive* a;
