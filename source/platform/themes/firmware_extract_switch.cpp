@@ -17,18 +17,6 @@ namespace thomaz {
 
 namespace {
 
-// SZS validation: accept SARC ("SARC" magic at offset 0) or Yaz0-compressed
-// SZS ("Yaz0" magic at offset 0). Either constitutes a valid layout file.
-// (Research Pitfall 2 / T-01-15 integrity threat.)
-bool is_valid_szs(const std::vector<std::uint8_t>& buf) {
-    if (buf.size() < 4) return false;
-    // SARC magic: 0x53 0x41 0x52 0x43 = "SARC"
-    if (buf[0] == 0x53 && buf[1] == 0x41 && buf[2] == 0x52 && buf[3] == 0x43) return true;
-    // Yaz0 magic: 0x59 0x61 0x7A 0x30 = "Yaz0"
-    if (buf[0] == 0x59 && buf[1] == 0x61 && buf[2] == 0x7A && buf[3] == 0x30) return true;
-    return false;
-}
-
 // mkdir -p for the parent directories of a file path (POSIX/FAT-safe).
 // Mirrors theme_install.cpp::ensure_parent_dirs (lines 38-44).
 void ensure_parent_dirs(const std::string& file_path) {
@@ -158,9 +146,9 @@ ExtractAllResult extract_all_base_layouts() {
         for (auto& [romfs_key, buf] : res.files) {
 
             // D-04: structural validation — Yaz0-decompress + SARC-unpack.
-            // is_structurally_valid_szs is used here (not the Phase 1 magic-only
-            // is_valid_szs). T-02-08: invalid buffers go to failed_parts, never
-            // overwrite a good file on disk.
+            // is_structurally_valid_szs performs a full structural check (not a
+            // magic-only prefix test). T-02-08: invalid buffers go to
+            // failed_parts, never overwrite a good file on disk.
             if (!is_structurally_valid_szs(buf)) {
                 failed_parts.push_back(romfs_key + ": invalid szs");
                 continue;
