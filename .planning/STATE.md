@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v0.4
 milestone_name: Extração de Temas
 status: executing
-last_updated: "2026-06-05T16:19:08.900Z"
+last_updated: "2026-06-05T16:27:18.343Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 9
-  completed_plans: 7
-  percent: 78
+  completed_plans: 8
+  percent: 89
 ---
 
 # Project State
@@ -28,10 +28,10 @@ Phase B's existing "Aplicar Tema".
 ## Current Position
 
 Phase: 02 (full-extraction-engine) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-06-05
-Progress: [████████░░] 78%
+Progress: [█████████░] 89%
 
 ## Roadmap Summary
 
@@ -70,6 +70,9 @@ Progress: [████████░░] 78%
 
 - [Phase 02 Plan 02]: `szs_validate.cpp` doc comment rephrased to avoid literal `switch.h` text (neutral-TU acceptance grep checks for its absence as an include; comment text was triggering a false match)
 
+- [Phase 02 Plan 03]: `nca_romfs_filter` prefix check uses `rfind(entry,0)==0` (starts_with semantics) — avoids matching `/lyt/` in interior path segments
+- [Phase 02 Plan 03]: `extract_all_base_layouts()` opens privileged session once before the three-title loop, closes once on all exit paths (Pitfall 2 / T-02-10)
+
 ### De-risking rationale
 
 - Highest hardware unknowns sequenced FIRST in Phase 1: (a) do the pinned SPL public
@@ -99,8 +102,8 @@ Progress: [████████░░] 78%
 
 ## Session Continuity
 
-Last completed: 02-02-PLAN.md — neutral szs_validate TU + host doctest (ce51fee, 273e0d3). D-04 structural validation replaces Phase 1 magic-only check. Full 187-test suite green at C++20.
-Next step: Execute Phase 02 Plan 03 (multi-title extraction driver + /lyt/ filter widening).
+Last completed: 02-03-PLAN.md — /lyt/ prefix RomFS filter + extract_all_base_layouts() multi-title driver (1785033, d5bfc11). D-01 prefix widening in nca_romfs_filter; D-02/D-02a best-effort/systemic split; D-03 flat overwrite; D-04 is_structurally_valid_szs write gate; single session across all three titles.
+Next step: Execute Phase 02 Plan 04 (firmware_extract_fake.cpp stub + integration wiring).
 
 Key files for Phase 1:
 
