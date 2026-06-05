@@ -20,10 +20,12 @@ std::string HttpCloudSaveClient::savesUrl(std::uint64_t titleId) const {
     return baseUrl + "/saves/" + titleIdHex(titleId);
 }
 
-CloudStatus HttpCloudSaveClient::getStatus(const std::string& token, std::uint64_t titleId) {
+CloudStatus HttpCloudSaveClient::getStatus(const std::string& token, std::uint64_t titleId,
+                                            CancelFlag cancelled) {
     HttpRequest req;
-    req.method = HttpMethod::Get;
-    req.url    = savesUrl(titleId);
+    req.method    = HttpMethod::Get;
+    req.url       = savesUrl(titleId);
+    req.cancelled = cancelled; // thread the abort flag into the transport
     req.headers.push_back({ "Authorization", "Bearer " + token });
 
     HttpResponse resp = http->request(req);
@@ -41,10 +43,12 @@ CloudStatus HttpCloudSaveClient::getStatus(const std::string& token, std::uint64
     return s;
 }
 
-CloudPull HttpCloudSaveClient::pull(const std::string& token, std::uint64_t titleId) {
+CloudPull HttpCloudSaveClient::pull(const std::string& token, std::uint64_t titleId,
+                                    CancelFlag cancelled) {
     HttpRequest req;
-    req.method = HttpMethod::Get;
-    req.url    = savesUrl(titleId) + "?includeData=1";
+    req.method    = HttpMethod::Get;
+    req.url       = savesUrl(titleId) + "?includeData=1";
+    req.cancelled = cancelled; // thread the abort flag into the transport
     req.headers.push_back({ "Authorization", "Bearer " + token });
 
     HttpResponse resp = http->request(req);
@@ -65,10 +69,12 @@ CloudPull HttpCloudSaveClient::pull(const std::string& token, std::uint64_t titl
 
 CloudPush HttpCloudSaveClient::push(const std::string& token, std::uint64_t titleId,
                                     const std::vector<std::uint8_t>& blob,
-                                    const std::string& label, int revision) {
+                                    const std::string& label, int revision,
+                                    CancelFlag cancelled) {
     HttpRequest req;
-    req.method = HttpMethod::Put;
-    req.url    = savesUrl(titleId);
+    req.method    = HttpMethod::Put;
+    req.url       = savesUrl(titleId);
+    req.cancelled = cancelled; // thread the abort flag into the transport
     req.headers.push_back({ "Authorization", "Bearer " + token });
     req.fields.push_back({ "label", label });
     req.fields.push_back({ "revision", std::to_string(revision) });

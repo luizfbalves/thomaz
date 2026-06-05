@@ -3,7 +3,8 @@
 
 namespace thomaz {
 
-CloudStatus FakeCloudSaveClient::getStatus(const std::string&, std::uint64_t titleId) {
+CloudStatus FakeCloudSaveClient::getStatus(const std::string&, std::uint64_t titleId,
+                                            CancelFlag /*cancelled*/) {
     CloudStatus s;
     s.ok = true;
     auto it = slots.find(titleId);
@@ -16,7 +17,8 @@ CloudStatus FakeCloudSaveClient::getStatus(const std::string&, std::uint64_t tit
     return s;
 }
 
-CloudPull FakeCloudSaveClient::pull(const std::string&, std::uint64_t titleId) {
+CloudPull FakeCloudSaveClient::pull(const std::string&, std::uint64_t titleId,
+                                    CancelFlag /*cancelled*/) {
     CloudPull p;
     p.ok = true;
     auto it = slots.find(titleId);
@@ -32,7 +34,8 @@ CloudPull FakeCloudSaveClient::pull(const std::string&, std::uint64_t titleId) {
 
 CloudPush FakeCloudSaveClient::push(const std::string&, std::uint64_t titleId,
                                     const std::vector<std::uint8_t>& blob,
-                                    const std::string& label, int revision) {
+                                    const std::string& label, int revision,
+                                    CancelFlag /*cancelled*/) {
     CloudPush r;
     auto it = slots.find(titleId);
     // API accepts an absent revision OR 0 for a brand-new slot; the C++ interface

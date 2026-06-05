@@ -256,12 +256,16 @@ void SaveDetailActivity::doUpload() {
     std::string token = sess ? sess->token : "";
     ICloudSaveClient* c = this->cloudSaves;
     std::uint64_t tid   = this->title.title_id;
+    // Capture the cancellation flag by value (shared_ptr copy) BEFORE dispatch
+    // so the worker never touches `this`.  Passed into each HTTP transfer so
+    // destroying the activity aborts the in-flight cloud-save request (CONC-03).
+    auto cancelled = this->cancelledFlag();
 
     auto status = std::make_shared<CloudStatus>();
     this->runAsync(
-        [c, token, tid, status]() {
+        [c, token, tid, status, cancelled]() {
             // Fresh status decides clean push vs conflict.
-            *status = c->getStatus(token, tid);
+            *status = c->getStatus(token, tid, cancelled);
         },
         [this, status, tid]() {
             if (!status->ok) {
@@ -303,11 +307,13 @@ void SaveDetailActivity::pushAtRevision(int revision) {
     ISaveService* svc   = this->saveService;
     std::uint64_t tid   = this->title.title_id;
     std::string label   = this->title.name;
+    // Capture the cancellation flag by value BEFORE dispatch (CONC-03).
+    auto cancelled = this->cancelledFlag();
 
     // push_result: first=blobEmpty, second=CloudPush (valid only when !first)
     auto push_result = std::make_shared<std::pair<bool, CloudPush>>();
     this->runAsync(
-        [c, svc, token, tid, label, revision, push_result]() {
+        [c, svc, token, tid, label, revision, push_result, cancelled]() {
             std::string err;
             std::vector<std::uint8_t> blob = svc->packageActiveSave(tid, &err);
             if (blob.empty()) {
@@ -315,7 +321,7 @@ void SaveDetailActivity::pushAtRevision(int revision) {
                 return;
             }
             push_result->first  = false;
-            push_result->second = c->push(token, tid, blob, label, revision);
+            push_result->second = c->push(token, tid, blob, label, revision, cancelled);
         },
         [this, push_result, tid]() {
             if (push_result->first) {
@@ -355,6 +361,8 @@ void SaveDetailActivity::doDownload() {
     ICloudSaveClient* c = this->cloudSaves;
     ISaveService* svc   = this->saveService;
     std::uint64_t tid   = this->title.title_id;
+    // Capture the cancellation flag by value BEFORE dispatch (CONC-03).
+    auto cancelled = this->cancelledFlag();
 
     struct DownloadResult {
         CloudPull pull;
@@ -365,8 +373,8 @@ void SaveDetailActivity::doDownload() {
     };
     auto dl = std::make_shared<DownloadResult>();
     this->runAsync(
-        [c, svc, token, tid, dl]() {
-            dl->pull = c->pull(token, tid);
+        [c, svc, token, tid, dl, cancelled]() {
+            dl->pull = c->pull(token, tid, cancelled);
             if (dl->pull.ok && dl->pull.exists) {
                 // Snapshot existing backups so we can pin EXACTLY the one the import
                 // creates — robust even if the system clock was set back (newest-by-

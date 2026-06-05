@@ -11,11 +11,14 @@ namespace thomaz {
 // API's optimistic-concurrency rule: a PUT must send the current revision.
 class FakeCloudSaveClient : public ICloudSaveClient {
   public:
-    CloudStatus getStatus(const std::string& token, std::uint64_t titleId) override;
-    CloudPull   pull(const std::string& token, std::uint64_t titleId) override;
+    CloudStatus getStatus(const std::string& token, std::uint64_t titleId,
+                          CancelFlag cancelled = nullptr) override;
+    CloudPull   pull(const std::string& token, std::uint64_t titleId,
+                     CancelFlag cancelled = nullptr) override;
     CloudPush   push(const std::string& token, std::uint64_t titleId,
                      const std::vector<std::uint8_t>& blob,
-                     const std::string& label, int revision) override;
+                     const std::string& label, int revision,
+                     CancelFlag cancelled = nullptr) override;
 
   private:
     struct Slot {

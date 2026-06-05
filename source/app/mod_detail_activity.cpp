@@ -194,14 +194,18 @@ void ModDetailActivity::startDownload(const core::ModFile& file)
     brls::Application::notify("mods/downloading"_i18n);
 
     std::uint64_t tid = this->title.title_id; // copy before async — avoids UAF if activity is popped
+    // Capture the cancellation flag by value (shared_ptr copy) BEFORE dispatch
+    // so the worker never touches `this`.  When the activity is destroyed, the
+    // base dtor sets *cancelled=true and the in-flight download aborts (CONC-03).
+    auto cancelled = this->cancelledFlag();
 
     auto results = std::make_shared<std::pair<bool, std::string>>(); // (done_ok, msg)
     this->runAsync(
-        [f, dest, mod_name, tid, results]() {
+        [f, dest, mod_name, tid, results, cancelled]() {
             std::string err;
             // progress nullptr is safe — download_file guards `if(progress)`.
             // A live progress bar is a future refinement.
-            bool ok = download_file(f.download_url, dest, nullptr, &err);
+            bool ok = download_file(f.download_url, dest, nullptr, &err, cancelled);
             if (ok)
             {
                 ModActionResult ir = import_archive(tid, mod_name, dest, nullptr);
