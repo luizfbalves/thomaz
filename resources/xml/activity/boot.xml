@@ -6,7 +6,7 @@
                   justifyContent="center" alignItems="center"
                   backgroundColor="#000000">
             <brls:Image id="bootIcon"
-                        image="@res/icon/icon.png"
+                        image="@res/img/icon.jpg"
                         width="240" height="240"/>
         </brls:Box>
 
