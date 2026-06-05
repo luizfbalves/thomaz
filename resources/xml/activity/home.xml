@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   Home — "What are we doing today?" (design "Signal").
-  Big violet hero (Themes) + vertical rail (Settings, Saves, Mods, Cheats).
+  Violet hero (Themes) + two card columns so the 5 other destinations no longer
+  crowd a single rail: column A = Settings/Saves/Mods, column B = System/Cheats.
   Each block is an AnimatedBox so the menu cascades in on appear.
   Footer hints come from registerAction() in HomeActivity.
-  IDs themesCard / settingsCard / savesCard / modsCard / cheatsCard wired in HomeActivity.
+  IDs themesCard / settingsCard / savesCard / modsCard / systemCard / cheatsCard wired in HomeActivity.
 -->
 <brls:AppletFrame title="thomaz" iconInterpolation="linear">
 
@@ -20,12 +21,12 @@
                         fontSize="34" textColor="@theme/thomaz/text" marginTop="6"/>
         </AnimatedBox>
 
-        <!-- hero + rail -->
+        <!-- hero + two card columns (3 parts: hero | col A | col B) -->
         <brls:Box axis="row" grow="1.0">
 
             <!-- ===== HERO: Themes ===== -->
             <AnimatedBox id="themesCard" entranceDelay="80"
-                      axis="column" grow="1.55" marginRight="18"
+                      axis="column" grow="1.25" marginRight="18"
                       padding="34" cornerRadius="22"
                       backgroundColor="@theme/thomaz/accent_bright"
                       focusable="true" highlightCornerRadius="22"
@@ -37,11 +38,11 @@
                             fontSize="40" textColor="#FFFFFF"/>
                 <brls:Label text="@i18n/themes/subtitle"
                             fontSize="17" textColor="#FFFFFFD9"
-                            marginTop="8" width="360"/>
+                            marginTop="8" width="300"/>
             </AnimatedBox>
 
-            <!-- ===== RAIL ===== -->
-            <brls:Box axis="column" grow="1.0">
+            <!-- ===== COLUMN A: Settings / Saves / Mods ===== -->
+            <brls:Box axis="column" grow="1.0" marginRight="14">
 
                 <!-- Settings (active) -->
                 <AnimatedBox id="settingsCard" entranceDelay="150"
@@ -55,7 +56,7 @@
                 </AnimatedBox>
 
                 <!-- Save Manager (active) -->
-                <AnimatedBox id="savesCard" entranceDelay="270"
+                <AnimatedBox id="savesCard" entranceDelay="210"
                           axis="row" alignItems="center" grow="1.0" marginBottom="14"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
                           backgroundColor="@theme/thomaz/tile_backup"
@@ -66,8 +67,8 @@
                 </AnimatedBox>
 
                 <!-- Mods (active) -->
-                <AnimatedBox id="modsCard" entranceDelay="330"
-                          axis="row" alignItems="center" grow="1.0" marginBottom="14"
+                <AnimatedBox id="modsCard" entranceDelay="270"
+                          axis="row" alignItems="center" grow="1.0"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
                           backgroundColor="@theme/thomaz/tile_mods"
                           focusable="true" highlightCornerRadius="16"
@@ -76,9 +77,14 @@
                                 fontSize="17" textColor="#FFFFFF" grow="1.0"/>
                 </AnimatedBox>
 
+            </brls:Box>
+
+            <!-- ===== COLUMN B: System / Cheats ===== -->
+            <brls:Box axis="column" grow="1.0">
+
                 <!-- Sistema (active) -->
-                <AnimatedBox id="systemCard" entranceDelay="360"
-                          axis="row" alignItems="center" grow="1.0"
+                <AnimatedBox id="systemCard" entranceDelay="200"
+                          axis="row" alignItems="center" grow="1.0" marginBottom="14"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
                           backgroundColor="@theme/thomaz/tile_settings"
                           focusable="true" highlightCornerRadius="16"
@@ -88,8 +94,8 @@
                 </AnimatedBox>
 
                 <!-- Cheats (active) -->
-                <AnimatedBox id="cheatsCard" entranceDelay="390"
-                          axis="row" alignItems="center" grow="1.0" marginTop="14"
+                <AnimatedBox id="cheatsCard" entranceDelay="260"
+                          axis="row" alignItems="center" grow="1.0"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
                           backgroundColor="@theme/thomaz/accent_bright"
                           focusable="true" highlightCornerRadius="16"
