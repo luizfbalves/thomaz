@@ -142,31 +142,36 @@ void ThemeDetailActivity::buildGallery() {
     }
 
     if (strip) strip->setVisibility(brls::Visibility::VISIBLE);
-    if (row) row->clearViews();
 
-    for (const auto& item : g) {
-        core::GalleryImage gi = item;
-        auto* thumb = new brls::Image();
-        thumb->setWidth(80.0f);
-        thumb->setHeight(45.0f);
-        thumb->setCornerRadius(6.0f);
-        thumb->setMarginRight(8.0f);
-        thumb->setFocusable(true);
-        this->loadThumb(gi.thumb_url, thumb);
+    // Built once per resolve. The async loadThumb() calls below capture the raw
+    // thumb pointers; this is safe because the strip is never rebuilt during the
+    // activity's life (clearViews would dangle in-flight fetches otherwise).
+    if (row) {
+        row->clearViews();
+        for (const auto& item : g) {
+            core::GalleryImage gi = item;
+            auto* thumb = new brls::Image();
+            thumb->setWidth(80.0f);
+            thumb->setHeight(45.0f);
+            thumb->setCornerRadius(6.0f);
+            thumb->setMarginRight(8.0f);
+            thumb->setFocusable(true);
+            this->loadThumb(gi.thumb_url, thumb);
 
-        thumb->getFocusEvent()->subscribe([this, gi](brls::View*) {
-            this->showGalleryImage(gi);
-        });
-        thumb->registerAction("themes/view_fullscreen"_i18n, brls::BUTTON_A,
-            [this, gi](brls::View*) {
-                brls::Application::pushActivity(new ImageViewerActivity(gi, this->http));
-                return true;
+            thumb->getFocusEvent()->subscribe([this, gi](brls::View*) {
+                this->showGalleryImage(gi);
             });
-        thumb->addGestureRecognizer(new brls::TapGestureRecognizer(thumb, [this, gi]() {
-            brls::Application::pushActivity(new ImageViewerActivity(gi, this->http));
-        }));
+            thumb->registerAction("themes/view_fullscreen"_i18n, brls::BUTTON_A,
+                [this, gi](brls::View*) {
+                    brls::Application::pushActivity(new ImageViewerActivity(gi, this->http));
+                    return true;
+                });
+            thumb->addGestureRecognizer(new brls::TapGestureRecognizer(thumb, [this, gi]() {
+                brls::Application::pushActivity(new ImageViewerActivity(gi, this->http));
+            }));
 
-        if (row) row->addView(thumb);
+            row->addView(thumb);
+        }
     }
 
     this->showGalleryImage(g.front());
@@ -185,8 +190,6 @@ void ThemeDetailActivity::onResolved(const core::ThemeDetail& d, bool ok) {
     this->detail   = d;
     this->resolved = true;
 
-    if (auto* content = this->getView("detailContent"))
-        content->setVisibility(brls::Visibility::VISIBLE);
     this->buildGallery();
 
     if (auto* desc = (brls::Label*)this->getView("detailDesc"))
@@ -209,6 +212,10 @@ void ThemeDetailActivity::onResolved(const core::ThemeDetail& d, bool ok) {
             }
         }
     }
+
+    // Reveal the populated content in one pass (no blank-text flash).
+    if (auto* content = this->getView("detailContent"))
+        content->setVisibility(brls::Visibility::VISIBLE);
 
     this->downloaded = theme_already_downloaded(this->entry);
     this->applied    = is_active_theme(this->entry);
