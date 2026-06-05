@@ -42,7 +42,6 @@ std::string partLabel(const std::string& target) {
 } // namespace
 
 ThemeBrowserActivity::ThemeBrowserActivity(IHttpClient* http) : http(http) {}
-ThemeBrowserActivity::~ThemeBrowserActivity() { *this->alive = false; }
 
 void ThemeBrowserActivity::onContentAvailable() {
     install_header_username(this);
@@ -86,41 +85,42 @@ void ThemeBrowserActivity::runQuery(int page) {
     if (auto* spinner = this->getView("spinner")) spinner->setVisibility(brls::Visibility::VISIBLE);
 
     IHttpClient* client = this->http;
-    auto alive = this->alive;
     bool packs = this->packsMode;
     std::string q = this->query;
     std::string t = this->target;
 
-    brls::async([this, client, alive, packs, q, t, page]() {
-        core::themezer::GraphQlFetcher fetch = makeFetcher(client);
-        core::themezer::BrowseResult res = packs
-            ? core::themezer::browse_packs(q, page, 30, fetch)
-            : core::themezer::browse_themes(q, t, page, 30, fetch);
-        bool ok = (res.status == core::themezer::BrowseStatus::Ok);
-        core::BrowsePage pg = res.page;
-        brls::sync([this, alive, ok, pg]() {
-            if (!alive->load()) return;
+    auto results = std::make_shared<std::pair<bool, core::BrowsePage>>(); // (ok, pg)
+    this->runAsync(
+        [client, packs, q, t, page, results]() {
+            core::themezer::GraphQlFetcher fetch = makeFetcher(client);
+            core::themezer::BrowseResult res = packs
+                ? core::themezer::browse_packs(q, page, 30, fetch)
+                : core::themezer::browse_themes(q, t, page, 30, fetch);
+            results->first  = (res.status == core::themezer::BrowseStatus::Ok);
+            results->second = res.page;
+        },
+        [this, results]() {
             if (auto* spinner = this->getView("spinner")) spinner->setVisibility(brls::Visibility::GONE);
-            if (!ok) { brls::Application::notify("themes/error_network"_i18n); return; }
-            this->populate(pg);
+            if (!results->first) { brls::Application::notify("themes/error_network"_i18n); return; }
+            this->populate(results->second);
         });
-    });
 }
 
 void ThemeBrowserActivity::loadThumb(const std::string& url, brls::Image* into) {
     if (url.empty() || !into) return;
     IHttpClient* client = this->http;
-    auto alive = this->alive;
     std::string u = url;
-    brls::async([client, alive, u, into]() {
-        HttpResponse r = client->get(u);
-        if (!r.ok()) return;
-        std::string body = r.body;
-        brls::sync([alive, body, into]() {
-            if (!alive->load()) return;
-            into->setImageFromMem((const unsigned char*)body.data(), (int)body.size());
+    auto body = std::make_shared<std::string>();
+    auto ok   = std::make_shared<bool>(false);
+    this->runAsync(
+        [client, u, body, ok]() {
+            HttpResponse r = client->get(u);
+            if (r.ok()) { *body = r.body; *ok = true; }
+        },
+        [into, body, ok]() {
+            if (*ok)
+                into->setImageFromMem((const unsigned char*)body->data(), (int)body->size());
         });
-    });
 }
 
 void ThemeBrowserActivity::populate(const core::BrowsePage& pg) {

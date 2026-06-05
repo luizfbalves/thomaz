@@ -23,11 +23,6 @@ ClearCheatsActivity::ClearCheatsActivity(ITitleService* titleService)
 {
 }
 
-ClearCheatsActivity::~ClearCheatsActivity()
-{
-    *this->alive = false; // tell an in-flight load's UI callback to bail
-}
-
 void ClearCheatsActivity::onContentAvailable()
 {
     install_header_username(this);
@@ -36,16 +31,15 @@ void ClearCheatsActivity::onContentAvailable()
     // listInstalled() reads control data off the NAND (slow). Run it on a worker
     // thread with the spinner up so the screen transition stays smooth.
     ITitleService* svc = this->titleService;
-    auto alive         = this->alive;
 
-    brls::async([this, svc, alive]() {
-        auto titles = svc->listInstalled();
-        brls::sync([this, alive, titles]() {
-            if (!alive->load())
-                return;
-            this->populate(titles);
+    auto titles = std::make_shared<std::vector<InstalledTitle>>();
+    this->runAsync(
+        [svc, titles]() {
+            *titles = svc->listInstalled();
+        },
+        [this, titles]() {
+            this->populate(*titles);
         });
-    });
 }
 
 void ClearCheatsActivity::populate(const std::vector<InstalledTitle>& titles)

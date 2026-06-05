@@ -12,8 +12,6 @@ namespace thomaz {
 AuthActivity::AuthActivity(IAuthClient* client, std::function<void()> onAuthed)
     : client(client), onAuthed(std::move(onAuthed)) {}
 
-AuthActivity::~AuthActivity() { *this->alive = false; }
-
 void AuthActivity::onContentAvailable()
 {
     auto* userCell = (brls::InputCell*)this->getView("usernameCell");
@@ -91,24 +89,24 @@ void AuthActivity::submit()
     status->setText("…");
 
     IAuthClient* c = this->client;
-    auto alive     = this->alive;
     std::string u = this->username, p = this->password;
     bool reg = this->registerMode;
 
-    brls::async([this, c, alive, u, p, reg, status]() {
-        AuthResult r = reg ? c->registerUser(u, p) : c->login(u, p);
-        brls::sync([this, alive, r, u, status]() {
-            if (!alive->load()) return;
+    auto result = std::make_shared<AuthResult>();
+    this->runAsync(
+        [c, u, p, reg, result]() {
+            *result = reg ? c->registerUser(u, p) : c->login(u, p);
+        },
+        [this, result, u, status]() {
             this->busy = false;
-            if (!r.ok) {
-                status->setText(r.error.empty() ? "thomaz/auth/err_failed"_i18n : r.error);
+            if (!result->ok) {
+                status->setText(result->error.empty() ? "thomaz/auth/err_failed"_i18n : result->error);
                 return;
             }
             auto cb = this->onAuthed;
             brls::Application::popActivity(brls::TransitionAnimation::NONE,
                                            [cb]() { if (cb) cb(); });
         });
-    });
 }
 
 } // namespace thomaz

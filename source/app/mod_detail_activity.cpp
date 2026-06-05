@@ -54,11 +54,6 @@ ModDetailActivity::ModDetailActivity(InstalledTitle title, std::uint64_t mod_id,
 {
 }
 
-ModDetailActivity::~ModDetailActivity()
-{
-    *this->alive = false; // tell an in-flight UI callback to bail
-}
-
 void ModDetailActivity::onContentAvailable()
 {
     install_header_username(this);
@@ -70,21 +65,19 @@ void ModDetailActivity::onContentAvailable()
     // Resolve the mod's files on a worker thread; the spinner stays up until done.
     std::uint64_t mod_id = this->modId;
     IHttpClient* client  = this->http; // owned by main(), app-lifetime
-    auto alive           = this->alive;
 
-    brls::async([this, mod_id, client, alive]() {
-        core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
-            HttpResponse r = client->get(url);
-            return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
-        };
-        core::ResolveResult res = core::resolve_mod_files(mod_id, fetch);
-
-        brls::sync([this, alive, res]() {
-            if (!alive->load())
-                return; // activity was popped while we were loading
-            this->populate(res);
+    auto results = std::make_shared<core::ResolveResult>();
+    this->runAsync(
+        [mod_id, client, results]() {
+            core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
+                HttpResponse r = client->get(url);
+                return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
+            };
+            *results = core::resolve_mod_files(mod_id, fetch);
+        },
+        [this, results]() {
+            this->populate(*results);
         });
-    });
 }
 
 void ModDetailActivity::populate(const core::ResolveResult& result)
@@ -181,7 +174,7 @@ void ModDetailActivity::confirmAndDownload(const core::ModFile& file)
         body.replace(pos, 8, this->title.name);
 
     core::ModFile f      = file;
-    auto          alive  = this->alive;
+    auto          alive  = this->alive; // UI-event closure: captures guard by value
     brls::Dialog* dialog = new brls::Dialog(body);
     dialog->addButton("mods/download"_i18n, [this, alive, f]() {
         if (!alive->load())
@@ -201,35 +194,32 @@ void ModDetailActivity::startDownload(const core::ModFile& file)
     brls::Application::notify("mods/downloading"_i18n);
 
     std::uint64_t tid = this->title.title_id; // copy before async — avoids UAF if activity is popped
-    auto alive        = this->alive;
 
-    brls::async([alive, f, dest, mod_name, tid]() {
-        std::string err;
-        // progress nullptr is safe — download_file guards `if(progress)`.
-        // A live progress bar is a future refinement.
-        bool ok      = download_file(f.download_url, dest, nullptr, &err);
-        bool done_ok = false;
-        std::string msg;
-        if (ok)
-        {
-            ModActionResult ir = import_archive(tid, mod_name, dest, nullptr);
-            done_ok            = ir.ok;
-            msg = ir.ok ? "mods/installed_ok"_i18n
-                        : ("mods/download_failed"_i18n + std::string(": ") + ir.error);
-        }
-        else
-        {
-            msg = "mods/download_failed"_i18n + std::string(": ") + err;
-        }
-
-        brls::sync([alive, msg, done_ok]() {
-            if (!alive->load())
-                return;
-            brls::Application::notify(msg);
-            if (done_ok)
+    auto results = std::make_shared<std::pair<bool, std::string>>(); // (done_ok, msg)
+    this->runAsync(
+        [f, dest, mod_name, tid, results]() {
+            std::string err;
+            // progress nullptr is safe — download_file guards `if(progress)`.
+            // A live progress bar is a future refinement.
+            bool ok = download_file(f.download_url, dest, nullptr, &err);
+            if (ok)
+            {
+                ModActionResult ir = import_archive(tid, mod_name, dest, nullptr);
+                results->first     = ir.ok;
+                results->second    = ir.ok ? "mods/installed_ok"_i18n
+                                           : ("mods/download_failed"_i18n + std::string(": ") + ir.error);
+            }
+            else
+            {
+                results->first  = false;
+                results->second = "mods/download_failed"_i18n + std::string(": ") + err;
+            }
+        },
+        [results]() {
+            brls::Application::notify(results->second);
+            if (results->first)
                 brls::Application::popActivity();
         });
-    });
 }
 
 } // namespace thomaz

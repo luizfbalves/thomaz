@@ -7,19 +7,19 @@
 
 #pragma once
 
-#include <atomic>
 #include <cstdint>
 #include <memory>
 
 #include <borealis.hpp>
 
+#include "app/thomaz_activity.hpp"
 #include "core/mods/mod_browse.hpp"
 #include "platform/http_client.hpp"
 #include "platform/title.hpp"
 
 namespace thomaz {
 
-class ModDetailActivity : public brls::Activity
+class ModDetailActivity : public ThomazActivity
 {
   public:
     // manual_search: true when the user reached this mod through the global
@@ -27,7 +27,6 @@ class ModDetailActivity : public brls::Activity
     // to a different game — we confirm the install target before staging.
     ModDetailActivity(InstalledTitle title, std::uint64_t mod_id, IHttpClient* http,
                       bool manual_search = false);
-    ~ModDetailActivity() override;
 
     CONTENT_FROM_XML_RES("activity/mod_detail.xml");
 
@@ -45,9 +44,6 @@ class ModDetailActivity : public brls::Activity
     std::uint64_t modId;
     IHttpClient* http;
     bool manualSearch;
-
-    // Set false in the destructor so an in-flight async UI callback bails.
-    std::shared_ptr<std::atomic_bool> alive = std::make_shared<std::atomic_bool>(true);
 };
 
 } // namespace thomaz

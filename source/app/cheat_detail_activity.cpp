@@ -25,11 +25,6 @@ CheatDetailActivity::CheatDetailActivity(InstalledTitle title, IHttpClient* http
 {
 }
 
-CheatDetailActivity::~CheatDetailActivity()
-{
-    *this->alive = false; // tell any in-flight fetch callback to bail
-}
-
 void CheatDetailActivity::onContentAvailable()
 {
     install_header_username(this);
@@ -42,34 +37,30 @@ void CheatDetailActivity::onContentAvailable()
     // status from the XML stay visible until the result comes back.
     InstalledTitle titleCopy = this->title;     // copy: worker must not touch `this`
     IHttpClient* client      = this->http;       // owned by main(), app-lifetime
-    auto alive               = this->alive;      // shared liveness flag
 
-    brls::async([this, titleCopy, client, alive]() {
-        core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
-            HttpResponse r = client->get(url);
-            // Distinguish "couldn't reach the server" from "server answered, but
-            // this game isn't in the db". status 0 == transport/connection failure
-            // -> nullopt -> NetworkError ("check your connection"). A reachable
-            // non-200 (typically 404: most games simply aren't in switch-cheats-db)
-            // is NOT a connection problem: return an empty doc so the resolver
-            // ends up at NotInDb ("no cheats for this game") instead of scaring
-            // the user with a bogus network error.
-            if (r.status == 0)
-                return std::nullopt;
-            if (!r.ok())
-                return std::string{};
-            return r.body;
-        };
-        core::FetchResult result =
-            core::fetch_cheat_set(titleCopy.title_id, titleCopy.version, fetch);
-
-        // Back to the UI thread to mutate views.
-        brls::sync([this, alive, result]() {
-            if (!alive->load())
-                return; // activity was popped while we were downloading
-            this->populate(result);
+    auto result = std::make_shared<core::FetchResult>();
+    this->runAsync(
+        [titleCopy, client, result]() {
+            core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
+                HttpResponse r = client->get(url);
+                // Distinguish "couldn't reach the server" from "server answered, but
+                // this game isn't in the db". status 0 == transport/connection failure
+                // -> nullopt -> NetworkError ("check your connection"). A reachable
+                // non-200 (typically 404: most games simply aren't in switch-cheats-db)
+                // is NOT a connection problem: return an empty doc so the resolver
+                // ends up at NotInDb ("no cheats for this game") instead of scaring
+                // the user with a bogus network error.
+                if (r.status == 0)
+                    return std::nullopt;
+                if (!r.ok())
+                    return std::string{};
+                return r.body;
+            };
+            *result = core::fetch_cheat_set(titleCopy.title_id, titleCopy.version, fetch);
+        },
+        [this, result]() {
+            this->populate(*result);
         });
-    });
 }
 
 void CheatDetailActivity::populate(const core::FetchResult& result)
