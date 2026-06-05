@@ -94,6 +94,7 @@ None yet.
 |---|-------------|------|--------|-----------|
 | 260605-ot7 | Theme-apply screen UX: busy-guard download/apply button against repeated clicks | 2026-06-05 | 4f9205b | [260605-ot7-melhorar-a-ux-da-tela-de-aplicacao-de-te](./quick/260605-ot7-melhorar-a-ux-da-tela-de-aplicacao-de-te/) |
 | 260605-qgb | BootActivity boot screen: login/guest entry before HomeActivity when no session | 2026-06-05 | d668063 | [260605-qgb-vamos-adicionar-uma-bootscreen-no-app-us](./quick/260605-qgb-vamos-adicionar-uma-bootscreen-no-app-us/) |
+| 260605-rcu | Hybrid title-visibility system: heuristic auto-hides forwarders (save=0 & acct=0) + per-title overrides + global toggle | 2026-06-05 | c816ffc | [260605-rcu-da-pra-ocultar-apps-que-nao-sao-jogos-da](./quick/260605-rcu-da-pra-ocultar-apps-que-nao-sao-jogos-da/) |
 
 ## Deferred Items
 
