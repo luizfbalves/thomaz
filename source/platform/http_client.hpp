@@ -1,5 +1,7 @@
 #pragma once
+#include <atomic>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -32,6 +34,13 @@ struct HttpRequest {
     // non-empty the request is sent as multipart and `body` is ignored.
     std::vector<std::pair<std::string, std::string>> fields;
     std::vector<MultipartFile> files;
+
+    // Cooperative abort: set this to a shared_ptr<atomic<bool>> that the
+    // owning activity's base destructor will flip to true.  The curl transport
+    // checks it in CURLOPT_XFERINFOFUNCTION and aborts (returns 1) as soon as
+    // the flag is set.  null (default) means the transfer never self-aborts
+    // (happy-path / existing callers unchanged).
+    std::shared_ptr<std::atomic<bool>> cancelled;
 };
 
 // HTTP abstraction so the UI/orchestration don't depend on libcurl.

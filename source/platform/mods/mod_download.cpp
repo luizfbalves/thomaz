@@ -3,7 +3,9 @@
 
 #include <curl/curl.h>
 #include "platform/curl_tls.hpp"
+#include <atomic>
 #include <cstdio>
+#include <memory>
 #include <sys/stat.h>
 
 namespace thomaz {
@@ -17,10 +19,13 @@ size_t writeToFile(char* ptr, size_t size, size_t nmemb, void* userdata) {
 
 struct ProgressCtx {
     const std::function<void(std::uint64_t, std::uint64_t)>* cb;
+    std::shared_ptr<std::atomic<bool>> cancelled; // null = never aborts (existing callers)
 };
 
 int xferInfo(void* p, curl_off_t dltotal, curl_off_t dlnow, curl_off_t, curl_off_t) {
     auto* ctx = static_cast<ProgressCtx*>(p);
+    // Cooperative abort: if the owning activity was destroyed, bail immediately.
+    if (ctx && ctx->cancelled && ctx->cancelled->load()) return 1; // abort
     if (ctx && ctx->cb && *ctx->cb) {
         // IN-01: dltotal is -1/0 while the total size is unknown. Casting -1 to
         // uint64_t yields 0xFFFF... which a progress bar renders as a nonsensical
@@ -36,7 +41,8 @@ int xferInfo(void* p, curl_off_t dltotal, curl_off_t dlnow, curl_off_t, curl_off
 
 bool download_file(const std::string& url, const std::string& dest_path,
                    const std::function<void(std::uint64_t, std::uint64_t)>& progress,
-                   std::string* err) {
+                   std::string* err,
+                   std::shared_ptr<std::atomic<bool>> cancelled) {
     ensure_parent_dirs(dest_path);
 
     std::FILE* out = std::fopen(dest_path.c_str(), "wb");
@@ -52,7 +58,7 @@ bool download_file(const std::string& url, const std::string& dest_path,
         return false;
     }
 
-    ProgressCtx ctx{&progress};
+    ProgressCtx ctx{&progress, cancelled}; // cancelled may be null (existing callers)
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "thomaz/0.1 (+switch homebrew)");

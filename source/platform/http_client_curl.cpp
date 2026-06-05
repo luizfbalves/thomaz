@@ -13,6 +13,19 @@ size_t writeToString(char* ptr, size_t size, size_t nmemb, void* userdata) {
     return size * nmemb;
 }
 
+// Per-transfer context for the abort hook.
+struct CancelCtx {
+    std::shared_ptr<std::atomic<bool>> cancelled; // shared_ptr copy — outlives the activity
+};
+
+// CURLOPT_XFERINFOFUNCTION: returns 1 (abort) when the cancelled flag is set,
+// 0 otherwise (happy path, transfer continues normally).
+int curlCancelXferInfo(void* p, curl_off_t, curl_off_t, curl_off_t, curl_off_t) {
+    auto* ctx = static_cast<CancelCtx*>(p);
+    if (ctx && ctx->cancelled && ctx->cancelled->load()) return 1; // abort
+    return 0;
+}
+
 } // namespace
 
 CurlHttpClient::CurlHttpClient() {
@@ -51,6 +64,16 @@ HttpResponse CurlHttpClient::request(const HttpRequest& req) {
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToString);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response.body);
+
+    // Cooperative abort: if the caller supplied a cancelled flag, install the
+    // progress hook so the transfer can be interrupted when the owning activity
+    // is destroyed.  The CancelCtx is stack-allocated and outlasts the
+    // easy_perform call below, so the pointer remains valid throughout.
+    CancelCtx cancelCtx{req.cancelled}; // shared_ptr copy by value
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+    curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, curlCancelXferInfo);
+    curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &cancelCtx);
+
     // TLS certificate verification via the bundled CA (romfs) / system store.
     apply_curl_tls(curl);
 
