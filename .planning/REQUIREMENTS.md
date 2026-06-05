@@ -20,7 +20,7 @@ Approach locked: **Option A** (port exelix BIS + SPL + hactool, GPLv2).
 - [ ] **INTEG-05**: User gets a clear success message, or a failure message naming the reason
 
 ### Title Takeover (TAKEOVER)
-- [ ] **TAKEOVER-01**: If extraction is attempted in applet mode, the user is shown a clear "relaunch via title takeover" message instead of a crash or silent failure
+- [x] **TAKEOVER-01**: If extraction is attempted in applet mode, the user is shown a clear "relaunch via title takeover" message instead of a crash or silent failure
 - [ ] **TAKEOVER-02**: The required title-takeover launch path for privileged FS/SPL access is documented for users
 - [ ] **TAKEOVER-03** *(optional)*: Provide and document a forwarder (installable Home-menu icon) that launches thomaz directly in Application mode, so users avoid the manual hold-`R` step
 
@@ -40,7 +40,7 @@ Approach locked: **Option A** (port exelix BIS + SPL + hactool, GPLv2).
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | EXTRACT-04 | Phase 1 | Complete |
-| TAKEOVER-01 | Phase 1 | Pending |
+| TAKEOVER-01 | Phase 1 | Complete |
 | TAKEOVER-02 | Phase 1 | Pending |
 | EXTRACT-01 | Phase 2 | Pending |
 | EXTRACT-02 | Phase 2 | Pending |
