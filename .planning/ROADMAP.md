@@ -114,14 +114,24 @@ Plans:
   4. A host doctest covers the cloud-save conflict-resolution / `plan_push` branch (TEST-04)
   5. Desktop build with `-DUSE_SDL2=ON` compiles clean with zero errors and zero new warnings after all activity inheritance changes
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+
+- [ ] 04-01-PLAN.md — Create ThomazActivity base (alive+cancelled+runAsync) + pure Borealis-free thomaz::core::run_if_alive helper + TEST-04b dropped-callback doctest [CONC-02, TEST-04] (Wave 1)
+- [ ] 04-05-PLAN.md — Extend test_save_sync.cpp with the classify→plan_push conflict decision-composition cases [TEST-04] (Wave 1, parallel)
+- [ ] 04-02-PLAN.md — Single-pass migrate the 4 DEBT-03/CONC-02 shared activities (game_list, save_manager, save_detail, mod_browser): base-swap + alive removal + runAsync + null-guarded dynamic_cast [CONC-02, DEBT-03] (Wave 2)
+- [ ] 04-03-PLAN.md — Migrate the remaining 9 alive-guarded activities to ThomazActivity + runAsync (no casts); mod_manager is base-swap-only [CONC-02] (Wave 2, parallel)
+- [ ] 04-04-PLAN.md — CONC-03 curl cancellation across BOTH surfaces (mod_download.cpp + http_client_curl.cpp); add HttpRequest.cancelled; thread the base cancelled flag from activities [CONC-03] (Wave 3)
 
 **Planning flags:**
 
-- **`brls::View::cast<T>()` existence (DEBT-03):** Check `lib/borealis/library/include/borealis/core/view.hpp` before Phase 4 implementation. If the method is absent, `dynamic_cast` + null guard is the correct replacement in all cases.
-- **CONC-03 after CONC-02:** The curl cancellation flag (CONC-03) relies on the ownership model established by the `runAsync` wrapper (CONC-02). Implement CONC-02 first.
-- **DEBT-03 / CONC-02 shared files:** Both touch the four activity `.cpp` files at different lines. Serialize in one PR or coordinate carefully to avoid merge conflicts.
-- **S2 constraint:** CONC-02 removes the `alive` member from `save_detail_activity.hpp` — requires Phase 3's CONC-01 to have already atomicized `cloudBusy` in that same header.
+- **`brls::View::cast<T>()` existence (DEBT-03):** RESOLVED — confirmed ABSENT in vendored Borealis (`lib/borealis/library/include/borealis/core/view.hpp`). `dynamic_cast` + null guard is the replacement in all cases.
+- **CONC-03 after CONC-02:** The curl cancellation flag (CONC-03) relies on the ownership model established by the `runAsync` wrapper (CONC-02). Wave order enforces this: CONC-02 base (Wave 1) → migrations (Wave 2) → CONC-03 (Wave 3).
+- **DEBT-03 / CONC-02 shared files:** The four shared activity `.cpp` files are edited single-pass in Plan 04-02 (base-swap + runAsync + casts together) to avoid merge churn.
+- **Two-curl-surface (CONC-03):** D-03 spans TWO curl transports — `mod_download.cpp` (has xferInfo) AND the hook-less `http_client_curl.cpp` (cloud saves + browse GETs). Plan 04-04 covers both; touching only mod_download.cpp silently fails CONC-03.
+- **TEST-04 split:** TEST-04a (conflict/plan_push composition) is a `test_save_sync.cpp` extension (Plan 04-05); TEST-04b (runAsync dropped-callback) is a Borealis-free `test_async_guard.cpp` against `thomaz::core::run_if_alive` (Plan 04-01) — the host suite cannot instantiate a `ThomazActivity`.
+- **S2 constraint:** CONC-02 removes the `alive` member from `save_detail_activity.hpp` — satisfied; Phase 3's CONC-01 already atomicized `cloudBusy` in that header.
 
 ## Progress
 
@@ -133,4 +143,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Remove Community Feature | 3/3 | Complete   | 2026-06-04 |
 | 2. API Security + Regression Tests | 1/3 | In Progress|  |
 | 3. C++ Platform Hardening | 4/4 | Complete    | 2026-06-05 |
-| 4. C++ Activity Hardening | 0/? | Not started | - |
+| 4. C++ Activity Hardening | 0/5 | Not started | - |
