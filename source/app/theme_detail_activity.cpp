@@ -38,8 +38,6 @@ core::themezer::GraphQlFetcher makeFetcher(IHttpClient* http) {
 ThemeDetailActivity::ThemeDetailActivity(core::ThemeEntry entry, IHttpClient* http)
     : entry(std::move(entry)), http(http) {}
 
-ThemeDetailActivity::~ThemeDetailActivity() { *this->alive = false; }
-
 void ThemeDetailActivity::onContentAvailable() {
     install_header_username(this);
     install_tls_warning_banner(this);
@@ -51,38 +49,40 @@ void ThemeDetailActivity::onContentAvailable() {
         note->setText("themes/download_ok"_i18n);
 
     if (!this->entry.preview_url.empty()) {
-        std::string url = this->entry.preview_url;
+        std::string url     = this->entry.preview_url;
         IHttpClient* client = this->http;
-        auto alive = this->alive;
-        brls::async([this, client, url, alive]() {
-            HttpResponse r = client->get(url);
-            if (!r.ok()) return;
-            std::string body = r.body;
-            brls::sync([this, alive, body]() {
-                if (!alive->load()) return;
-                if (auto* img = (brls::Image*)this->getView("detailPreview"))
-                    img->setImageFromMem((const unsigned char*)body.data(), (int)body.size());
+        auto body           = std::make_shared<std::string>();
+        auto imgOk          = std::make_shared<bool>(false);
+        this->runAsync(
+            [client, url, body, imgOk]() {
+                HttpResponse r = client->get(url);
+                if (r.ok()) { *body = r.body; *imgOk = true; }
+            },
+            [this, body, imgOk]() {
+                if (*imgOk) {
+                    if (auto* img = (brls::Image*)this->getView("detailPreview"))
+                        img->setImageFromMem((const unsigned char*)body->data(), (int)body->size());
+                }
             });
-        });
     }
 
     if (auto* spinner = this->getView("spinner")) spinner->setVisibility(brls::Visibility::VISIBLE);
 
-    core::ThemeEntry e = this->entry;
+    core::ThemeEntry e  = this->entry;
     IHttpClient* client = this->http;
-    auto alive = this->alive;
-    brls::async([this, e, client, alive]() {
-        core::themezer::GraphQlFetcher fetch = makeFetcher(client);
-        core::themezer::DetailResult res = (e.kind == core::ThemeKind::Pack)
-            ? core::themezer::pack_detail(e.hex_id, fetch)
-            : core::themezer::theme_detail(e.hex_id, fetch);
-        bool ok = (res.status == core::themezer::DetailStatus::Ok);
-        core::ThemeDetail d = res.detail;
-        brls::sync([this, alive, d, ok]() {
-            if (!alive->load()) return;
-            this->onResolved(d, ok);
+    auto detResult      = std::make_shared<std::pair<core::ThemeDetail, bool>>(); // (d, ok)
+    this->runAsync(
+        [e, client, detResult]() {
+            core::themezer::GraphQlFetcher fetch = makeFetcher(client);
+            core::themezer::DetailResult res = (e.kind == core::ThemeKind::Pack)
+                ? core::themezer::pack_detail(e.hex_id, fetch)
+                : core::themezer::theme_detail(e.hex_id, fetch);
+            detResult->second = (res.status == core::themezer::DetailStatus::Ok);
+            detResult->first  = res.detail;
+        },
+        [this, detResult]() {
+            this->onResolved(detResult->first, detResult->second);
         });
-    });
 
     if (auto* btn = this->getView("downloadButton")) {
         btn->registerClickAction([this](brls::View*) {
@@ -137,21 +137,21 @@ void ThemeDetailActivity::startDownload() {
     brls::Application::notify("themes/downloading"_i18n);
 
     core::ThemeDetail d = this->detail;
-    auto alive = this->alive;
-    brls::async([this, alive, d]() {
-        ThemeDownloadResult r = download_theme(d);
-        std::string msg = r.ok ? "themes/download_ok"_i18n
-                               : ("themes/download_fail"_i18n + std::string(": ") + r.error);
-        bool ok = r.ok;
-        brls::sync([this, alive, msg, ok]() {
-            if (!alive->load()) return;
-            brls::Application::notify(msg);
-            if (ok) {
+    auto results = std::make_shared<std::pair<bool, std::string>>(); // (ok, msg)
+    this->runAsync(
+        [d, results]() {
+            ThemeDownloadResult r  = download_theme(d);
+            results->first         = r.ok;
+            results->second        = r.ok ? "themes/download_ok"_i18n
+                                          : ("themes/download_fail"_i18n + std::string(": ") + r.error);
+        },
+        [this, results]() {
+            brls::Application::notify(results->second);
+            if (results->first) {
                 this->downloaded = true;
                 this->refreshActionButton();
             }
         });
-    });
 }
 
 void ThemeDetailActivity::refreshActionButton() {
@@ -175,23 +175,23 @@ void ThemeDetailActivity::doApply() {
     brls::Application::notify("themes/applying"_i18n);
 
     core::ThemeDetail d = this->detail;
-    auto alive = this->alive;
-    brls::async([this, d, alive]() {
-        InstallResult r = install_theme(d);
-        brls::sync([this, alive, r]() {
-            if (!alive->load()) return;
+    auto result = std::make_shared<InstallResult>();
+    this->runAsync(
+        [d, result]() {
+            *result = install_theme(d);
+        },
+        [this, result]() {
             this->busy = false;
-            if (!r.ok) {
-                brls::Application::notify("themes/apply_fail"_i18n + std::string(": ") + r.error);
+            if (!result->ok) {
+                brls::Application::notify("themes/apply_fail"_i18n + std::string(": ") + result->error);
                 return;
             }
-            if (!r.warnings.empty()) brls::Application::notify("themes/warn_parts_removed"_i18n);
+            if (!result->warnings.empty()) brls::Application::notify("themes/warn_parts_removed"_i18n);
             brls::Application::notify("themes/apply_ok"_i18n);
             this->applied = true;
             this->refreshActionButton();
             this->showRebootDialog();
         });
-    });
 }
 
 void ThemeDetailActivity::doRemove() {
@@ -199,14 +199,15 @@ void ThemeDetailActivity::doRemove() {
     this->busy = true;
     brls::Application::notify("themes/removing"_i18n);
 
-    auto alive = this->alive;
-    brls::async([this, alive]() {
-        InstallResult r = remove_active_theme();
-        brls::sync([this, alive, r]() {
-            if (!alive->load()) return;
+    auto result = std::make_shared<InstallResult>();
+    this->runAsync(
+        [result]() {
+            *result = remove_active_theme();
+        },
+        [this, result]() {
             this->busy = false;
-            if (!r.ok) {
-                brls::Application::notify("themes/remove_fail"_i18n + std::string(": ") + r.error);
+            if (!result->ok) {
+                brls::Application::notify("themes/remove_fail"_i18n + std::string(": ") + result->error);
                 return;
             }
             brls::Application::notify("themes/remove_ok"_i18n);
@@ -214,7 +215,6 @@ void ThemeDetailActivity::doRemove() {
             this->refreshActionButton();
             this->showRebootDialog();
         });
-    });
 }
 
 void ThemeDetailActivity::showBaseMissingDialog() {

@@ -56,11 +56,6 @@ ModManagerActivity::ModManagerActivity(InstalledTitle title, IHttpClient* http)
 {
 }
 
-ModManagerActivity::~ModManagerActivity()
-{
-    *this->alive = false; // tell an in-flight UI callback to bail
-}
-
 void ModManagerActivity::onContentAvailable()
 {
     install_header_username(this);

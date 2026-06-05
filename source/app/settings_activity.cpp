@@ -54,10 +54,6 @@ SettingsActivity::SettingsActivity(IHttpClient* http)
 {
 }
 
-SettingsActivity::~SettingsActivity()
-{
-    *this->alive = false;
-}
 
 void SettingsActivity::onContentAvailable()
 {
@@ -140,24 +136,24 @@ void SettingsActivity::checkForUpdate(brls::Label* status)
     status->setText("thomaz/update/checking"_i18n);
 
     IHttpClient* client = this->http;
-    auto alive          = this->alive;
 
-    brls::async([this, client, alive, status]() {
-        HttpResponse r = client->get(core::github_latest_release_url());
-        bool ok        = r.ok();
-        core::ReleaseInfo rel = ok ? core::parse_latest_release(r.body, "thomaz.nro")
-                                   : core::ReleaseInfo{};
-
-        brls::sync([this, alive, status, ok, rel]() {
-            if (!alive->load())
-                return;
+    auto results = std::make_shared<std::pair<bool, core::ReleaseInfo>>(); // (ok, rel)
+    this->runAsync(
+        [client, results]() {
+            HttpResponse r    = client->get(core::github_latest_release_url());
+            results->first    = r.ok();
+            results->second   = results->first ? core::parse_latest_release(r.body, "thomaz.nro")
+                                               : core::ReleaseInfo{};
+        },
+        [this, results, status]() {
             this->busy = false;
 
-            if (!ok)
+            if (!results->first)
             {
                 status->setText("thomaz/update/error"_i18n);
                 return;
             }
+            const core::ReleaseInfo& rel = results->second;
             if (!rel.valid)
             {
                 status->setText("thomaz/update/none"_i18n);
@@ -178,7 +174,6 @@ void SettingsActivity::checkForUpdate(brls::Label* status)
             dialog->addButton("thomaz/update/confirm_no"_i18n, []() {});
             dialog->open();
         });
-    });
 }
 
 void SettingsActivity::installUpdate(const core::ReleaseInfo& release, brls::Label* status)
@@ -188,20 +183,19 @@ void SettingsActivity::installUpdate(const core::ReleaseInfo& release, brls::Lab
     this->busy = true;
     status->setText("thomaz/update/downloading"_i18n);
 
-    auto alive         = this->alive;
     std::string url    = release.nro_url;
     std::string target = update_target_path();
 
-    brls::async([this, alive, status, url, target]() {
-        std::string err;
-        bool ok = apply_downloaded_update(url, target, &err);
-        brls::sync([this, alive, status, ok]() {
-            if (!alive->load())
-                return;
+    auto ok = std::make_shared<bool>(false);
+    this->runAsync(
+        [url, target, ok]() {
+            std::string err;
+            *ok = apply_downloaded_update(url, target, &err);
+        },
+        [this, ok, status]() {
             this->busy = false;
-            status->setText(ok ? "thomaz/update/done"_i18n : "thomaz/update/failed"_i18n);
+            status->setText(*ok ? "thomaz/update/done"_i18n : "thomaz/update/failed"_i18n);
         });
-    });
 }
 
 void SettingsActivity::refreshDatabase(brls::Label* status)
@@ -212,20 +206,18 @@ void SettingsActivity::refreshDatabase(brls::Label* status)
     status->setText("thomaz/db/refreshing"_i18n);
 
     IHttpClient* client = this->http;
-    auto alive          = this->alive;
 
-    brls::async([this, client, alive, status]() {
-        HttpResponse r = client->get(core::db_index_url());
-        bool wrote     = r.ok() && write_text_file(index_cache_path(), r.body);
-
-        brls::sync([this, alive, status, wrote]() {
-            if (!alive->load())
-                return;
+    auto wrote = std::make_shared<bool>(false);
+    this->runAsync(
+        [client, wrote]() {
+            HttpResponse r = client->get(core::db_index_url());
+            *wrote         = r.ok() && write_text_file(index_cache_path(), r.body);
+        },
+        [this, wrote, status]() {
             this->busy = false;
-            status->setText(wrote ? "thomaz/db/refresh_done"_i18n
-                                  : "thomaz/db/refresh_failed"_i18n);
+            status->setText(*wrote ? "thomaz/db/refresh_done"_i18n
+                                   : "thomaz/db/refresh_failed"_i18n);
         });
-    });
 }
 
 } // namespace thomaz

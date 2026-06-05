@@ -7,20 +7,19 @@
 
 #pragma once
 
-#include <atomic>
 #include <memory>
 
 #include <borealis.hpp>
+#include "app/thomaz_activity.hpp"
 #include "core/update.hpp"
 #include "platform/http_client.hpp"
 
 namespace thomaz {
 
-class SettingsActivity : public brls::Activity
+class SettingsActivity : public ThomazActivity
 {
   public:
     explicit SettingsActivity(IHttpClient* http);
-    ~SettingsActivity() override;
 
     CONTENT_FROM_XML_RES("activity/settings.xml");
 
@@ -33,9 +32,6 @@ class SettingsActivity : public brls::Activity
 
     IHttpClient* http;
     bool busy = false; // a network action is in flight
-
-    // Reset in the destructor so in-flight async UI callbacks bail.
-    std::shared_ptr<std::atomic_bool> alive = std::make_shared<std::atomic_bool>(true);
 };
 
 } // namespace thomaz
