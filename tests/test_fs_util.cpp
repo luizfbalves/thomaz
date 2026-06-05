@@ -62,6 +62,13 @@ TEST_CASE("ensure_parent_dirs handles trailing-slash path") {
     fs::remove_all(tmp);
 }
 
+// IN-05: this asserts equivalence-OVER-THE-TESTED-INPUTS, not universal
+// equivalence. The canonical impl guards with `!dir.empty()` while the oracle
+// guards with `acc.size() > 1`, so they DIVERGE on a leading-`/`-only or
+// double-slash segment such as "//x" (canonical would mkdir("/"), the oracle
+// would skip it). All inputs below are repo-shaped absolute temp paths whose
+// first real segment is non-empty, where the two agree. Do not read this test as
+// proof that canonical == oracle for arbitrary paths.
 TEST_CASE("D-05: canonical ensure_parent_dirs is equivalent to char-by-char oracle") {
     fs::path tmp_canon = fs::temp_directory_path() / "test_fs_util_canon";
     fs::path tmp_ref   = fs::temp_directory_path() / "test_fs_util_ref";
