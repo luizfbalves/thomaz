@@ -11,6 +11,11 @@ namespace thomaz {
 // globalmente em todas as telas. No-op se não houver sessão ou header.
 void install_header_username(brls::Activity* activity);
 
+// Injeta indicadores de sistema (barra SD, barra NAND, WiFi) no hint_box do
+// AppletFrame. Deve ser chamado ANTES de install_header_username para que
+// a ordem no hint_box seja [SD][NAND][WiFi][@usuario].
+void install_system_status(brls::Activity* activity);
+
 // Registra a ação de ajuda no botão "-" (BUTTON_BACK) do rodapé: abre um
 // diálogo explicando como a tela funciona. `frameId` é o id do AppletFrame da
 // tela; `bodyKey` é a chave i18n do texto explicativo. No-op se o frame não for
