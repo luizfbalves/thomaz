@@ -19,11 +19,6 @@ SaveManagerActivity::SaveManagerActivity(ITitleService* titleService, ISaveServi
 {
 }
 
-SaveManagerActivity::~SaveManagerActivity()
-{
-    *this->alive = false;
-}
-
 void SaveManagerActivity::onContentAvailable()
 {
     install_header_username(this);
@@ -31,32 +26,39 @@ void SaveManagerActivity::onContentAvailable()
     install_help_action(this, "saveManagerFrame", "thomaz/help/saves_list");
 
     ITitleService* svc = this->titleService;
-    auto alive         = this->alive;
 
-    brls::async([this, svc, alive]() {
-        auto titles = svc->listInstalled();
-        brls::sync([this, alive, titles]() {
-            if (!alive->load())
-                return;
-            this->populate(titles);
+    auto titles = std::make_shared<std::vector<InstalledTitle>>();
+    this->runAsync(
+        [svc, titles]() {
+            *titles = svc->listInstalled();
+        },
+        [this, titles]() {
+            this->populate(*titles);
         });
-    });
 }
 
 void SaveManagerActivity::populate(const std::vector<InstalledTitle>& titles)
 {
-    brls::Box* listBox      = (brls::Box*)this->getView("saveListBox");
-    brls::Label* emptyLabel = (brls::Label*)this->getView("emptyLabel");
+    auto* listBox = dynamic_cast<brls::Box*>(this->getView("saveListBox"));
+    if (!listBox)
+    {
+        brls::Logger::error("saveListBox missing or not a Box");
+        return;
+    }
+    auto* emptyLabel = dynamic_cast<brls::Label*>(this->getView("emptyLabel"));
+    if (!emptyLabel)
+    {
+        brls::Logger::error("emptyLabel missing or not a Label");
+        return;
+    }
     if (auto* spinner = this->getView("spinner"))
         spinner->setVisibility(brls::Visibility::GONE);
 
     if (titles.empty()) {
-        if (emptyLabel) emptyLabel->setVisibility(brls::Visibility::VISIBLE);
-        if (listBox)    listBox->setVisibility(brls::Visibility::GONE);
+        emptyLabel->setVisibility(brls::Visibility::VISIBLE);
+        listBox->setVisibility(brls::Visibility::GONE);
         return;
     }
-    if (!listBox)
-        return;
 
     std::string root          = core::saves_root();
     ISaveService* save        = this->saveService;

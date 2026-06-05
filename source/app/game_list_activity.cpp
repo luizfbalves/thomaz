@@ -51,11 +51,6 @@ GameListActivity::GameListActivity(ITitleService* titleService, IHttpClient* htt
 {
 }
 
-GameListActivity::~GameListActivity()
-{
-    *this->alive = false; // stop a still-running index load from touching us
-}
-
 void GameListActivity::onContentAvailable()
 {
     install_header_username(this);
@@ -69,22 +64,31 @@ void GameListActivity::onContentAvailable()
     // a worker thread while the XML spinner shows, then build the rows on the UI
     // thread. Mirrors the async pattern already used for the cheats-db index.
     ITitleService* svc = this->titleService;
-    auto alive         = this->alive;
 
-    brls::async([this, svc, alive]() {
-        auto titles = svc->listInstalled();
-        brls::sync([this, alive, titles]() {
-            if (!alive->load())
-                return; // activity was popped while we were loading
-            this->populate(titles);
+    auto titles = std::make_shared<std::vector<InstalledTitle>>();
+    this->runAsync(
+        [svc, titles]() {
+            *titles = svc->listInstalled();
+        },
+        [this, titles]() {
+            this->populate(*titles);
         });
-    });
 }
 
 void GameListActivity::populate(const std::vector<InstalledTitle>& titles)
 {
-    brls::Box* listBox = (brls::Box*)this->getView("gameListBox");
-    brls::Label* emptyLabel = (brls::Label*)this->getView("emptyLabel");
+    auto* listBox = dynamic_cast<brls::Box*>(this->getView("gameListBox"));
+    if (!listBox)
+    {
+        brls::Logger::error("gameListBox missing or not a Box");
+        return;
+    }
+    auto* emptyLabel = dynamic_cast<brls::Label*>(this->getView("emptyLabel"));
+    if (!emptyLabel)
+    {
+        brls::Logger::error("emptyLabel missing or not a Label");
+        return;
+    }
 
     if (auto* spinner = this->getView("spinner"))
         spinner->setVisibility(brls::Visibility::GONE); // load finished
@@ -92,19 +96,13 @@ void GameListActivity::populate(const std::vector<InstalledTitle>& titles)
     if (titles.empty())
     {
         // Show empty state, hide the list container.
-        if (emptyLabel)
-            emptyLabel->setVisibility(brls::Visibility::VISIBLE);
-        if (listBox)
-            listBox->setVisibility(brls::Visibility::GONE);
+        emptyLabel->setVisibility(brls::Visibility::VISIBLE);
+        listBox->setVisibility(brls::Visibility::GONE);
         return;
     }
 
     // Hide empty label.
-    if (emptyLabel)
-        emptyLabel->setVisibility(brls::Visibility::GONE);
-
-    if (!listBox)
-        return;
+    emptyLabel->setVisibility(brls::Visibility::GONE);
 
     // Entry to the "clear cheats" screen (cheats mode only).
     if (this->target == Target::Cheats)
@@ -237,35 +235,31 @@ void GameListActivity::loadCheatIndexAsync()
         return;
 
     IHttpClient* client = this->http;
-    auto alive          = this->alive;
 
-    brls::async([this, client, alive]() {
-        // Use the cached index if we have one; otherwise download + cache it.
-        std::string cachePath          = index_cache_path();
-        std::optional<std::string> doc = read_text_file(cachePath);
-        if (!doc)
-        {
-            HttpResponse r = client->get(core::db_index_url());
-            if (r.ok())
+    auto covered = std::make_shared<std::set<std::uint64_t>>();
+    this->runAsync(
+        [client, covered]() {
+            // Use the cached index if we have one; otherwise download + cache it.
+            std::string cachePath          = index_cache_path();
+            std::optional<std::string> doc = read_text_file(cachePath);
+            if (!doc)
             {
-                write_text_file(cachePath, r.body);
-                doc = r.body;
+                HttpResponse r = client->get(core::db_index_url());
+                if (r.ok())
+                {
+                    write_text_file(cachePath, r.body);
+                    doc = r.body;
+                }
             }
-        }
-
-        std::set<std::uint64_t> covered;
-        if (doc)
-            covered = core::parse_db_index(*doc);
-
-        // Back on the UI thread: reveal badges for covered titles.
-        brls::sync([this, alive, covered]() {
-            if (!alive->load())
-                return;
+            if (doc)
+                *covered = core::parse_db_index(*doc);
+        },
+        [this, covered]() {
+            // Back on the UI thread: reveal badges for covered titles.
             for (auto& [titleId, badge] : this->hasCheatBadges)
-                if (badge && covered.count(titleId))
+                if (badge && covered->count(titleId))
                     badge->setVisibility(brls::Visibility::VISIBLE);
         });
-    });
 }
 
 } // namespace thomaz
