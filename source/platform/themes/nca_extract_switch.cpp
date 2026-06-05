@@ -188,21 +188,26 @@ NcaExtractResult extract_szs_from_nca(
     ::mkdir("/switch", 0777);
     ::mkdir("/switch/thomaz", 0777);
     std::fflush(stderr);
-    std::freopen(kErrLog, "w", stderr);
+    // WR-06: freopen closes the original stream and returns NULL on failure.
+    // If the redirect fails (e.g. /switch/thomaz not writable), proceed WITHOUT
+    // redirection rather than writing every subsequent fprintf to a now-closed
+    // stream. stderr_redirected gates the diagnostics below and the read-back.
+    const bool stderr_redirected = (std::freopen(kErrLog, "w", stderr) != nullptr);
 
     // Build stamp (FIRST line of the log) — uniquely identifies which nro is on
     // the SD card. __DATE__/__TIME__ are the compile time of THIS TU, so a stale
     // install is obvious: compare this line to the nro's mtime. The "iso3" tag
     // marks the isolated-mbedtls build (hactool bound to our private non-PSA
     // mbedtls, not the portlib PSA copy that fails XTS decrypt setkey).
-    std::fprintf(stderr, "thomaz hactool build: %s %s [iso9-switchdef]\n", __DATE__, __TIME__);
-    std::fflush(stderr);
+    // WR-06: only write to stderr if the redirect to kErrLog succeeded.
+    if (stderr_redirected) {
+        std::fprintf(stderr, "thomaz hactool build: %s %s [iso9-switchdef]\n", __DATE__, __TIME__);
+        std::fflush(stderr);
 
     // --- Diagnostics (non-secret) to localize the "Invalid NCA header" cause --
     // The key VALUE is never printed (T-01-04); only whether it is all-zero (SPL
     // silent-failure signal) plus a non-invertible 2-byte XOR fold. The raw NCA
     // bytes peeked below are still ENCRYPTED on disk and are not secret.
-    {
         bool key_zero = true;
         std::uint16_t fold = 0;
         for (std::size_t i = 0; i < header_key.size(); ++i) {
@@ -259,9 +264,11 @@ NcaExtractResult extract_szs_from_nca(
     nca_file = nullptr;
 
     // Read back the captured hactool stderr (last chunk) for the error message.
+    // WR-06: only meaningful if the redirect succeeded.
     std::fflush(stderr);
     std::string hactool_err;
-    if (FILE* ef = std::fopen(kErrLog, "rb")) {
+    if (stderr_redirected) {
+      if (FILE* ef = std::fopen(kErrLog, "rb")) {
         char ebuf[512];
         size_t n = std::fread(ebuf, 1, sizeof(ebuf) - 1, ef);
         ebuf[n] = '\0';
@@ -272,6 +279,7 @@ NcaExtractResult extract_szs_from_nca(
                (hactool_err.back() == '\n' || hactool_err.back() == '\r' ||
                 hactool_err.back() == ' '))
             hactool_err.pop_back();
+      }
     }
 
     // --- hactool aborted (bad key, corrupt NCA, etc.) -------------------------
