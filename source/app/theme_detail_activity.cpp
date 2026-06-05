@@ -48,6 +48,7 @@ ThemeDetailActivity::ThemeDetailActivity(core::ThemeEntry entry, IHttpClient* ht
     : entry(std::move(entry)), http(http) {}
 
 void ThemeDetailActivity::onContentAvailable() {
+    install_system_status(this);
     install_header_username(this);
     install_tls_warning_banner(this);
 

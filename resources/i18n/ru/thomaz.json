@@ -30,5 +30,10 @@
     "boot": {
         "login": "Войти",
         "guest": "Продолжить без входа"
+    },
+    "status": {
+        "sd": "SD",
+        "console": "NAND",
+        "wifi": "Wi-Fi"
     }
 }

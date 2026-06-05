@@ -27,6 +27,7 @@ CheatDetailActivity::CheatDetailActivity(InstalledTitle title, IHttpClient* http
 
 void CheatDetailActivity::onContentAvailable()
 {
+    install_system_status(this);
     install_header_username(this);
     install_tls_warning_banner(this);
     install_help_action(this, "cheatFrame", "thomaz/help/cheats");

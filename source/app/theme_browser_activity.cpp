@@ -46,6 +46,7 @@ std::string partLabel(const std::string& target) {
 ThemeBrowserActivity::ThemeBrowserActivity(IHttpClient* http) : http(http) {}
 
 void ThemeBrowserActivity::onContentAvailable() {
+    install_system_status(this);
     install_header_username(this);
     install_tls_warning_banner(this);
 

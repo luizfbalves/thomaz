@@ -22,6 +22,7 @@ SystemActivity::SystemActivity(std::shared_ptr<ISysmoduleStore> store)
 
 void SystemActivity::onContentAvailable()
 {
+    install_system_status(this);
     install_header_username(this);
     install_tls_warning_banner(this);
 

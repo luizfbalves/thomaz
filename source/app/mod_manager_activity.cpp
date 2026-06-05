@@ -58,6 +58,7 @@ ModManagerActivity::ModManagerActivity(InstalledTitle title, IHttpClient* http)
 
 void ModManagerActivity::onContentAvailable()
 {
+    install_system_status(this);
     install_header_username(this);
     install_tls_warning_banner(this);
     install_help_action(this, "modFrame", "thomaz/help/mods");

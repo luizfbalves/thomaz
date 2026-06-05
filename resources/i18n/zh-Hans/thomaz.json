@@ -30,5 +30,10 @@
     "boot": {
         "login": "登录",
         "guest": "不登录继续"
+    },
+    "status": {
+        "sd": "SD",
+        "console": "主机",
+        "wifi": "Wi-Fi"
     }
 }

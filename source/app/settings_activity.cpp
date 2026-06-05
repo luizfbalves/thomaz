@@ -57,6 +57,7 @@ SettingsActivity::SettingsActivity(IHttpClient* http)
 
 void SettingsActivity::onContentAvailable()
 {
+    install_system_status(this);
     install_header_username(this);
     install_tls_warning_banner(this);
 
@@ -194,15 +195,24 @@ void SettingsActivity::installUpdate(const core::ReleaseInfo& release, brls::Lab
     std::string target = update_target_path();
     auto cancelled     = this->cancelledFlag();
 
-    auto ok = std::make_shared<bool>(false);
+    auto ok  = std::make_shared<bool>(false);
+    auto msg = std::make_shared<std::string>();
     this->runAsync(
-        [url, target, ok, cancelled]() {
-            std::string err;
-            *ok = apply_downloaded_update(url, target, &err, cancelled);
+        [url, target, ok, msg, cancelled]() {
+            *ok = apply_downloaded_update(url, target, msg.get(), cancelled);
         },
-        [this, ok, status]() {
+        [this, ok, msg, status]() {
             this->busy = false;
-            status->setText(*ok ? "thomaz/update/done"_i18n : "thomaz/update/failed"_i18n);
+            if (*ok) {
+                status->setText("thomaz/update/done"_i18n);
+            } else {
+                // Show the error detail in the status line so the user (and
+                // nxlink/log) can see what actually went wrong, not just a
+                // generic "falha ao atualizar".
+                std::string detail = msg->empty() ? "thomaz/update/failed"_i18n
+                                                  : ("thomaz/update/failed"_i18n + ": " + *msg);
+                status->setText(detail);
+            }
         });
 }
 

@@ -25,6 +25,7 @@ ClearCheatsActivity::ClearCheatsActivity(ITitleService* titleService)
 
 void ClearCheatsActivity::onContentAvailable()
 {
+    install_system_status(this);
     install_header_username(this);
     install_tls_warning_banner(this);
 

@@ -176,5 +176,10 @@
     "cheats_list": "Escolha um jogo para gerenciar as trapaças.\n\nAqui ficam os jogos instalados no seu console. Selecione um para baixar e ativar trapaças. As trapaças são aplicadas pelo Atmosphère ao abrir o jogo.",
     "mods_list": "Escolha um jogo para gerenciar os mods.\n\nAqui ficam os jogos instalados no seu console. Selecione um para importar, baixar ou ativar mods. Os mods são aplicados via LayeredFS do Atmosphère ao abrir o jogo.",
     "saves_list": "Escolha um jogo para fazer backup ou restaurar o save.\n\nAqui ficam os jogos instalados no seu console com a data do último backup. Selecione um para copiar o save para o cartão SD (ou nuvem) e restaurar depois."
+  },
+  "status": {
+    "sd": "SD",
+    "console": "Console",
+    "wifi": "WiFi"
   }
 }

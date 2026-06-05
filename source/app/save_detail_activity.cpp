@@ -44,6 +44,7 @@ SaveDetailActivity::SaveDetailActivity(InstalledTitle title, ISaveService* saveS
 
 void SaveDetailActivity::onContentAvailable()
 {
+    install_system_status(this);
     install_header_username(this);
     install_tls_warning_banner(this);
     install_help_action(this, "saveFrame", "thomaz/help/saves");

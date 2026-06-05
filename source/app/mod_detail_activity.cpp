@@ -56,6 +56,7 @@ ModDetailActivity::ModDetailActivity(InstalledTitle title, std::uint64_t mod_id,
 
 void ModDetailActivity::onContentAvailable()
 {
+    install_system_status(this);
     install_header_username(this);
     install_tls_warning_banner(this);
 

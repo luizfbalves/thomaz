@@ -30,6 +30,7 @@ ModBrowserActivity::ModBrowserActivity(InstalledTitle title, IHttpClient* http)
 
 void ModBrowserActivity::onContentAvailable()
 {
+    install_system_status(this);
     install_header_username(this);
     install_tls_warning_banner(this);
 

@@ -30,5 +30,10 @@
     "boot": {
         "login": "Se connecter",
         "guest": "Continuer sans connexion"
+    },
+    "status": {
+        "sd": "SD",
+        "console": "NAND",
+        "wifi": "Wi-Fi"
     }
 }

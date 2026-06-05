@@ -176,5 +176,10 @@
     "cheats_list": "Pick a game to manage its cheats.\n\nThis lists the games installed on your console. Choose one to download and toggle cheats for it. Cheats are applied by Atmosphère when you launch the game.",
     "mods_list": "Pick a game to manage its mods.\n\nThis lists the games installed on your console. Choose one to import, download or enable mods for it. Mods are applied via Atmosphère's LayeredFS when you launch the game.",
     "saves_list": "Pick a game to back up or restore its save.\n\nThis lists the games installed on your console with the date of their last backup. Choose one to copy its save to the SD card (or cloud) and restore it later."
+  },
+  "status": {
+    "sd": "SD",
+    "console": "NAND",
+    "wifi": "WiFi"
   }
 }
