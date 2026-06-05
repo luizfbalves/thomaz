@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v0.4
 milestone_name: Extração de Temas
 status: executing
-last_updated: "2026-06-05T16:08:57.450Z"
+last_updated: "2026-06-05T16:19:08.900Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 9
-  completed_plans: 6
-  percent: 67
+  completed_plans: 7
+  percent: 78
 ---
 
 # Project State
@@ -28,10 +28,10 @@ Phase B's existing "Aplicar Tema".
 ## Current Position
 
 Phase: 02 (full-extraction-engine) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-06-05
-Progress: [███████░░░] 67%
+Progress: [████████░░] 78%
 
 ## Roadmap Summary
 
@@ -68,6 +68,8 @@ Progress: [███████░░░] 67%
 - [Phase 02 Plan 01]: `ExtractAllResult` is additive alongside existing `ExtractResult`; `extract_base_layout` preserved for live caller in `theme_detail_activity.cpp`
 - [Phase 02 Plan 01]: `ExtractAllResult` contract — `ok=false` only on systemic abort; `failed_parts` collects per-part warnings; `ok=false` implies `written_parts` is empty
 
+- [Phase 02 Plan 02]: `szs_validate.cpp` doc comment rephrased to avoid literal `switch.h` text (neutral-TU acceptance grep checks for its absence as an include; comment text was triggering a false match)
+
 ### De-risking rationale
 
 - Highest hardware unknowns sequenced FIRST in Phase 1: (a) do the pinned SPL public
@@ -97,8 +99,8 @@ Progress: [███████░░░] 67%
 
 ## Session Continuity
 
-Last completed: 02-01-PLAN.md — target_map() common arm (f71ae0e) + ExtractAllResult interface contract (ee5af63). REQUIREMENTS.md: EXTRACT-01/02/03 marked complete.
-Next step: Execute Phase 02 Plan 02 (NCA filter widening to /lyt/ prefix).
+Last completed: 02-02-PLAN.md — neutral szs_validate TU + host doctest (ce51fee, 273e0d3). D-04 structural validation replaces Phase 1 magic-only check. Full 187-test suite green at C++20.
+Next step: Execute Phase 02 Plan 03 (multi-title extraction driver + /lyt/ filter widening).
 
 Key files for Phase 1:
 

@@ -62,7 +62,7 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md — Add `common` to `target_map()` (D-01a) + extend `test_cfw_paths` doctest; declare `ExtractAllResult` + `extract_all_base_layouts()` in the neutral `firmware_extract.hpp` and add the desktop no-op (interface contract) — Wave 1
-- [ ] 02-02-PLAN.md — Extract D-04 structural validation into a neutral `szs_validate.{hpp,cpp}` (Yaz0+SARC) + host doctest; bump `tests/Makefile` to C++20 with SarcLib so success criterion 4 covers validation — Wave 1
+- [x] 02-02-PLAN.md — Extract D-04 structural validation into a neutral `szs_validate.{hpp,cpp}` (Yaz0+SARC) + host doctest; bump `tests/Makefile` to C++20 with SarcLib so success criterion 4 covers validation — Wave 1
 - [ ] 02-03-PLAN.md — Widen `nca_romfs_filter` to a `/lyt/` directory prefix (D-01); implement `extract_all_base_layouts()` single-session multi-title best-effort driver (three titles, D-02/D-02a, D-04 validate, D-03 flat overwrite) — Wave 2
 - [ ] 02-04-PLAN.md — Hardware verify: run `extract_all_base_layouts()` under title takeover, confirm all six qlaunch layouts + Psl + MyPage land flat in `/themes/systemData/` (success criteria 1-3) — Wave 3 (checkpoint)
 
