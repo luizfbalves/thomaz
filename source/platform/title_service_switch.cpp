@@ -79,6 +79,8 @@ std::vector<InstalledTitle> NsTitleService::listInstalled() {
                 t.display_version = dv;
                 // Configured user-account save-data size (bytes); 0 if the game has none.
                 t.save_data_size = control->nacp.user_account_save_data_size;
+                // startup_user_account: 0 = no account required (typical for homebrew/forwarders).
+                t.startup_user_account = control->nacp.startup_user_account;
                 // The icon (JPEG) follows the nacp in the control data buffer.
                 size_t iconSize = (size_t)controlSize - sizeof(control->nacp);
                 if (iconSize > 0)

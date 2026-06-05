@@ -14,6 +14,7 @@ struct InstalledTitle {
     std::string display_version; // human version string from NACP (e.g. "1.0.1"); may be empty
     std::vector<std::uint8_t> icon; // raw JPEG icon bytes from control data (empty if none)
     std::uint64_t save_data_size = 0; // configured user-account save-data size in bytes (NACP); 0 = unknown
+    std::uint8_t startup_user_account = 0; // NACP startup_user_account; 0 = no account required (homebrew/forwarder heuristic)
 };
 
 // Lists installed titles. Implemented on Switch by NsTitleService; the
