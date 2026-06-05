@@ -721,10 +721,25 @@ int nca_decrypt_header(nca_ctx_t* ctx) {
 void nca_decrypt_key_area(nca_ctx_t* ctx) {
 	if (ctx->format_version == NCAVERSION_NCA0_BETA || ctx->format_version == NCAVERSION_NCA0) return;
 #ifdef __SWITCH__
-	unsigned char tmpKek[0x10];
-	splCryptoGenerateAesKek(ctx->tool_ctx->settings.keyset.key_area_key_application_source, ctx->header.crypto_type2, 0, tmpKek);
-	for (int i = 0; i < 4; i++)
-		splCryptoGenerateAesKey(tmpKek, ctx->header.encrypted_keys[i], ctx->decrypted_keys[i]);
+	unsigned char tmpKek[0x10] = {0};
+	Result _kek_rc = splCryptoGenerateAesKek(ctx->tool_ctx->settings.keyset.key_area_key_application_source, ctx->header.crypto_type2, 0, tmpKek);
+	int _key_rc[4] = {0};
+	int _dk_nz[4] = {0};
+	for (int i = 0; i < 4; i++) {
+		_key_rc[i] = (int)splCryptoGenerateAesKey(tmpKek, ctx->header.encrypted_keys[i], ctx->decrypted_keys[i]);
+		for (int j = 0; j < 0x10; j++) if (ctx->decrypted_keys[i][j]) { _dk_nz[i] = 1; break; }
+	}
+	{
+		int kek_nz = 0; for (int j = 0; j < 0x10; j++) if (tmpKek[j]) { kek_nz = 1; break; }
+		int rights_nz = 0; for (int j = 0; j < 0x10; j++) if (ctx->header.rights_id[j]) { rights_nz = 1; break; }
+		fprintf(stderr,
+			"diag: keyarea ct=%u ct2=%u kaek=%u rights_nz=%d kek_rc=0x%x kek_nz=%d k_rc=[%x,%x,%x,%x] dk_nz=[%d,%d,%d,%d]\n",
+			ctx->header.crypto_type, ctx->header.crypto_type2, ctx->header.kaek_ind, rights_nz,
+			(unsigned)_kek_rc, kek_nz,
+			_key_rc[0], _key_rc[1], _key_rc[2], _key_rc[3],
+			_dk_nz[0], _dk_nz[1], _dk_nz[2], _dk_nz[3]);
+		fflush(stderr);
+	}
 #else
 	aes_ctx_t* aes_ctx = new_aes_ctx(ctx->tool_ctx->settings.keyset.key_area_keys[ctx->crypto_type][ctx->header.kaek_ind], 16, AES_MODE_ECB);
 	aes_decrypt(aes_ctx, ctx->decrypted_keys, ctx->header.encrypted_keys, 0x40);

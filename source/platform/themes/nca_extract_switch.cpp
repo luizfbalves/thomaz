@@ -174,7 +174,7 @@ NcaExtractResult extract_szs_from_nca(
     // install is obvious: compare this line to the nro's mtime. The "iso3" tag
     // marks the isolated-mbedtls build (hactool bound to our private non-PSA
     // mbedtls, not the portlib PSA copy that fails XTS decrypt setkey).
-    std::fprintf(stderr, "thomaz hactool build: %s %s [iso7-keyfix]\n", __DATE__, __TIME__);
+    std::fprintf(stderr, "thomaz hactool build: %s %s [iso8-keyarea-diag]\n", __DATE__, __TIME__);
     std::fflush(stderr);
 
     // --- Diagnostics (non-secret) to localize the "Invalid NCA header" cause --
