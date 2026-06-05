@@ -17,5 +17,8 @@
         "restore_ok": "Restauration terminée",
         "restore_fail": "Échec de la restauration",
         "empty": "Aucun jeu installé"
+    },
+    "tls": {
+        "insecure_warning": "Vérification du certificat indisponible — la connexion n'est pas sécurisée"
     }
 }

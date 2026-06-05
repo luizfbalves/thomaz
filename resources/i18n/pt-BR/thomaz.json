@@ -156,6 +156,9 @@
     "never_played": "Nunca jogado",
     "unknown": "—"
   },
+  "tls": {
+    "insecure_warning": "Verificação de certificado indisponível — conexão não é segura"
+  },
   "help": {
     "hint": "Ajuda",
     "close": "Entendi",

@@ -17,5 +17,8 @@
         "restore_ok": "还原完成",
         "restore_fail": "还原失败",
         "empty": "未安装任何游戏"
+    },
+    "tls": {
+        "insecure_warning": "证书验证不可用 — 连接不安全"
     }
 }

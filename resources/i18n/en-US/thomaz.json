@@ -156,6 +156,9 @@
     "never_played": "Never played",
     "unknown": "—"
   },
+  "tls": {
+    "insecure_warning": "Certificate verification unavailable — connection is not secure"
+  },
   "help": {
     "hint": "Help",
     "close": "Got it",
