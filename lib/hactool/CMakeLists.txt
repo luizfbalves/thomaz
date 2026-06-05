@@ -46,6 +46,20 @@ target_compile_definitions(hactool
         MBEDTLS_USER_CONFIG_FILE="${CMAKE_SOURCE_DIR}/lib/mbedtls/thomaz_cmac_config.h"
 )
 
+# CRITICAL: define __SWITCH__ for the hactool target. Borealis' toolchain.cmake
+# only does `set(__SWITCH__ ON)` (a CMake var, NOT a -D), and because USE_GLFW
+# defaults ON on Switch it `add_definitions(-D__GLFW__)` at directory scope —
+# which hactool inherits. The app target gets -D__SWITCH__ transitively from the
+# borealis library it links, but hactool links NO borealis, so without this it
+# compiled with __GLFW__ and NO __SWITCH__. That excluded every `#ifdef __SWITCH__`
+# block in hactool — most importantly nca_decrypt_key_area's SPL key-area
+# derivation, falling back to the desktop path that reads an EMPTY key_area_keys
+# table -> zero section keys -> "section N is corrupted!". Define it so the
+# on-device SPL crypto path (and <switch.h>) compile in.
+if (PLATFORM_SWITCH)
+    target_compile_definitions(hactool PRIVATE __SWITCH__)
+endif ()
+
 # The hactool fork targets devkitA64 (armv8-a+crc+crypto). The upstream
 # Makefile uses -Wall -Werror; toolchain drift under the current devkitA64
 # may surface new warnings. Per Assumption A2 (01-RESEARCH.md), relax
