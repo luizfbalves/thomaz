@@ -25,6 +25,22 @@ TEST_CASE("base_szs_path joins the base dir") {
     CHECK(base_szs_path("Set") == base_layout_dir() + "/Set.szs");
 }
 
+TEST_CASE("target_map common arm resolves to qlaunch title and common.szs") {
+    // D-01a: common.szs belongs to qlaunch (0100000000001000) per ThemeTargetInfo::QlaunchCommon
+    auto c = target_map("common");
+    REQUIRE(c.has_value());
+    CHECK(c->title_id == "0100000000001000");
+    CHECK(c->szs == "common.szs");
+    // Psl and MyPage are separate titles — verify their title-IDs are unchanged
+    CHECK(target_map("Psl")->title_id  == "0100000000001007");
+    CHECK(target_map("MyPage")->title_id == "0100000000001013");
+}
+
+TEST_CASE("base_szs_path common is flat inside base_layout_dir") {
+    // Success criterion 3: base_szs_path("common") == base_layout_dir() + "/common.szs"
+    CHECK(base_szs_path("common") == base_layout_dir() + "/common.szs");
+}
+
 TEST_CASE("base_present_for requires every base file to exist") {
     namespace fs = std::filesystem;
     fs::create_directories(base_layout_dir());
