@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: Awaiting next milestone
 stopped_at: Completed 04-06-PLAN.md
-last_updated: "2026-06-05T19:41:32.661Z"
-last_activity: 2026-06-05 — Milestone v1.0 completed and archived; v0.5.0 theme-extraction engine merged (Phases 1-2 shipped, 3-4 open)
+last_updated: "2026-06-05T22:12:00Z"
+last_activity: 2026-06-05 — Quick task 260605-qgb: BootActivity boot screen added (3 tasks, clean desktop build)
 progress:
   total_phases: 4
   completed_phases: 4
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 Phase: Milestone v1.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-06-05 — Completed quick task 260605-ot7: theme-apply screen button busy-guard
+Last activity: 2026-06-05 — Completed quick task 260605-qgb: BootActivity boot screen (3 tasks)
 
 ## Performance Metrics
 
@@ -110,6 +110,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260605-ot7 | Theme-apply screen UX: busy-guard download/apply button against repeated clicks | 2026-06-05 | 4f9205b | [260605-ot7-melhorar-a-ux-da-tela-de-aplicacao-de-te](./quick/260605-ot7-melhorar-a-ux-da-tela-de-aplicacao-de-te/) |
+| 260605-qgb | BootActivity boot screen: login/guest entry before HomeActivity when no session | 2026-06-05 | d668063 | [260605-qgb-vamos-adicionar-uma-bootscreen-no-app-us](./quick/260605-qgb-vamos-adicionar-uma-bootscreen-no-app-us/) |
 
 ## Deferred Items
 
@@ -127,8 +128,8 @@ All deferred UAT/verification items are on-hardware checks the host test suite c
 
 ## Session Continuity
 
-Last session: 2026-06-05T18:47:09.000Z
-Stopped at: Completed 04-06-PLAN.md
+Last session: 2026-06-05T22:12:00Z
+Stopped at: Completed quick task 260605-qgb (BootActivity boot screen)
 Resume file: None
 
 ## Operator Next Steps
