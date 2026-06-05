@@ -62,14 +62,14 @@ Plans:
 - **No Redis:** Token blocklist uses Postgres `RevokedToken` table. `findUnique` on primary-key `jti` is sub-millisecond; no new infrastructure dependency.
 
 ### Phase 3: C++ Platform Hardening
-**Goal**: Duplicated filesystem helpers are consolidated into a shared `fs_util` platform utility, the TLS fail-safe shows a visible on-screen warning, `cloudBusy` is `std::atomic<bool>`, and all three are verified by a clean desktop build and host tests
+**Goal**: Duplicated filesystem helpers are consolidated into a shared `fs_util` platform utility, the TLS path for a missing CA is safe (post-execution: fail-closed per CONTEXT D-06a; originally fail-open + on-screen warning), `cloudBusy` is `std::atomic<bool>`, and all three are verified by a clean desktop build and host tests
 **Depends on**: Phase 2
 **Requirements**: SEC-03, CONC-01, DEBT-01, DEBT-02, TEST-03
 **Success Criteria** (what must be TRUE):
   1. `source/platform/fs_util.hpp` and `fs_util.cpp` exist; `ensure_parent_dirs` and `copy_tree` are defined there; all previously duplicated copies are removed from their original call sites
   2. `save_detail_activity.hpp` declares `cloudBusy` as `std::atomic<bool>{false}`; all read/write sites use `load()`/`store()` or `compare_exchange_strong`
-  3. When the CA bundle probe fails (`ca_ok == false`), a visible warning is emitted via `brls::Logger::warning` (or `brls::Application::notify`); no `CURLOPT_SSL_VERIFYPEER` lines appear outside `#ifdef __SWITCH__`
-  4. A doctest covering the TLS fail-safe branch (`ca_ok == false`) passes in the host test suite (TEST-03)
+  3. [REVISED post-execution — see CONTEXT D-06a] TLS handling for a missing CA bundle is safe: originally "fail-open + on-screen banner", now **fail-closed** — when `ca_ok == false`, certificate verification stays ON (`tls_policy(false) == {1,2}`) and content downloads refuse rather than proceeding unauthenticated; the `install_tls_warning_banner` helper + 14-activity wiring remain in place but are latent (reachable only via an explicit `TlsMode::InsecureAllowed` caller). No `CURLOPT_SSL_VERIFYPEER` lines appear outside `#ifdef __SWITCH__`
+  4. A doctest covering the TLS policy branch passes in the host test suite (TEST-03) — asserts both the fail-closed default (`tls_policy(false) == {1,2}`) and the explicit opt-in (`tls_policy(false, TlsMode::InsecureAllowed) == {0,0}`)
   5. Desktop build with `-DUSE_SDL2=ON` compiles clean with zero errors and zero new warnings
 **Plans**: 4 plans
 

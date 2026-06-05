@@ -9,22 +9,45 @@
 Resolve four isolated C++ platform-layer issues without adding features:
 1. **DEBT-01/DEBT-02** — consolidate duplicated `ensure_parent_dirs` and `copy_tree` into a single shared `source/platform/fs_util.{hpp,cpp}`.
 2. **CONC-01** — make `cloudBusy` a `std::atomic<bool>` with a documented threading contract; preserve existing guard behavior.
-3. **SEC-03** — surface a visible, persistent on-screen warning when the TLS fail-safe degrades HTTPS to no-verification; the fail-safe *networking* behavior itself is unchanged.
+3. **SEC-03** — surface a visible, persistent on-screen warning when the TLS fail-safe degrades HTTPS to no-verification; the fail-safe *networking* behavior itself is unchanged. **[REVISED post-execution — see D-06a: networking now fails CLOSED on CA-missing; the banner is retained but latent.]**
 4. **TEST-03** — a host doctest covers the `ca_ok == false` fail-safe branch so a regression that silently disables verification fails CI.
 
 Verified by a clean desktop build (`-DUSE_SDL2=ON`, zero new warnings) and the host doctest suite under `tests/`.
 
-**Not in scope:** the `runAsync` base-class refactor, unsafe-cast guarding, curl cancellation (all Phase 4). No new networking behavior — the fail-safe still proceeds with verification OFF (keeps the self-updater alive), per REQUIREMENTS SEC-03.
+**Not in scope:** the `runAsync` base-class refactor, unsafe-cast guarding, curl cancellation (all Phase 4). ~~No new networking behavior — the fail-safe still proceeds with verification OFF (keeps the self-updater alive), per REQUIREMENTS SEC-03.~~ **[SUPERSEDED by D-06a, 2026-06-05: networking behavior WAS changed post-execution — CA-missing now fails closed.]**
 </domain>
 
 <decisions>
-## Implementation Decisions
+## ⚠ POST-EXECUTION DESIGN CHANGE (2026-06-05) — D-06a: fail-open → fail-closed
+
+After Phase 3 executed and passed automated verification, a `/gsd-code-review 3 --fix --all` pass
+applied finding **CR-01** (TLS fail-open is a MITM / remote-content-tampering risk), **user-authorized
+as a deliberate reversal of the original locked decision**. This **supersedes D-03 and reframes
+D-01/D-02/D-02a**:
+
+- **D-06a (supersedes D-03):** The TLS fail-safe **no longer fails open**. When `ca_ok == false`,
+  verification stays **ON** (`tls_policy(false)` now returns `{verifypeer:1, verifyhost:2}`) — content
+  downloads **fail closed** (refuse) rather than proceeding unauthenticated. A new `TlsMode` enum gates
+  the legacy insecure `{0,0}` behavior behind an explicit per-caller opt-in (`TlsMode::InsecureAllowed`),
+  which no caller currently uses. The process-global `tls_insecure` latch is no longer flipped on the
+  automatic CA-missing path. Commits `3829744`..`3fa978f`; rationale in `03-REVIEW.md` (CR-01) and
+  `03-REVIEW-FIX.md`.
+- **SEC-03 banner status:** `install_tls_warning_banner` + its wiring into all 14 activities remain in
+  the codebase and still render **if** the latch is ever set, but under fail-closed nothing sets it
+  automatically. The banner is now latent (reachable only via a future `InsecureAllowed` caller), not a
+  live runtime warning. The SEC-03 requirement's *intent* (don't silently operate insecure) is now met
+  by refusing the insecure transfer outright rather than by warning-and-continuing.
+- **TEST-03 updated** to assert the new contract: `tls_policy(false) == {1,2}` (fail-closed default) and
+  `tls_policy(false, TlsMode::InsecureAllowed) == {0,0}` (explicit opt-in), preserving the
+  silent-downgrade regression guard.
+
+The original decisions below are retained for history and marked **[SUPERSEDED by D-06a]** where applicable.
 
 ### TLS fail-safe warning (SEC-03)
 - **D-01:** When `ca_ok == false` and HTTPS drops to `VERIFYPEER 0`, show a **persistent on-screen warning**, not log-only. `brls::Logger::warning` alone is insufficient — SEC-03 requires on-screen visibility.
 - **D-02:** Placement is **app-wide** — visible across all screens while the insecure state persists (not a one-time dialog, not per-network-screen). Maximum visibility.
 - **D-02a (realization, resolved post-research):** There is **no single `brls::Application` shell** — each activity builds its own `AppletFrame`. The app-wide banner is realized via a **shared helper** following the existing `install_header_username` precedent (`source/app/app_header.cpp`): a helper called from each activity's `onContentAvailable` that injects the warning into the AppletFrame header when a process-wide `tls_insecure` flag is set. Touches ~14 activity files; uses the established codebase pattern rather than a custom always-on overlay. (Research Open Question 1 / Assumption A4 — confirmed by user.)
-- **D-03:** The fail-safe networking behavior is **unchanged** — still degrades to no-verification rather than bricking all HTTPS (REQUIREMENTS SEC-03 locks this). The warning is additive; it does not block usage.
+- **D-03:** ~~The fail-safe networking behavior is **unchanged** — still degrades to no-verification rather than bricking all HTTPS (REQUIREMENTS SEC-03 locks this). The warning is additive; it does not block usage.~~ **[SUPERSEDED by D-06a, 2026-06-05]** — networking now fails **closed** on CA-missing (refuse, not degrade). See the post-execution note above.
 
 ### fs_util consolidation scope (DEBT-01/DEBT-02)
 - **D-04:** Consolidate **ALL** call-sites, not just the roadmap-flagged ones. `ensure_parent_dirs` currently lives in 4 files (`cheat_store.cpp`, `themes/theme_install.cpp`, `mods/libarchive_extractor.cpp`, `mods/mod_download.cpp`); `copy_tree` in 3 (`mods/mod_store.cpp`/`.hpp`, `mods/mod_actions.cpp`, `save_service_switch.cpp`). Every duplicate moves to `fs_util` and the local copy is removed — strict "exactly one" reading of DEBT-01/02. Larger diff accepted for complete hardening.
