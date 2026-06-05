@@ -18,6 +18,7 @@
 #include <vector>
 #include <setjmp.h>
 #include <sys/stat.h>
+#include <unistd.h>   // dup/dup2/close/fileno — restore stderr after redirect (WR-01)
 
 // hactool recovery hooks (lib/hactool/source/hactool_recover.c). hactool aborts
 // the whole process via exit() on any parse/key error; arming this jmp_buf turns
@@ -188,6 +189,11 @@ NcaExtractResult extract_szs_from_nca(
     ::mkdir("/switch", 0777);
     ::mkdir("/switch/thomaz", 0777);
     std::fflush(stderr);
+    // WR-01: save the original stderr fd so the redirect is LOCAL to this call.
+    // Without restoring it, freopen rebinds process-wide stderr permanently and
+    // every later fprintf/assert in the whole app goes to this log (truncated on
+    // the next extraction). dup() the underlying fd now; dup2() it back below.
+    const int saved_stderr_fd = ::dup(::fileno(stderr));
     // WR-06: freopen closes the original stream and returns NULL on failure.
     // If the redirect fails (e.g. /switch/thomaz not writable), proceed WITHOUT
     // redirection rather than writing every subsequent fprintf to a now-closed
@@ -280,6 +286,15 @@ NcaExtractResult extract_szs_from_nca(
                 hactool_err.back() == ' '))
             hactool_err.pop_back();
       }
+    }
+
+    // WR-01: restore the original process-wide stderr. After this point stderr
+    // points back at wherever it did on entry, so unrelated diagnostics for the
+    // rest of the session are no longer swallowed by hactool.log.
+    if (saved_stderr_fd >= 0) {
+        std::fflush(stderr);
+        ::dup2(saved_stderr_fd, ::fileno(stderr));
+        ::close(saved_stderr_fd);
     }
 
     // --- hactool aborted (bad key, corrupt NCA, etc.) -------------------------
