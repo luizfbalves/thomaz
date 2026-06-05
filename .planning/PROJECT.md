@@ -1,12 +1,22 @@
-# thomaz — Hardening Milestone
+# thomaz — Switch-Only Simplification
 
 ## What This Is
 
-thomaz is a Nintendo Switch homebrew hub (Borealis UI, devkitPro NRO + desktop build) that manages cheats, mods, themes, cloud saves, and sysmodules, backed by a Node.js/Fastify + PostgreSQL cloud API. This milestone is a **quality/hardening pass**: take the issues already surfaced by the codebase audit (`.planning/codebase/CONCERNS.md`) as a backlog and fix them — no new features.
+thomaz is a Nintendo Switch homebrew hub (Borealis UI, devkitPro NRO) that manages cheats, mods, themes, cloud saves, and sysmodules, backed by a Node.js/Fastify + PostgreSQL cloud API. The tree historically built for two targets — Switch (devkitPro) and desktop PC (SDL2/GLFW) — from one source. This milestone is a **simplification pass**: remove the desktop build target entirely so the tree targets only the Switch, cutting the platform-abstraction surface that existed solely to run the GUI on PC.
+
+## Current Milestone: v1.1 Switch-Only Simplification
+
+**Goal:** Remove the desktop (PC/SDL2/GLFW) build target entirely so the source tree targets only Nintendo Switch, reducing maintenance surface — without changing the shipped `.nro` behavior.
+
+**Target features:**
+- `CMakeLists.txt` no longer has a `PLATFORM_DESKTOP` path; desktop build/run scripts removed
+- The five desktop-only platform stub pairs (`save_service_fake`, `title_service_fake`, `fake_auth_client`, `themes/firmware_extract_fake`, `sysmod/sysmod_store_fake`) deleted; their `*_switch` twins become the sole implementations
+- Every `#if defined(__SWITCH__)` selection seam collapsed to the Switch branch across the ~33 affected files (desktop `#else` branches removed)
+- Verification gate re-established for a single-target tree: host doctest suite (`tests/Makefile`) stays green + the Switch build (`scripts/build-switch.sh`, devkitPro Docker) compiles clean
 
 ## Core Value
 
-Every issue documented in `CONCERNS.md` is resolved (or explicitly deferred with reason) without regressing existing behavior — verified by host tests and a clean desktop build.
+The desktop build target and its supporting stubs are removed with **zero change to the shipped Switch `.nro`** — proven by a green host doctest suite (`tests/Makefile`) and a clean Switch build (`scripts/build-switch.sh`).
 
 ## Requirements
 
@@ -38,9 +48,11 @@ Every issue documented in `CONCERNS.md` is resolved (or explicitly deferred with
 
 ### Active
 
-<!-- v1.0 Hardening shipped. Next milestone TBD via /gsd-new-milestone. -->
+<!-- v1.1 Switch-Only Simplification — requirements scoped in REQUIREMENTS.md (SIMPL-*, BUILD-*). -->
 
-_None — v1.0 Hardening complete. Candidates for the next milestone:_
+_v1.1 milestone active — desktop-removal requirements defined in `.planning/REQUIREMENTS.md`._
+
+**Carried-forward candidates (NOT in v1.1 — future milestones):**
 - [ ] PERF-01: avoid double archive traversal per mod extraction (deferred from v1.0)
 - [ ] PERF-02: cache last-known `CloudStatus` to skip the upload status prefetch (deferred from v1.0)
 - [ ] On-hardware UAT pass: 5 Phase-04 activity-pop/dialog UAF crash-path scenarios + Phase-03 TLS banner render + `save_service_switch.cpp` Switch-toolchain compile (deferred from v1.0 close — see STATE.md)
@@ -55,6 +67,8 @@ _None — v1.0 Hardening complete. Candidates for the next milestone:_
 - Mandatory on-hardware verification gate — hardware testing tracked as a separate manual checklist, not a per-fix blocker (per user decision)
 - Performance bottlenecks (double archive traversal, cloud-save status prefetch) — documented in CONCERNS.md but lower priority; revisit only if time remains
 
+**v1.1 scope note (2026-06-05):** Removing the desktop target also removes PC GUI iteration and the cheap non-devkitPro full-tree compile check. The host doctest suite (`tests/Makefile`) is independent of the desktop build and survives untouched. `saves/fake_cloud_save_client.*` is a doctest test double — NOT a desktop GUI stub — and is kept.
+
 ## Context
 
 - The codebase was mapped on 2026-06-04; all issues for this milestone come from `.planning/codebase/CONCERNS.md` (Tech Debt, Security, Performance, Fragile Areas, Test Coverage Gaps).
@@ -67,7 +81,7 @@ _None — v1.0 Hardening complete. Candidates for the next milestone:_
 
 ## Constraints
 
-- **Verification**: Each fix needs a host test (doctest for core, Vitest for API) where feasible, plus a clean desktop build (`-DUSE_SDL2=ON`). Hardware validation is a separate manual checklist, not a per-item gate.
+- **Verification**: Host doctest suite (`tests/Makefile`, `g++`) is the primary automated gate and must stay green. The compile gate for the UI/platform layer is now the **Switch build** (`scripts/build-switch.sh`, devkitPro Docker) — the desktop build is removed this milestone and is no longer available as a non-devkitPro compile check. Hardware validation is a separate manual checklist, not a per-item gate.
 - **Behavior preservation**: Intentional trade-offs (TLS fail-safe, 365-day JWT) keep their behavior; only safety nets are added.
 - **Architecture**: New shared logic goes in `core/` (testable); `platform/` stays thin orchestration. No exceptions in core/platform — return-value error handling.
 - **Tech stack**: C++20 client (devkitA64 / desktop SDL2); Node ≥20 + TypeScript strict API. No new heavy dependencies just to fix issues.
@@ -106,4 +120,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-05 after v1.0 Hardening milestone*
+*Last updated: 2026-06-05 — started v1.1 Switch-Only Simplification milestone*
