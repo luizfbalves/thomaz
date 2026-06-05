@@ -52,7 +52,7 @@ std::string theme_detail_body(const std::string& hex_id) {
         "{ switch{ theme(hexId:\"" + sanitize_hex(hex_id) + "\"){ hexId name "
         "description downloadUrl target creator{username} "
         "screenshotPreview{jpgThumbUrl hdUrl thumbUrl} "
-        "assets{ backgroundImageUrl albumIconUrl homeIconUrl newsIconUrl "
+        "assets{backgroundImageUrl albumIconUrl homeIconUrl newsIconUrl "
         "shopIconUrl controllerIconUrl settingsIconUrl powerIconUrl "
         "nsoIconUrl cardIconUrl shareIconUrl } } } }";
     return wrap(q, json::object());

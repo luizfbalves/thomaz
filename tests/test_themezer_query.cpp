@@ -38,6 +38,7 @@ TEST_CASE("theme_detail_body requests preview sizes + asset images") {
     json t = json::parse(theme_detail_body("A24"));
     std::string q = t["query"].get<std::string>();
     CHECK(q.find("screenshotPreview{") != std::string::npos);
+    CHECK(q.find("jpgThumbUrl") != std::string::npos);  // kept for the existing parser
     CHECK(q.find("hdUrl") != std::string::npos);
     CHECK(q.find("thumbUrl") != std::string::npos);
     CHECK(q.find("assets{") != std::string::npos);
@@ -51,5 +52,7 @@ TEST_CASE("pack_detail_body requests member theme previews") {
     std::string q = p["query"].get<std::string>();
     CHECK(q.find("themes{") != std::string::npos);
     CHECK(q.find("screenshotPreview{") != std::string::npos);
+    CHECK(q.find("jpgThumbUrl") != std::string::npos);  // kept for the existing parser
     CHECK(q.find("hdUrl") != std::string::npos);
+    CHECK(q.find("thumbUrl") != std::string::npos);
 }
