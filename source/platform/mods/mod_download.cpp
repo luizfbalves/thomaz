@@ -12,9 +12,19 @@ namespace thomaz {
 
 namespace {
 
+// Sink that both writes to the file and tallies the bytes received, so the
+// caller can compare the total against the server's advertised Content-Length
+// and reject a truncated transfer (WR-06).
+struct FileSink {
+    std::FILE*     f      = nullptr;
+    std::uint64_t  written = 0;
+};
+
 size_t writeToFile(char* ptr, size_t size, size_t nmemb, void* userdata) {
-    auto* f = static_cast<std::FILE*>(userdata);
-    return std::fwrite(ptr, 1, size * nmemb, f);
+    auto* sink = static_cast<FileSink*>(userdata);
+    size_t n   = std::fwrite(ptr, 1, size * nmemb, sink->f);
+    sink->written += n;
+    return n;
 }
 
 struct ProgressCtx {
@@ -59,6 +69,7 @@ bool download_file(const std::string& url, const std::string& dest_path,
     }
 
     ProgressCtx ctx{&progress, cancelled}; // cancelled may be null (existing callers)
+    FileSink sink{out, 0};
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "thomaz/0.1 (+switch homebrew)");
@@ -66,7 +77,7 @@ bool download_file(const std::string& url, const std::string& dest_path,
     curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1L);
     curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 30L);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToFile);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, out);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &sink);
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
     curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, xferInfo);
     curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &ctx);
@@ -75,25 +86,38 @@ bool download_file(const std::string& url, const std::string& dest_path,
 
     CURLcode rc = curl_easy_perform(curl);
     long httpStatus = 0;
-    if (rc == CURLE_OK)
+    curl_off_t advertisedLen = -1; // server's Content-Length for THIS transfer, -1 if unknown
+    if (rc == CURLE_OK) {
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStatus);
+        // CONTENT_LENGTH_DOWNLOAD_T reflects the final (post-redirect) response.
+        curl_easy_getinfo(curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &advertisedLen);
+    }
     curl_easy_cleanup(curl);
 
-    // WR-02: download_file does NOT by itself guarantee a byte-complete file.
-    // A server that closes early after a 200 (or a chunked/no-Content-Length
-    // response) can yield a truncated archive that still passes
-    // (rc==CURLE_OK && 2xx && closeOk). Integrity of downloaded archives
-    // therefore depends on the downstream extractor's EOF check
-    // (libarchive_extractor.cpp surfaces r != ARCHIVE_EOF), which rejects a
-    // truncated archive. Callers that download non-archive content must not
-    // assume completeness from this function's success return alone.
+    // WR-06: when the server advertised a Content-Length, require the bytes we
+    // actually wrote to match it. A server that closes early after a 200 yields
+    // a truncated file that otherwise passes (rc==CURLE_OK && 2xx && closeOk);
+    // for non-archive downloads (e.g. the self-update .nro) there is no
+    // downstream archive-EOF check to catch it.
+    bool lengthOk = (advertisedLen < 0) ||
+                    (sink.written == static_cast<std::uint64_t>(advertisedLen));
+
+    // WR-02/WR-06: the lengthOk check above now rejects a short transfer when the
+    // server advertised a Content-Length. A chunked / no-Content-Length response
+    // (advertisedLen < 0) still cannot be length-verified here; for those, archive
+    // integrity relies on the downstream extractor's EOF check
+    // (libarchive_extractor.cpp surfaces r != ARCHIVE_EOF). Callers downloading
+    // non-archive content over a length-less response must not assume completeness
+    // from this function's success return alone.
     bool closeOk = (std::fclose(out) == 0);
-    bool ok = (rc == CURLE_OK) && (httpStatus >= 200 && httpStatus < 300) && closeOk;
+    bool ok = (rc == CURLE_OK) && (httpStatus >= 200 && httpStatus < 300) && closeOk && lengthOk;
     if (!ok) {
         if (err) {
             if (rc == CURLE_ABORTED_BY_CALLBACK) { /* cooperative teardown — leave *err empty, no toast */ }
             else if (rc != CURLE_OK) *err = curl_easy_strerror(rc);
             else if (!closeOk)       *err = "write error";
+            else if (!lengthOk)      *err = "truncated download (" + std::to_string(sink.written) +
+                                            " of " + std::to_string(advertisedLen) + " bytes)";
             else                     *err = "HTTP " + std::to_string(httpStatus);
         }
         std::remove(dest_path.c_str());
