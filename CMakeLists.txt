@@ -59,11 +59,40 @@ if (PLATFORM_SWITCH)
     add_subdirectory(lib/mbedtls)
     list(APPEND APP_PLATFORM_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/lib/hactool/include)
 
-    # Link order is load-bearing (GNU static linker resolves left-to-right).
-    # hactool + thomaz_mbedtls_cmac must precede the portlib mbedtls/mbedx509/mbedcrypto
-    # so hactool's mbedtls_cipher_cmac_* symbols resolve against the CMAC build,
-    # while curl continues to use the portlib mbedtls (Pitfall 1 — dual mbedtls).
-    list(APPEND APP_PLATFORM_LIB hactool thomaz_mbedtls_cmac
+    # --- Symbol isolation for the vendored mbedtls (Pitfall 1 — the real fix) --
+    # The devkitPro portlib mbedtls (linked by curl for TLS) is PSA-built and
+    # exports the SAME mbedtls_* symbols as our thomaz_mbedtls_cmac. PSA has no
+    # AES-XTS, so when hactool's mbedtls_cipher_setkey bound to the portlib copy,
+    # NCA header decrypt failed with MBEDTLS_ERR_CIPHER_FEATURE_UNAVAILABLE.
+    # Forcing link order is unreliable (CMake reorders link libs) and mixing the
+    # two mbedtls ABIs (PSA vs non-PSA cipher context) would corrupt curl's TLS.
+    # Fix: partial-link hactool + our mbedtls into one relocatable object and
+    # localize every symbol except the tiny API our C++ wrapper calls. hactool
+    # then uses OUR mbedtls privately; curl keeps the portlib — no collision.
+    set(HACTOOL_ISOLATED ${CMAKE_BINARY_DIR}/libhactool_isolated.a)
+    set(HACTOOL_COMBINED ${CMAKE_BINARY_DIR}/hactool_combined.o)
+    add_custom_command(
+        OUTPUT ${HACTOOL_ISOLATED}
+        DEPENDS hactool thomaz_mbedtls_cmac
+        COMMAND ${CMAKE_LINKER} -r --whole-archive
+                $<TARGET_FILE:hactool> $<TARGET_FILE:thomaz_mbedtls_cmac>
+                --no-whole-archive -o ${HACTOOL_COMBINED}
+        COMMAND ${CMAKE_OBJCOPY}
+                --keep-global-symbol=nca_process
+                --keep-global-symbol=nca_free_section_contexts
+                --keep-global-symbol=g_hactool_recover_jmp
+                --keep-global-symbol=g_hactool_recover_active
+                ${HACTOOL_COMBINED}
+        COMMAND ${CMAKE_COMMAND} -E rm -f ${HACTOOL_ISOLATED}
+        COMMAND ${CMAKE_AR} crs ${HACTOOL_ISOLATED} ${HACTOOL_COMBINED}
+        VERBATIM
+        COMMENT "Isolating hactool + private CMAC mbedtls (localizing mbedtls_* symbols)"
+    )
+    add_custom_target(hactool_isolated DEPENDS ${HACTOOL_ISOLATED})
+
+    # The isolated archive replaces `hactool thomaz_mbedtls_cmac` on the link
+    # line. curl still uses the portlib mbedtls/mbedx509/mbedcrypto.
+    list(APPEND APP_PLATFORM_LIB ${HACTOOL_ISOLATED}
                                  curl mbedtls mbedx509 mbedcrypto
                                  archive bz2 lzma zstd lz4 z)
 elseif (PLATFORM_DESKTOP)
@@ -118,3 +147,9 @@ endif ()
 target_include_directories(${PROJECT_NAME} PRIVATE ${APP_PLATFORM_INCLUDE})
 target_compile_options(${PROJECT_NAME} PRIVATE -ffunction-sections -fdata-sections ${APP_PLATFORM_OPTION})
 target_link_libraries(${PROJECT_NAME} PRIVATE borealis ${APP_PLATFORM_LIB})
+
+# Ensure the isolated hactool+mbedtls archive is built before the final link
+# (Switch only; the target only exists under PLATFORM_SWITCH).
+if (PLATFORM_SWITCH)
+    add_dependencies(${PROJECT_NAME} hactool_isolated)
+endif ()
