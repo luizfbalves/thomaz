@@ -26,9 +26,10 @@ std::string update_target_path() {
 }
 
 bool apply_downloaded_update(const std::string& url, const std::string& target,
-                             std::string* err) {
+                             std::string* err,
+                             std::shared_ptr<std::atomic<bool>> cancelled) {
     const std::string tmp = target + ".tmp";
-    if (!download_file(url, tmp, nullptr, err)) {
+    if (!download_file(url, tmp, nullptr, err, cancelled)) {
         std::remove(tmp.c_str()); // download_file already cleans up; belt-and-suspenders
         return false;
     }

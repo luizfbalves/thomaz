@@ -136,11 +136,15 @@ void SettingsActivity::checkForUpdate(brls::Label* status)
     status->setText("thomaz/update/checking"_i18n);
 
     IHttpClient* client = this->http;
+    auto cancelled      = this->cancelledFlag();
 
     auto results = std::make_shared<std::pair<bool, core::ReleaseInfo>>(); // (ok, rel)
     this->runAsync(
-        [client, results]() {
-            HttpResponse r    = client->get(core::github_latest_release_url());
+        [client, results, cancelled]() {
+            HttpRequest req{};
+            req.url           = core::github_latest_release_url();
+            req.cancelled     = cancelled;
+            HttpResponse r    = client->request(req);
             results->first    = r.ok();
             results->second   = results->first ? core::parse_latest_release(r.body, "thomaz.nro")
                                                : core::ReleaseInfo{};
@@ -188,12 +192,13 @@ void SettingsActivity::installUpdate(const core::ReleaseInfo& release, brls::Lab
 
     std::string url    = release.nro_url;
     std::string target = update_target_path();
+    auto cancelled     = this->cancelledFlag();
 
     auto ok = std::make_shared<bool>(false);
     this->runAsync(
-        [url, target, ok]() {
+        [url, target, ok, cancelled]() {
             std::string err;
-            *ok = apply_downloaded_update(url, target, &err);
+            *ok = apply_downloaded_update(url, target, &err, cancelled);
         },
         [this, ok, status]() {
             this->busy = false;
@@ -209,11 +214,15 @@ void SettingsActivity::refreshDatabase(brls::Label* status)
     status->setText("thomaz/db/refreshing"_i18n);
 
     IHttpClient* client = this->http;
+    auto cancelled      = this->cancelledFlag();
 
     auto wrote = std::make_shared<bool>(false);
     this->runAsync(
-        [client, wrote]() {
-            HttpResponse r = client->get(core::db_index_url());
+        [client, wrote, cancelled]() {
+            HttpRequest req{};
+            req.url        = core::db_index_url();
+            req.cancelled  = cancelled;
+            HttpResponse r = client->request(req);
             *wrote         = r.ok() && write_text_file(index_cache_path(), r.body);
         },
         [this, wrote, status]() {

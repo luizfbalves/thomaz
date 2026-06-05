@@ -65,12 +65,16 @@ void ModDetailActivity::onContentAvailable()
     // Resolve the mod's files on a worker thread; the spinner stays up until done.
     std::uint64_t mod_id = this->modId;
     IHttpClient* client  = this->http; // owned by main(), app-lifetime
+    auto cancelled       = this->cancelledFlag();
 
     auto results = std::make_shared<core::ResolveResult>();
     this->runAsync(
-        [mod_id, client, results]() {
-            core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
-                HttpResponse r = client->get(url);
+        [mod_id, client, results, cancelled]() {
+            core::UrlFetcher fetch = [client, cancelled](const std::string& url) -> std::optional<std::string> {
+                HttpRequest req{};
+                req.url        = url;
+                req.cancelled  = cancelled;
+                HttpResponse r = client->request(req);
                 return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
             };
             *results = core::resolve_mod_files(mod_id, fetch);
