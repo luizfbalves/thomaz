@@ -38,11 +38,15 @@ void CheatDetailActivity::onContentAvailable()
     InstalledTitle titleCopy = this->title;     // copy: worker must not touch `this`
     IHttpClient* client      = this->http;       // owned by main(), app-lifetime
 
-    auto result = std::make_shared<core::FetchResult>();
+    auto result    = std::make_shared<core::FetchResult>();
+    auto cancelled = this->cancelledFlag();
     this->runAsync(
-        [titleCopy, client, result]() {
-            core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
-                HttpResponse r = client->get(url);
+        [titleCopy, client, result, cancelled]() {
+            core::UrlFetcher fetch = [client, cancelled](const std::string& url) -> std::optional<std::string> {
+                HttpRequest req;
+                req.url       = url;
+                req.cancelled = cancelled;
+                HttpResponse r = client->request(req);
                 // Distinguish "couldn't reach the server" from "server answered, but
                 // this game isn't in the db". status 0 == transport/connection failure
                 // -> nullopt -> NetworkError ("check your connection"). A reachable

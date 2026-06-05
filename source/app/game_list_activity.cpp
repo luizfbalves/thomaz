@@ -236,15 +236,19 @@ void GameListActivity::loadCheatIndexAsync()
 
     IHttpClient* client = this->http;
 
-    auto covered = std::make_shared<std::set<std::uint64_t>>();
+    auto covered   = std::make_shared<std::set<std::uint64_t>>();
+    auto cancelled = this->cancelledFlag();
     this->runAsync(
-        [client, covered]() {
+        [client, covered, cancelled]() {
             // Use the cached index if we have one; otherwise download + cache it.
             std::string cachePath          = index_cache_path();
             std::optional<std::string> doc = read_text_file(cachePath);
             if (!doc)
             {
-                HttpResponse r = client->get(core::db_index_url());
+                HttpRequest req;
+                req.url       = core::db_index_url();
+                req.cancelled = cancelled;
+                HttpResponse r = client->request(req);
                 if (r.ok())
                 {
                     write_text_file(cachePath, r.body);

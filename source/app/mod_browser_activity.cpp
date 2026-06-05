@@ -51,11 +51,15 @@ void ModBrowserActivity::onContentAvailable()
 
     // Results shared between the worker and onSync via shared_ptr to avoid
     // capture-by-reference dangling across the async boundary.
-    auto results = std::make_shared<std::pair<core::GameResolve, core::BrowseResult>>();
+    auto results   = std::make_shared<std::pair<core::GameResolve, core::BrowseResult>>();
+    auto cancelled = this->cancelledFlag();
     this->runAsync(
-        [http, tid, name, results]() {
-            core::UrlFetcher fetch = [http](const std::string& url) -> std::optional<std::string> {
-                HttpResponse r = http->get(url);
+        [http, tid, name, results, cancelled]() {
+            core::UrlFetcher fetch = [http, cancelled](const std::string& url) -> std::optional<std::string> {
+                HttpRequest req;
+                req.url       = url;
+                req.cancelled = cancelled;
+                HttpResponse r = http->request(req);
                 return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
             };
             results->first = core::resolve_game(tid, name, fetch);
@@ -159,11 +163,15 @@ void ModBrowserActivity::runGameSearch(const std::string& query)
     std::string q       = query;
     int page            = this->page;
 
-    auto res = std::make_shared<core::BrowseResult>();
+    auto res       = std::make_shared<core::BrowseResult>();
+    auto cancelled = this->cancelledFlag();
     this->runAsync(
-        [client, gid, q, page, res]() {
-            core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
-                HttpResponse r = client->get(url);
+        [client, gid, q, page, res, cancelled]() {
+            core::UrlFetcher fetch = [client, cancelled](const std::string& url) -> std::optional<std::string> {
+                HttpRequest req;
+                req.url       = url;
+                req.cancelled = cancelled;
+                HttpResponse r = client->request(req);
                 return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
             };
             *res = core::list_game_mods(gid, q, page, fetch);
@@ -182,11 +190,15 @@ void ModBrowserActivity::runGlobalSearch()
     std::string q       = this->query;
     int page            = this->page;
 
-    auto res = std::make_shared<core::BrowseResult>();
+    auto res       = std::make_shared<core::BrowseResult>();
+    auto cancelled = this->cancelledFlag();
     this->runAsync(
-        [client, q, page, res]() {
-            core::UrlFetcher fetch = [client](const std::string& url) -> std::optional<std::string> {
-                HttpResponse r = client->get(url);
+        [client, q, page, res, cancelled]() {
+            core::UrlFetcher fetch = [client, cancelled](const std::string& url) -> std::optional<std::string> {
+                HttpRequest req;
+                req.url       = url;
+                req.cancelled = cancelled;
+                HttpResponse r = client->request(req);
                 return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
             };
             *res = core::search_mods(q, 0, page, fetch);
