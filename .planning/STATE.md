@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v0.4
 milestone_name: Extração de Temas
 status: executing
-last_updated: "2026-06-05T00:25:55.367Z"
+last_updated: "2026-06-05T00:33:41.674Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 4
-  percent: 80
+  completed_plans: 5
+  percent: 100
 ---
 
 # Project State
@@ -80,11 +80,19 @@ Progress: [████████░░] 80%
 
 ### Blockers
 
-- None. Roadmap awaiting user approval before planning Phase 1.
+- **Phase 01 awaits on-hardware validation** — plan 05 Task 1 (docs) is complete
+  (commit b7d3548), but Task 2 (human-verify) is open. The firmware extraction spike
+  code is complete (plans 01-04 merged) but has NOT yet been executed on a real Nintendo
+  Switch. Once the first hardware run succeeds:
+  1. Record `setsysGetFirmwareVersion` major.minor.micro in `docs/title-takeover.md`
+     Proveniência table and in `THIRD_PARTY.md` `## SPL key sources` block.
+  2. Confirm Atmosphère 1.7.1/b39e29d key sources derived a valid header key.
+  3. Approve Task 2 checkpoint (signal: "approved" or correction description).
 
 ## Session Continuity
 
-Next step: user approves roadmap → `/gsd-plan-phase 1`.
+Last completed: plan 05 Task 1 — docs/title-takeover.md + THIRD_PARTY.md SPL block (b7d3548).
+Next step: run the hardware spike → approve Task 2 → Phase 01 complete → Phase 02 planning.
 
 Key files for Phase 1:
 

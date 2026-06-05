@@ -22,7 +22,7 @@ skip the manual hold-`R` launch.
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Privileged Extraction Spike** - Re-vendor hactool+mbedtls, run as a title takeover, and prove BIS→lr→SPL→hactool extracts ONE qlaunch `.szs` to the SD on real hardware
+- [x] **Phase 1: Privileged Extraction Spike** - Re-vendor hactool+mbedtls, run as a title takeover, and prove BIS→lr→SPL→hactool extracts ONE qlaunch `.szs` to the SD on real hardware (completed 2026-06-05)
 - [ ] **Phase 2: Full Extraction Engine** - Extract every required layout from all three titles (qlaunch, Psl, MyPage) into the canonical `/themes/systemData/` flat layout
 - [ ] **Phase 3: Theme UI Integration** - "Extrair layouts do firmware" action with already-extracted/re-extract state, firmware-version record, base_missing unblock, and clear success/failure messaging
 - [ ] **Phase 4: Forwarder (Optional)** - Provide and document an installable Home-menu forwarder that launches thomaz directly in Application mode
@@ -46,7 +46,7 @@ Plans:
 - [x] 01-02-PLAN.md: Port `key_loader` (`__SWITCH__`) — pmdmnt/spl/splCrypto init, raw BIS System mount, `lr` title→NCA resolve, SPL header-key derivation from pinned public sources (keyless, EXTRACT-04) — Wave 2
 - [x] 01-03-PLAN.md: Port a minimal `hactool` facade — in-memory NCA RomFS read with a `/lyt/*.szs` filename filter, keyed by the SPL-derived header key — Wave 2
 - [x] 01-04-PLAN.md: Add the `platform/themes` extraction entry point with a `*_switch.cpp` real impl + `*_fake.cpp` desktop no-op; applet-vs-Application gate (TAKEOVER-01) → compose key_loader + hactool → validate → write to canonical SD path; on-hardware spike run — Wave 3
-- [ ] 01-05-PLAN.md: Document the title-takeover launch path (TAKEOVER-02) and record firmware/key-source provenance from the on-hardware spike — Wave 4
+- [x] 01-05-PLAN.md: Document the title-takeover launch path (TAKEOVER-02) and record firmware/key-source provenance from the on-hardware spike — Wave 4
 
 ### Phase 2: Full Extraction Engine
 **Goal**: Generalize the proven spike into the complete extraction engine: pull every required `.szs` from all three system titles (qlaunch ResidentMenu/Entrance/Flaunch/Set/Notification/common, Psl, MyPage) and write them into the exact flat `/themes/systemData/` layout `cfw_paths::base_layout_dir()` expects.
@@ -101,7 +101,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Privileged Extraction Spike | 4/5 | In Progress|  |
+| 1. Privileged Extraction Spike | 5/5 | Complete   | 2026-06-05 |
 | 2. Full Extraction Engine | 0/3 | Not started | - |
 | 3. Theme UI Integration | 0/3 | Not started | - |
 | 4. Forwarder (Optional) | 0/1 | Not started | - |
