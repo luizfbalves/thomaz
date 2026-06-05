@@ -176,10 +176,14 @@ NcaExtractResult extract_szs_from_nca(
     //              calls extraction_file_stream_cb with the decrypted buffer.
     // hactool's exit() on error longjmps back to the setjmp below (see
     // hactool_recover.*), so a wrong key surfaces as an error, not an app crash.
+    // NOTE: do NOT call nca_init(&nca_ctx) here — in this fork nca_init() is just
+    // `memset(ctx, 0, sizeof(*ctx))`, so calling it AFTER we set nca_ctx.file and
+    // nca_ctx.tool_ctx would wipe them back to NULL and nca_process() would
+    // fseeko64() a NULL FILE* (data abort, the on-hardware crash). We already
+    // zero-initialised nca_ctx above, so the context is ready as-is.
     bool aborted = false;
     g_hactool_recover_active = 1;
     if (setjmp(g_hactool_recover_jmp) == 0) {
-        nca_init(&nca_ctx);
         nca_process(&nca_ctx);
         nca_free_section_contexts(&nca_ctx);
     } else {
