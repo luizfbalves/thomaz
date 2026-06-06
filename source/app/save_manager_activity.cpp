@@ -8,6 +8,8 @@
 #include <borealis/core/thread.hpp>
 
 #include "core/backup_store.hpp"
+#include "core/title_filter.hpp"
+#include "platform/title_visibility_store.hpp"
 
 using namespace brls::literals;
 
@@ -66,7 +68,20 @@ void SaveManagerActivity::populate(const std::vector<InstalledTitle>& titles)
     ICloudSaveClient* cloud   = this->cloudSaves;
     IAuthClient* feedClient   = this->feed;
 
+    // Hide non-game homebrew (sphaira & co.) from the save list, mirroring the
+    // games list. A NonGame title has no save data, so it has nothing to manage
+    // here anyway. Respects the same persisted overrides + global show_hidden
+    // toggle the user controls from the games list (single source of truth).
+    TitleVisibilityStore visibility;
+    visibility.load();
+
+    int shownCount = 0;
     for (const auto& title : titles) {
+        if (!visibility.show_hidden() &&
+            core::effectively_hidden(title, visibility.force_hidden(), visibility.force_shown()))
+            continue;
+        ++shownCount;
+
         brls::Box* row = new brls::Box(brls::Axis::ROW);
         row->setHeight(64.0f);
         row->setFocusable(true);
@@ -125,6 +140,14 @@ void SaveManagerActivity::populate(const std::vector<InstalledTitle>& titles)
         });
         row->addGestureRecognizer(new brls::TapGestureRecognizer(row));
         listBox->addView(row);
+    }
+
+    // Everything installed was filtered out (only homebrew present) — surface the
+    // empty state rather than a blank list.
+    if (shownCount == 0) {
+        emptyLabel->setVisibility(brls::Visibility::VISIBLE);
+        listBox->setVisibility(brls::Visibility::GONE);
+        return;
     }
 
     // Give focus to the first item in the list (no-op on empty list via guard
