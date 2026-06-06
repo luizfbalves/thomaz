@@ -2,9 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Game Management
-status: roadmapped
-last_updated: "2026-06-06T21:12:16.918Z"
-last_activity: 2026-06-06
+status: planning
+stopped_at: Phase 8 context gathered
+last_updated: "2026-06-06T22:05:16.384Z"
+last_activity: 2026-06-06 — Milestone v1.2 roadmap revised (NSZ merged into Phase 10; 4 phases, 19/19 requirements mapped)
 progress:
   total_phases: 4
   completed_phases: 0
@@ -152,9 +153,9 @@ All deferred UAT/verification items are on-hardware checks the host test suite c
 
 ## Session Continuity
 
-Last session: 2026-06-06 — v1.2 roadmap revised (NSZ merged into Phase 10)
-Stopped at: ROADMAP.md + REQUIREMENTS.md traceability written for v1.2 (phases 8-11)
-Resume file: .planning/ROADMAP.md
+Last session: 2026-06-06T22:05:16.377Z
+Stopped at: Phase 8 context gathered
+Resume file: .planning/phases/08-catalog-content-sources-server-linking/08-CONTEXT.md
 
 ## Operator Next Steps
 
