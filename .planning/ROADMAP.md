@@ -87,7 +87,16 @@ All decidable logic (index parse, title-ID/kind derivation, PFS0 parse, install 
   3. Each catalog entry shows its kind (base / update / DLC) derived from the 64-bit title ID, and the user can filter/search the catalog.
   4. A user can browse and select local NSP/NSZ files on the SD card through the same catalog/detail surface.
   5. A user can tap once to sync their server-link configuration to their thomaz cloud account and see it restored on another console signed into the same account; the synced record is owner-scoped, credentials are protected at rest, and the API stores config only — never catalog or content bytes.
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — Pure core/games logic: tolerant Tinfoil index parse, title-ID kind/grouping, catalog view transforms, recurse bounds, config-only sync codec (+ doctests)
+- [ ] 08-02-PLAN.md — Streaming/Range HTTP seam + platform index fetch (redirect-safe), empty-by-default source store, per-source SD cache
+- [ ] 08-03-PLAN.md — Cloud config sync: owner-scoped SourceLink model + JWT config-only /sources route (encrypted at rest) + device sync client
+- [ ] 08-04-PLAN.md — Shared UI scaffolding: catalog/sources i18n (both locales), tile_games token, Home Games card, 3-tier cover-art service
+- [ ] 08-05-PLAN.md — Catalog grid/list + detail Activities (cache-first paint, search/sort/filter, kind chips, no install)
+- [ ] 08-06-PLAN.md — Source-list Activity: empty default, add auth-gated remote + local SD peer, one-tap sync, redacted credentials
+
 **UI hint**: yes
 **Research flag**: Tinfoil index schema is community-reverse-engineered, not formally specified — point the parser at a real user server early; treat the encrypted-index variant as out of scope for MVP. Validate `Accept-Ranges: bytes` and the streaming/Range fallback on the target server (the streaming seam established here is consumed by Phase 10). Keep fail-closed TLS; strip `Authorization` on cross-host redirects.
 
@@ -172,7 +181,7 @@ All decidable logic (index parse, title-ID/kind derivation, PFS0 parse, install 
 | 5. Collapse Source Seams to Switch-Only | v1.1 | 4/4 | Complete   | 2026-06-06 |
 | 6. Strip Desktop from Build System      | v1.1 | 2/2 | Complete   | 2026-06-06 |
 | 7. Docs Cleanup & Final Verification Gate | v1.1 | 2/2 | Complete   | 2026-06-06 |
-| 8. Catalog, Content Sources & Server Linking | v1.2 | 0/? | Not started | - |
+| 8. Catalog, Content Sources & Server Linking | v1.2 | 0/6 | Planned | - |
 | 9. Install-Decision Core & Resumable Queue | v1.2 | 0/? | Not started | - |
 | 10. NSP & NSZ Install Engine (HARDWARE) | v1.2 | 0/? | Not started | - |
 | 11. Installed Mgmt, Uninstall & Update/DLC Detection (HARDWARE) | v1.2 | 0/? | Not started | - |
