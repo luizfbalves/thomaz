@@ -4,14 +4,14 @@ milestone: v1.1
 milestone_name: Switch-Only Simplification
 status: executing
 stopped_at: v1.1 roadmap created (Phases 5-7); traceability + STATE updated
-last_updated: "2026-06-06T00:39:36.560Z"
-last_activity: 2026-06-06 -- Phase 06 execution started
+last_updated: "2026-06-06T01:16:59.940Z"
+last_activity: 2026-06-05 -- Phase 06 complete (Switch build verified, BUILD-03 green; ran on hardware via nxlink)
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 4
-  percent: 33
+  completed_plans: 5
+  percent: 83
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-05)
 
 **Core value:** Remove the desktop (PC/SDL2/GLFW) build target with zero change to the shipped Switch `.nro` — proven by a green host doctest suite (`tests/Makefile`) and a clean Switch build (`scripts/build-switch.sh`)
-**Current focus:** Phase 06 — strip-desktop-build-system
+**Current focus:** Phase 07 — docs-cleanup-final-verification-gate (next)
 
 ## Current Position
 
-Phase: 06 (strip-desktop-build-system) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 06
-Last activity: 2026-06-06 -- Phase 06 execution started
+Phase: 06 (strip-desktop-build-system) — COMPLETE (2/2 plans)
+Plan: 2 of 2 — done
+Status: Phase 06 complete; next is Phase 07 (docs cleanup + final verification gate)
+Last activity: 2026-06-05 -- Phase 06 Plan 02 complete (clean native Switch build, thomaz.nro 7.7MB, launched on hardware via nxlink). BUILD-03 green; Docker-unavailable blocker resolved via native devkitPro build.
 
 Roadmap: collapse source seams first (Phase 5), then strip the build system (Phase 6), then docs cleanup + final combined gate (Phase 7). Sequenced so the source layer is single-target before CMake stops offering the desktop branch — the tree is never left unbuildable mid-phase.
 
