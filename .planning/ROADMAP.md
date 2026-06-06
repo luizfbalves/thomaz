@@ -78,64 +78,89 @@ All decidable logic (index parse, title-ID/kind derivation, PFS0 parse, install 
 ## Phase Details
 
 ### Phase 8: Catalog, Content Sources & Server Linking
+
 **Goal**: A user can link their own content server (or pick local SD files), see its catalog rendered as a cover-art grid with base/update/DLC kinds, and sync that server configuration one-tap to their thomaz account — with no content ever touching the cloud API and no source enabled by default.
 **Depends on**: Nothing (first phase of the milestone; builds on existing `http_client_curl`, title/icon UI, and the cloud-saves auth pattern).
 **Requirements**: SRC-01, SRC-02, SRC-03, SRC-04, CAT-01, CAT-02, SYNC-01, SYNC-02
 **Success Criteria** (what must be TRUE):
+
   1. With no source configured, the source list is empty — nothing is bundled or enabled by default; the user must add a server before any catalog appears.
   2. A user can add a server URL returning a Tinfoil-style JSON index (`files[{url,size}]`, `directories`), including a server requiring auth (basic-auth-in-URL, custom header, or referrer gate), and see its catalog as a grid/list with cover art, title name, and size.
   3. Each catalog entry shows its kind (base / update / DLC) derived from the 64-bit title ID, and the user can filter/search the catalog.
   4. A user can browse and select local NSP/NSZ files on the SD card through the same catalog/detail surface.
   5. A user can tap once to sync their server-link configuration to their thomaz cloud account and see it restored on another console signed into the same account; the synced record is owner-scoped, credentials are protected at rest, and the API stores config only — never catalog or content bytes.
-**Plans**: 6 plans
 
+**Plans**: 6 plans
 Plans:
+**Wave 1**
+
 - [ ] 08-01-PLAN.md — Pure core/games logic: tolerant Tinfoil index parse, title-ID kind/grouping, catalog view transforms, recurse bounds, config-only sync codec (+ doctests)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 08-02-PLAN.md — Streaming/Range HTTP seam + platform index fetch (redirect-safe), empty-by-default source store, per-source SD cache
 - [ ] 08-03-PLAN.md — Cloud config sync: owner-scoped SourceLink model + JWT config-only /sources route (encrypted at rest) + device sync client
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 08-04-PLAN.md — Shared UI scaffolding: catalog/sources i18n (both locales), tile_games token, Home Games card, 3-tier cover-art service
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 08-05-PLAN.md — Catalog grid/list + detail Activities (cache-first paint, search/sort/filter, kind chips, no install)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
 - [ ] 08-06-PLAN.md — Source-list Activity: empty default, add auth-gated remote + local SD peer, one-tap sync, redacted credentials
 
 **UI hint**: yes
 **Research flag**: Tinfoil index schema is community-reverse-engineered, not formally specified — point the parser at a real user server early; treat the encrypted-index variant as out of scope for MVP. Validate `Accept-Ranges: bytes` and the streaming/Range fallback on the target server (the streaming seam established here is consumed by Phase 10). Keep fail-closed TLS; strip `Authorization` on cross-host redirects.
 
 ### Phase 9: Install-Decision Core & Resumable Queue
+
 **Goal**: Every install decision and the durable download/install queue exist and are proven on the host before any hardware write: PFS0/NSP parsing, the install plan (which NCAs, NAND-vs-SD target, free-space requirement, install order, CNMT meta-type), and a journaled, app-scoped queue runner that resumes interrupted downloads across a full app restart.
 **Depends on**: Phase 8 (content sources + catalog feed the queue and the planner).
 **Requirements**: QUEUE-01, QUEUE-02
 **Success Criteria** (what must be TRUE):
+
   1. Host doctests parse PFS0/NSP headers into an entry table and produce a correct `InstallPlan` (NCA set, storage target, free-space need, ordering, meta-type) against fixtures — no hardware required.
   2. A user can enqueue a download/install job; it runs off the UI thread through an app-scoped runner with per-item progress and a cancel action, and navigating away from the queue does not stop it.
   3. An interrupted download resumes after a full app restart from a persisted on-SD journal (per-content_id offset + placeholder_id, HTTP Range based); a user-cancelled item is discarded, not resumed.
   4. The queue serializes work (one job in-flight) and the journal schema already carries the fields the install engine will checkpoint, so Phase 10 builds on it without redesign.
+
 **Plans**: TBD
 **Research flag**: The persistence schema (per-content_id offset + placeholder_id + target storage) must be designed here so resume builds on top in Phase 10 without redesign. The runner must NOT borrow a `ThomazActivity`/`runAsync` `alive`/`cancelled` lifetime — it owns its own cancelled flag at app scope.
 
 ### Phase 10: NSP & NSZ Install Engine (HARDWARE)
+
 **Goal**: A user can install a base title, update, or DLC — packaged as either a plain NSP or a compressed NSZ — from a linked server or a local file: content streams directly into NCM storage by offset (never buffered whole in RAM), the user chooses NAND or SD with a free-space pre-flight check, an interrupted or failed install rolls back cleanly with orphaned placeholders/partial meta reconciled at startup, tickets are imported only when the NCA's rights_id requires one, and NSZ packages are stream-decompressed and re-encrypted on-device into the same placeholder write loop within the applet-mode memory budget.
 **Depends on**: Phase 9 (queue runner + journal + PFS0 parse + install planner) and Phase 8 (streaming content source).
 **Requirements**: INST-01, INST-02, INST-03, INST-04, INST-05
 **Success Criteria** (what must be TRUE):
+
   1. A user can install a base title (NSP) end-to-end from either a linked server or a local SD file, and the installed title appears and launches on the HOME menu.
   2. A user can install updates and DLC for a title through the same pipeline, with prerequisite/version and `RequiredSystemVersion` checks surfaced rather than producing un-launchable content.
   3. Installs stream into the NCM placeholder by offset with flat (non-size-proportional) peak RAM, let the user choose NAND or SD, and refuse early with a clear message when free space is insufficient.
   4. Interrupting or failing an install at any step leaves no orphaned placeholders, no registered-but-uncommitted NCAs, and an uncommitted content-meta DB; startup reconciliation (`CleanupAllPlaceHolder` + content/meta reconcile) clears any residue, and DB-mutating ops are serialized (install mutually exclusive with itself and uninstall).
   5. A title whose NCAs carry a non-zero rights_id imports its ticket+cert (common ticket preferred; personalized surfaced, not blindly imported); a no-ticket title installs without a spurious ticket.
   6. A user can install a solid-compressed NSZ package and the resulting title launches correctly (re-encryption is byte-correct — no silent corruption surfacing only at launch); NSZ decompression streams with flat peak RAM (not proportional to decompressed section size), the zstd context is freed deterministically so installs succeed even in applet mode, and the NCZ structure boundary (first 0x4000 bytes stored uncompressed, the zstd stream after the header) is handled correctly so the NCA is not corrupted.
+
 **Plans**: TBD
 **UI hint**: yes
 **Research flag**: HIGHEST-RISK, hardware-gated phase. Validate the NCM content-meta struct layout on the actual target firmware (layout has grown across firmware versions — do not hardcode sizes where libnx provides them). Verify the exact ncm/ns/es call sequence and interrupt-at-each-step rollback. Rollback + startup reconciliation + serialization + gated ticket import MUST ship in this phase — they are NOT a later hardening phase. **NSZ sub-gate (merged in, NOT dissolved):** NSZ carries higher technical uncertainty than plain NSP and the launch-only-corruption risk remains even though the user accepted the merge — it still needs its OWN dedicated spike and a distinct on-hardware validation sub-gate within this phase. NCZ format boundaries (0x4000 offset, per-section AES-CTR keys from the NCZ header), solid-vs-block streaming, applet-mode memory; reference Awoo `nca_writer` + the nsz spec; validate re-encryption against reference fixtures because corruption only fails at game launch. Do NOT collapse the NSZ validation into the NSP happy path — gate it separately.
 
 ### Phase 11: Installed Management, Uninstall & Update/DLC Detection (HARDWARE)
+
 **Goal**: A user can see what is installed (version, owned DLC, on-disk size) and how much free space remains on NAND and SD, uninstall a title's base/update/DLC to reclaim space, have available updates and DLC on the linked server auto-surfaced for installed titles, and watch the live download/install queue with cancel and resume.
 **Depends on**: Phase 10 (shares the ncm/ns lifecycle; the queue runner and catalog already exist). Update/DLC diff also draws on the Phase 8 catalog.
 **Requirements**: MGMT-01, MGMT-02, MGMT-03, UPD-01
 **Success Criteria** (what must be TRUE):
+
   1. A user can view installed titles with version, installed DLC, and on-disk size, and see free space on both NAND and SD card.
   2. A user can uninstall an installed title's base, update, and/or DLC and observe the freed space reflected.
   3. For installed titles, the app auto-detects and surfaces available updates and DLC present on the linked server (update-available / N-new-DLC badges).
   4. A user can open the queue screen to watch per-item progress, cancel a discardable item, and see an interrupted item resume — without the queue screen owning the install's lifetime.
+
 **Plans**: TBD
 **UI hint**: yes
 **Research flag**: Granular update/DLC uninstall is materially trickier than full-title `nsDeleteApplicationCompletely` — it needs application-record merge/trim logic; flag for phase-level research during planning.
