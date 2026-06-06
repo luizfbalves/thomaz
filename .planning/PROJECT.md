@@ -2,17 +2,28 @@
 
 ## What This Is
 
-thomaz is a Nintendo Switch homebrew hub (Borealis UI, devkitPro NRO) that manages cheats, mods, themes, cloud saves, and sysmodules, backed by a Node.js/Fastify + PostgreSQL cloud API. The tree historically built for two targets — Switch (devkitPro) and desktop PC (SDL2/GLFW) — from one source. This milestone is a **simplification pass**: remove the desktop build target entirely so the tree targets only the Switch, cutting the platform-abstraction surface that existed solely to run the GUI on PC.
+thomaz is a Nintendo Switch homebrew hub (Borealis UI, devkitPro NRO) that manages cheats, mods, themes, cloud saves, and sysmodules, backed by a Node.js/Fastify + PostgreSQL cloud API. This milestone adds a **game-management pillar**: a Tinfoil-style content client that installs, updates, uninstalls, and lists titles and DLC sourced from a user-linked content server (HTTP/HTTPS JSON index, optionally authenticated) or local SD/USB files — with a richer, more fluid UX than existing installers (cover-art browse, one-tap server linking synced to the thomaz account, a resumable download/install queue, and auto-detected updates/DLC). thomaz ships only the **client**: it hosts and distributes no content, the user supplies their own server, and we are not responsible for misuse of the feature.
 
 ## Current State
 
 **Shipped v1.1 Switch-Only Simplification (2026-06-06).** The desktop (PC/SDL2/GLFW) build target is fully removed: `CMakeLists.txt` has no `PLATFORM_DESKTOP` path, the desktop build/run scripts are gone, the five desktop stub pairs are deleted (their `*_switch` twins are now sole implementations), and every implementation-selection seam unconditionally uses the Switch path. Platform-portability `#else` seams (path strings, `_WIN32`/`localtime_r`) were knowingly retained to keep the host doctest suite green. Proven by **zero change to the shipped `.nro`** — host doctest 209/209 + a clean Switch build (`build_switch/thomaz.nro`, 7.7 MB), redeployed and confirmed on real hardware.
 
-**No active milestone.** Next milestone to be defined via `/gsd-new-milestone`. Carried-forward candidates below.
+**Active milestone: v1.2 Game Management** (started 2026-06-06). Defining requirements next.
+
+## Current Milestone: v1.2 Game Management
+
+**Goal:** Add a Tinfoil-style game-management client to the hub — install/update/uninstall/list titles + DLC from a user-linked content server or local files, with a markedly easier and more fluid UX than existing installers.
+
+**Target features:**
+- Link a user-owned content server (HTTP/HTTPS JSON index, optional auth) and browse its catalog with cover art and metadata; server config synced one-tap to the thomaz cloud account
+- Install base titles, updates, and DLC from the linked server or from local SD/USB files
+- Uninstall base/update/DLC and view installed titles with version, DLC, size, and free space (NAND/SD)
+- Resumable download/install queue with progress and cancel; auto-detect available updates/DLC for installed titles
+- Responsibility framing: thomaz is the client only — it hosts no content; the user supplies the server; misuse is the user's responsibility
 
 ## Core Value
 
-The desktop build target and its supporting stubs are removed with **zero change to the shipped Switch `.nro`** — proven by a green host doctest suite (`tests/Makefile`) and a clean Switch build (`scripts/build-switch.sh`).
+The user links their own content source and installs/manages games and DLC from inside the hub with a smoother, cover-art-rich, resumable flow than stock installers — thomaz being purely the client, never a content host.
 
 ## Requirements
 
@@ -55,7 +66,7 @@ The desktop build target and its supporting stubs are removed with **zero change
 
 ### Active
 
-_No active milestone — define the next via `/gsd-new-milestone`._
+**Milestone v1.2 Game Management** — requirements defined in `.planning/REQUIREMENTS.md`. Target areas: content-server linking + auth, catalog browse with cover art, base/update/DLC install, uninstall + installed-title listing, download/install queue, local SD/USB install.
 
 **Carried-forward candidates (future milestones):**
 - [ ] PERF-01: avoid double archive traversal per mod extraction (deferred from v1.0)
@@ -129,4 +140,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-06 — shipped v1.1 Switch-Only Simplification milestone*
+*Last updated: 2026-06-06 — started v1.2 Game Management milestone*

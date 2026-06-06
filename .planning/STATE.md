@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Switch-Only Simplification
-status: Awaiting next milestone
-stopped_at: Phase 7 context gathered
-last_updated: "2026-06-06T13:44:27.474Z"
-last_activity: 2026-06-06 — Milestone v1.1 completed and archived
+milestone: v1.2
+milestone_name: Game Management
+status: planning
+last_updated: "2026-06-06T21:12:16.918Z"
+last_activity: 2026-06-06
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-06-06)
 
 ## Current Position
 
-Phase: Milestone v1.1 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-06 — Completed quick task 260606-og5: improve README to reflect the project
+Status: Defining requirements
+Last activity: 2026-06-06 — Milestone v1.2 started
 
 ## Performance Metrics
 
