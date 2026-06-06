@@ -80,3 +80,10 @@ thomaz-cache/
 thomaz-saves/
 tests/test-saves-tmp/
 tests/test-mods-tmp/
+
+# Build/netload logs (nxlink workflow scratch)
+build*_log.txt
+build_switch_log.txt
+
+# Compiled host test runner (msys2 gcc output)
+tests/*.exe
