@@ -37,16 +37,6 @@ Cada recurso usa a melhor fonte open-source disponível: cheats vêm da [**switc
 
 ---
 
-## 📸 Capturas de tela
-
-| Início | Meus jogos |
-|:------:|:----------:|
-| ![Início](docs/screenshots/home.png) | ![Meus jogos](docs/screenshots/games.png) |
-
-<!-- Mais telas em breve: temas, mods, saves, trapaças (toggles) e configurações. -->
-
----
-
 ## 📦 Requisitos
 
 - Nintendo Switch com **Atmosphère** (CFW) e um menu de homebrew (hbmenu).
