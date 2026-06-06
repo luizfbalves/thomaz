@@ -1,0 +1,387 @@
+diff --git a/source/core/backup_store.cpp b/source/core/backup_store.cpp
+index bac0b00..54315b0 100644
+--- a/source/core/backup_store.cpp
++++ b/source/core/backup_store.cpp
+@@ -43,11 +43,7 @@ std::optional<ManifestInfo> parse_manifest(const std::string& body) {
+ }
+ 
+ std::string saves_root() {
+-#ifdef __SWITCH__
+     return "/switch/thomaz/saves";
+-#else
+-    return "thomaz-saves";
+-#endif
+ }
+ 
+ std::string title_backups_dir(const std::string& root, std::uint64_t title_id) {
+diff --git a/source/core/backup_store.hpp b/source/core/backup_store.hpp
+index e829b95..d3da1e6 100644
+--- a/source/core/backup_store.hpp
++++ b/source/core/backup_store.hpp
+@@ -34,9 +34,7 @@ std::string build_manifest(const ManifestInfo& info);
+ // Parse a manifest.json body; nullopt if malformed.
+ std::optional<ManifestInfo> parse_manifest(const std::string& body);
+ 
+-// Root directory holding all backups. Platform-specific:
+-//   Switch  -> "/switch/thomaz/saves"
+-//   desktop -> "thomaz-saves" (relative to the working dir)
++// Root directory holding all backups ("/switch/thomaz/saves").
+ std::string saves_root();
+ 
+ // <root>/<titleIdLowerHex>  — all backups of one title live here.
+diff --git a/source/core/mods/mod_paths.cpp b/source/core/mods/mod_paths.cpp
+index 66b6a5f..455e3a3 100644
+--- a/source/core/mods/mod_paths.cpp
++++ b/source/core/mods/mod_paths.cpp
+@@ -4,11 +4,7 @@
+ namespace thomaz::core {
+ 
+ std::string mod_staging_root() {
+-#ifdef __SWITCH__
+     return "/switch/thomaz/mods";
+-#else
+-    return "thomaz-mods";
+-#endif
+ }
+ 
+ std::string mod_staging_title_dir(std::uint64_t title_id) {
+diff --git a/source/platform/app_settings.cpp b/source/platform/app_settings.cpp
+index 020db01..844d165 100644
+--- a/source/platform/app_settings.cpp
++++ b/source/platform/app_settings.cpp
+@@ -6,11 +6,7 @@ namespace thomaz {
+ namespace {
+ 
+ std::string locale_file() {
+-#ifdef __SWITCH__
+     return "/switch/thomaz/config/locale.txt";
+-#else
+-    return "thomaz-cache/locale.txt";
+-#endif
+ }
+ 
+ std::string trim(const std::string& s) {
+@@ -22,17 +18,13 @@ std::string trim(const std::string& s) {
+ }
+ 
+ std::string api_url_file() {
+-#ifdef __SWITCH__
+     return "/switch/thomaz/config/api_url.txt";
+-#else
+-    return "thomaz-cache/api_url.txt";
+-#endif
+ }
+ 
+ std::string default_api_base_url() {
+-    // Both desktop and Switch default to the live API on Lightsail. For local
+-    // API development, set a localhost override in Settings (API URL field) —
+-    // it persists per platform and survives restarts.
++    // Defaults to the live API on Lightsail. For local API development, set a
++    // localhost override in Settings (API URL field) — it persists and survives
++    // restarts.
+     return "https://api.thomaz.baseup.cc";
+ }
+ 
+diff --git a/source/platform/cheat_store.cpp b/source/platform/cheat_store.cpp
+index 4669456..ce51959 100644
+--- a/source/platform/cheat_store.cpp
++++ b/source/platform/cheat_store.cpp
+@@ -47,11 +47,7 @@ bool write_text_file(const std::string& path, const std::string& body) {
+ }
+ 
+ std::string index_cache_path() {
+-#ifdef __SWITCH__
+     return "/switch/thomaz/cache/versions.json";
+-#else
+-    return "thomaz-cache/versions.json";
+-#endif
+ }
+ 
+ bool dir_has_nonempty_txt(const std::string& dir) {
+diff --git a/source/platform/curl_tls.hpp b/source/platform/curl_tls.hpp
+index e3209ba..2e62443 100644
+--- a/source/platform/curl_tls.hpp
++++ b/source/platform/curl_tls.hpp
+@@ -7,10 +7,8 @@
+ namespace thomaz {
+ 
+ // Process-global latch: set to true the first time apply_curl_tls detects a
+-// missing CA bundle (ca_ok == false on Switch). One-way flag, never cleared.
++// missing CA bundle (ca_ok == false). One-way flag, never cleared.
+ // The SEC-03 UI banner reads this via tls_is_insecure() to warn the user.
+-// Lives OUTSIDE #ifdef __SWITCH__ so the host build can inspect it (always false
+-// on desktop because the desktop branch never sets it).
+ // IN-04: atomic so the worker-thread setter (apply_curl_tls, via brls::async)
+ // and the UI-thread reader (install_tls_warning_banner) do not data-race. It is
+ // a one-way latch so the race was benign in practice, but a plain bool is still
+@@ -25,17 +23,15 @@ inline bool tls_is_insecure() {
+ }
+ 
+ // Enable TLS certificate verification on a curl easy handle.
+-//   - Switch: verify against the CA bundle packed into romfs
+-//     (resources/cacert.pem -> romfs:/cacert.pem). FAIL-CLOSED (CR-01,
+-//     user-authorized D-06 reversal): if that bundle can't be opened (a
+-//     packaging/mount bug), keep verification ON so the transfer fails loudly
+-//     rather than silently downloading/installing attacker-forged content over
+-//     an unauthenticated connection. A missing read-only romfs bundle is a build
+-//     defect; the correct response is a visible failure, not a silent downgrade.
+-//   - Desktop: verify against the system CA store.
++//   Verify against the CA bundle packed into romfs (resources/cacert.pem ->
++//   romfs:/cacert.pem). FAIL-CLOSED (CR-01, user-authorized D-06 reversal): if
++//   that bundle can't be opened (a packaging/mount bug), keep verification ON so
++//   the transfer fails loudly rather than silently downloading/installing
++//   attacker-forged content over an unauthenticated connection. A missing
++//   read-only romfs bundle is a build defect; the correct response is a visible
++//   failure, not a silent downgrade.
+ // Call once per handle, replacing any SSL_VERIFYPEER/VERIFYHOST the caller set.
+ inline void apply_curl_tls(CURL* curl) {
+-#ifdef __SWITCH__
+     // Probe the bundle once. curl's mbedtls backend loads CAINFO via the same
+     // newlib fopen, so a successful probe means CAINFO will resolve too.
+     static const bool ca_ok = [] {
+@@ -62,11 +58,6 @@ inline void apply_curl_tls(CURL* curl) {
+         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, p.verifypeer);
+         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, p.verifyhost);
+     }
+-#else
+-    auto p = tls_policy(true);
+-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, p.verifypeer);
+-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, p.verifyhost);
+-#endif
+ }
+ 
+ } // namespace thomaz
+diff --git a/source/platform/feed/auth_store.cpp b/source/platform/feed/auth_store.cpp
+index dbc8475..b67a49a 100644
+--- a/source/platform/feed/auth_store.cpp
++++ b/source/platform/feed/auth_store.cpp
+@@ -7,11 +7,7 @@ namespace thomaz {
+ 
+ namespace {
+ std::string session_file() {
+-#ifdef __SWITCH__
+     return "/switch/thomaz/config/session.txt";
+-#else
+-    return "thomaz-cache/session.txt";
+-#endif
+ }
+ } // namespace
+ 
+diff --git a/source/platform/game_stats.cpp b/source/platform/game_stats.cpp
+index b3fbb51..011f46a 100644
+--- a/source/platform/game_stats.cpp
++++ b/source/platform/game_stats.cpp
+@@ -1,14 +1,11 @@
+ /*
+     thomaz — per-title play statistics.
+ 
+-    Switch: pdm:qry (PdmPlayStatistics). Desktop: deterministic fake so the
+-    two-column game panel renders fully during UI iteration.
++    Switch: pdm:qry (PdmPlayStatistics).
+ */
+ 
+ #include "platform/game_stats.hpp"
+ 
+-#ifdef __SWITCH__
+-
+ #include <switch.h>
+ 
+ namespace thomaz {
+@@ -35,22 +32,3 @@ GameStats query_game_stats(std::uint64_t title_id)
+ }
+ 
+ } // namespace thomaz
+-
+-#else // desktop
+-
+-namespace thomaz {
+-
+-GameStats query_game_stats(std::uint64_t title_id)
+-{
+-    // Deterministic fake values, varied a little by title id, for layout testing.
+-    GameStats g;
+-    g.valid        = true;
+-    g.play_minutes = 1287 + (std::uint32_t)(title_id & 0xFF);   // ~21h
+-    g.launches     = 42 + (std::uint32_t)((title_id >> 8) & 0x3F);
+-    g.last_played  = 1717428000ULL; // 2024-06-03, fixed for stable rendering
+-    return g;
+-}
+-
+-} // namespace thomaz
+-
+-#endif
+diff --git a/source/platform/http_client_curl.cpp b/source/platform/http_client_curl.cpp
+index 3a15f31..698de4d 100644
+--- a/source/platform/http_client_curl.cpp
++++ b/source/platform/http_client_curl.cpp
+@@ -29,7 +29,6 @@ int curlCancelXferInfo(void* p, curl_off_t, curl_off_t, curl_off_t, curl_off_t)
+ } // namespace
+ 
+ CurlHttpClient::CurlHttpClient() {
+-#ifdef __SWITCH__
+     // The libnx socket stack is already brought up by Borealis in userAppInit()
+     // (lib/borealis/.../switch/switch_wrapper.c). Calling socketInitializeDefault()
+     // again returns an "already initialized" error — which previously made us mark
+@@ -37,9 +36,6 @@ CurlHttpClient::CurlHttpClient() {
+     // console was online. Sockets are guaranteed up by the time we run, so just
+     // use them; teardown is likewise owned by Borealis (userAppExit -> socketExit).
+     networkReady = true;
+-#else
+-    networkReady = true;
+-#endif
+     curl_global_init(CURL_GLOBAL_DEFAULT);
+ }
+ 
+diff --git a/source/platform/saves/sync_store.cpp b/source/platform/saves/sync_store.cpp
+index 499eb48..d0fbf90 100644
+--- a/source/platform/saves/sync_store.cpp
++++ b/source/platform/saves/sync_store.cpp
+@@ -8,11 +8,7 @@ namespace thomaz {
+ 
+ namespace {
+ std::string sync_file() {
+-#ifdef __SWITCH__
+     return "/switch/thomaz/config/save_sync.txt";
+-#else
+-    return "thomaz-cache/save_sync.txt";
+-#endif
+ }
+ } // namespace
+ 
+diff --git a/source/platform/sysmod/system_reboot.cpp b/source/platform/sysmod/system_reboot.cpp
+index 66f59c1..17fbbbc 100644
+--- a/source/platform/sysmod/system_reboot.cpp
++++ b/source/platform/sysmod/system_reboot.cpp
+@@ -1,7 +1,5 @@
+ #include "platform/sysmod/system_reboot.hpp"
+ 
+-#ifdef __SWITCH__
+-
+ #include <switch.h>
+ 
+ namespace thomaz {
+@@ -18,15 +16,3 @@ bool system_reboot_to_payload() {
+ }
+ 
+ } // namespace thomaz
+-
+-#else
+-
+-namespace thomaz {
+-
+-bool system_reboot_to_payload() {
+-    return false; // unsupported on desktop
+-}
+-
+-} // namespace thomaz
+-
+-#endif // __SWITCH__
+diff --git a/source/platform/themes/cfw_paths.cpp b/source/platform/themes/cfw_paths.cpp
+index 13900dc..e7faec4 100644
+--- a/source/platform/themes/cfw_paths.cpp
++++ b/source/platform/themes/cfw_paths.cpp
+@@ -4,19 +4,11 @@
+ namespace thomaz {
+ 
+ std::string layeredfs_root() {
+-#ifdef __SWITCH__
+     return "/atmosphere/contents";
+-#else
+-    return "themes-out/contents";
+-#endif
+ }
+ 
+ std::string base_layout_dir() {
+-#ifdef __SWITCH__
+     return "/themes/systemData";
+-#else
+-    return "themes/systemData";
+-#endif
+ }
+ 
+ std::optional<TargetMap> target_map(const std::string& target) {
+diff --git a/source/platform/themes/qlaunch_patches.cpp b/source/platform/themes/qlaunch_patches.cpp
+index 991d1cd..f8b1783 100644
+--- a/source/platform/themes/qlaunch_patches.cpp
++++ b/source/platform/themes/qlaunch_patches.cpp
+@@ -13,21 +13,13 @@ namespace {
+ 
+ // Bundled patches ship in the app romfs (resources/theme-patches at build time).
+ std::string patch_src_dir() {
+-#ifdef __SWITCH__
+     return "romfs:/theme-patches";
+-#else
+-    return "resources/theme-patches";
+-#endif
+ }
+ 
+ // Atmosphère scans every subfolder of exefs_patches; the subfolder name is
+ // arbitrary and just groups a patch set.
+ std::string exefs_patches_dir() {
+-#ifdef __SWITCH__
+     return "/atmosphere/exefs_patches/thomaz_themes";
+-#else
+-    return "themes-out/exefs_patches/thomaz_themes";
+-#endif
+ }
+ 
+ // mkdir -p for a directory path (POSIX, FAT-safe).
+diff --git a/source/platform/themes/theme_install.cpp b/source/platform/themes/theme_install.cpp
+index 40fcd2b..ea58981 100644
+--- a/source/platform/themes/theme_install.cpp
++++ b/source/platform/themes/theme_install.cpp
+@@ -52,7 +52,7 @@ InstallResult install_theme(const thomaz::core::ThemeDetail& detail,
+ 
+     // Give the theme engine the real console firmware so its layout-compat fixes
+     // run (the engine defaults hos::Version to 0.0.0 = pre-5.0, which disables
+-    // every firmware fix). No-op on desktop.
++    // every firmware fix).
+     init_engine_firmware();
+ 
+     // On firmware 20.0+ a themed (larger-than-stock) qlaunch SZS crashes the
+@@ -60,13 +60,9 @@ InstallResult install_theme(const thomaz::core::ThemeDetail& detail,
+     // The stock installer downloads it; we ship it bundled and install it here.
+     // Idempotent — only the patch matching this console's qlaunch is applied.
+     int patches = install_qlaunch_patches();
+-#ifdef __SWITCH__
+     if (patches == 0)
+         res.warnings.push_back("could not install qlaunch theme patch — the "
+                                "Home Menu may crash on reboot");
+-#else
+-    (void)patches;
+-#endif
+ 
+     std::string folder = theme_folder(detail.entry);
+     std::vector<std::string> written;        // for rollback
+diff --git a/source/platform/themes/theme_paths.cpp b/source/platform/themes/theme_paths.cpp
+index 03d2747..77a6364 100644
+--- a/source/platform/themes/theme_paths.cpp
++++ b/source/platform/themes/theme_paths.cpp
+@@ -4,11 +4,7 @@
+ namespace thomaz {
+ 
+ std::string themes_root() {
+-#ifdef __SWITCH__
+     return "/themes";
+-#else
+-    return "themes";
+-#endif
+ }
+ 
+ namespace {
+diff --git a/source/platform/title_visibility_store.cpp b/source/platform/title_visibility_store.cpp
+index 12e5fc0..aa9f22b 100644
+--- a/source/platform/title_visibility_store.cpp
++++ b/source/platform/title_visibility_store.cpp
+@@ -13,11 +13,7 @@ namespace {
+ 
+ std::string visibility_file()
+ {
+-#ifdef __SWITCH__
+     return "/switch/thomaz/config/title_visibility.txt";
+-#else
+-    return "thomaz-cache/title_visibility.txt";
+-#endif
+ }
+ 
+ // Parse a 0x-prefixed hex id string. Returns 0 on failure.

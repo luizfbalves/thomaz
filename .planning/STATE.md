@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Switch-Only Simplification
 status: executing
-stopped_at: Phase 05 COMPLETE (4/4 plans, VERIFICATION passed, Option D scope); next is Phase 06
-last_updated: "2026-06-05T23:34:21.166Z"
-last_activity: 2026-06-05
+stopped_at: v1.1 roadmap created (Phases 5-7); traceability + STATE updated
+last_updated: "2026-06-06T00:39:36.560Z"
+last_activity: 2026-06-06 -- Phase 06 execution started
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 4
+  total_plans: 6
   completed_plans: 4
   percent: 33
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-05)
 
 **Core value:** Remove the desktop (PC/SDL2/GLFW) build target with zero change to the shipped Switch `.nro` — proven by a green host doctest suite (`tests/Makefile`) and a clean Switch build (`scripts/build-switch.sh`)
-**Current focus:** Phase 05 — collapse-source-seams-switch-only
+**Current focus:** Phase 06 — strip-desktop-build-system
 
 ## Current Position
 
-Phase: 05 (collapse-source-seams-switch-only) — COMPLETE ✓ (VERIFICATION passed)
-Plan: 4 of 4 done
-Status: Phase 5 done; next is Phase 06 (strip the build system)
-Last activity: 2026-06-05
+Phase: 06 (strip-desktop-build-system) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 06
+Last activity: 2026-06-06 -- Phase 06 execution started
 
 Roadmap: collapse source seams first (Phase 5), then strip the build system (Phase 6), then docs cleanup + final combined gate (Phase 7). Sequenced so the source layer is single-target before CMake stops offering the desktop branch — the tree is never left unbuildable mid-phase.
 
