@@ -3,8 +3,8 @@
 //
 // Composes the privileged extraction chain (key_loader + nca_extract + cfw_paths)
 // into a single user-facing operation. This is the ONLY thomaz-facing symbol
-// for firmware extraction; all platform knowledge is confined to the
-// _switch.cpp / _fake.cpp pair (D-08 / Pitfall 4).
+// for firmware extraction; all platform knowledge is confined to
+// firmware_extract_switch.cpp (D-08 / Pitfall 4).
 //
 // Source lineage: exelix11/SwitchThemeInjector @ 2618b0c (GPLv2; thomaz is GPLv2)
 
@@ -41,10 +41,6 @@ struct ExtractAllResult {
 //   (qlaunch 0100000000001000, Psl 0100000000001007, MyPage 0100000000001013),
 //   extracts every /lyt/*.szs per title, validates and writes flat to
 //   base_layout_dir(). Session is closed exactly once on all exit paths.
-//
-// Desktop behaviour (firmware_extract_fake.cpp):
-//   Returns {false, "Firmware extraction is only available on Switch.", {}, {}}
-//   with zero Switch-specific symbols (D-08).
 ExtractAllResult extract_all_base_layouts();
 
 } // namespace thomaz

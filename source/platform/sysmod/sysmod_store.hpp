@@ -16,8 +16,7 @@ std::vector<core::RawSysmoduleEntry> sysmod_scan_contents(const std::string& roo
 // already-in-target-state case).
 bool sysmod_set_boot2_flag(const std::string& contents_dir, bool enabled);
 
-// Interface consumed by the UI. Real impl scans /atmosphere/contents; the
-// desktop fake (sysmod_store_fake) is in-memory.
+// Interface consumed by the UI. Real impl scans /atmosphere/contents.
 struct ISysmoduleStore {
     virtual ~ISysmoduleStore() = default;
     virtual std::vector<core::Sysmodule> list() = 0;

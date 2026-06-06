@@ -1,5 +1,15 @@
 # Phase 5: Collapse Source Seams to Switch-Only — Research
 
+> ⚠️ **CORRECTION (2026-06-05, post-execution):** §4–§5's claim that the host doctest suite
+> "passes unchanged" after collapsing the path-helper `#else` branches is **FALSE**. The host
+> suite compiles several path-helper files and 4 tests *write* to the helper outputs; removing
+> the host (`#else`) path branch makes them write to absolute Switch paths (`/themes`, …) and
+> fail with permission errors. Those ~12 `#else` branches are platform-**portability** seams
+> (Switch absolute vs host-relative path), not `*_fake`-vs-`*_switch` stub-selection — same
+> category as the kept `_WIN32` seams. Per scope decision **Option D**, they are RETAINED.
+> The "22 Category A seams" taxonomy below conflated portability seams with selection seams.
+> See `05-03-SUMMARY.md`.
+
 **Researched:** 2026-06-05
 **Domain:** C++ preprocessor seam collapse / desktop stub removal (Nintendo Switch homebrew)
 **Confidence:** HIGH — every claim below is grounded in an actual file path and grep/read result

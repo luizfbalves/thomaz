@@ -54,16 +54,16 @@ Remove the desktop (PC/SDL2/GLFW) build target entirely so the source tree targe
 **Depends on**: Phase 4 (v1.0 — last shipped phase; this milestone continues numbering)
 **Requirements**: SIMPL-01, SIMPL-02, SIMPL-03
 **Success Criteria** (what must be TRUE):
-  1. The 5 desktop stub pairs are deleted — `find source/platform -name '*_fake*'` returns only `saves/fake_cloud_save_client.{cpp,hpp}` (the retained doctest double); `save_service_fake`, `title_service_fake`, `fake_auth_client`, `themes/firmware_extract_fake`, and `sysmod/sysmod_store_fake` no longer exist.
-  2. No desktop selection branch survives: `grep -rn 'ifndef __SWITCH__\|#else' source/` shows no remaining `*_fake`-vs-`*_switch` seam, and each affected `*_switch` impl is the sole implementation behind its interface (the `#ifdef __SWITCH__ … #endif` guards around always-Switch code may stay or be dropped, but no `#else`/`#ifndef __SWITCH__` desktop branch remains).
+  1. The 5 desktop stub pairs are deleted — `find source/platform -name '*fake*'` returns only `saves/fake_cloud_save_client.{cpp,hpp}` (the retained doctest double; the glob is `*fake*`, not `*_fake*` — the retained file has no underscore prefix); `save_service_fake`, `title_service_fake`, `fake_auth_client`, `themes/firmware_extract_fake`, and `sysmod/sysmod_store_fake` no longer exist.
+  2. No `*_fake`-vs-`*_switch` **implementation-selection** seam survives — the factory/include seams that chose a deleted desktop stub over its `*_switch` counterpart (all in `main.cpp` and `home_activity.cpp`) are gone, leaving each `*_switch` impl the sole implementation behind its interface. **Platform-portability seams are explicitly RETAINED** (scope decision Option D, 2026-06-05): `#ifdef __SWITCH__ … #else … #endif` blocks that return a platform path string (Switch absolute vs host-relative) or a host-compilable fallback impl, plus `_WIN32`/`localtime_r` seams, are NOT desktop *stub-selection* and stay — they exist to keep the retained host doctest suite green (removing the host path branches makes host tests write to absolute Switch paths like `/themes` and fail). A residual `grep -rn 'ifndef __SWITCH__\|#else' source/` therefore still lists these portability seams; that is expected, not a violation.
   3. No `source/` file references a deleted stub or a desktop-only symbol/include — `grep -rnE 'PLATFORM_DESKTOP|SDL2|GLFW|_fake' source/` returns nothing except the retained `fake_cloud_save_client` references.
   4. `tests/Makefile` still builds and `make -C tests test` passes unchanged, confirming core + platform-neutral logic is unregressed and `saves/fake_cloud_save_client.*` is still compiled by the suite.
 **Plans**: 4 plans
 Plans:
 - [x] 05-01-PLAN.md — Collapse main.cpp and home_activity.cpp factory/include seams (consumer edits before stub deletion)
 - [x] 05-02-PLAN.md — Delete 9 desktop stub files from source/platform/
-- [ ] 05-03-PLAN.md — Collapse 22 remaining #else desktop branches across 12 files + clean 4 header comments
-- [ ] 05-04-PLAN.md — Run all 4 success-criterion greps and make -C tests test verification gate
+- [x] 05-03-PLAN.md — (Option D rescope) Keep platform-portability #else seams; clean 3 stale desktop-fake comments (SIMPL-03). The "22 #else" were portability seams, retained.
+- [x] 05-04-PLAN.md — Ran all 4 success-criterion checks + host doctest gate (208/208 passing)
 
 ### Phase 6: Strip Desktop from Build System
 **Goal**: The build system offers only the Switch toolchain — CMake has no `PLATFORM_DESKTOP` path, the desktop helper scripts are gone, and a clean Switch build still produces `thomaz.nro`.
