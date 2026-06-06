@@ -73,7 +73,10 @@ Plans:
   1. No `PLATFORM_DESKTOP` token remains in `CMakeLists.txt` — `grep -n 'PLATFORM_DESKTOP' CMakeLists.txt` returns nothing; the `elseif (PLATFORM_DESKTOP)` link branch and the `PLATFORM_DESKTOP` packaging branch are removed, and dual-target comments are gone.
   2. The desktop helper scripts are removed — `scripts/build-desktop.sh` and `scripts/run-desktop.sh` no longer exist in the repo.
   3. A clean Switch build via `scripts/build-switch.sh` (devkitPro Docker) succeeds end-to-end and produces `build_switch/thomaz.nro`.
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 06-01-PLAN.md — Strip the two `PLATFORM_DESKTOP` CMake branches + dual-target comments and delete `scripts/build-desktop.sh` / `scripts/run-desktop.sh` (BUILD-01, BUILD-02)
+- [ ] 06-02-PLAN.md — Clean Switch build via `scripts/build-switch.sh` (devkitPro Docker) proves the stripped tree produces `build_switch/thomaz.nro` (BUILD-03)
 
 ### Phase 7: Docs Cleanup & Final Verification Gate
 **Goal**: Repository docs and code comments describe a Switch-only tree with the host-doctest + Switch-build verification flow, and both single-target gates are confirmed green together.
@@ -98,5 +101,5 @@ Plans:
 | 3. Theme UI Integration            | v0.5.0 | 0/3 | Carried forward | - |
 | 4. Forwarder (Optional)            | v0.5.0 | 0/1 | Carried forward | - |
 | 5. Collapse Source Seams to Switch-Only | v1.1 | 0/4 | Not started | - |
-| 6. Strip Desktop from Build System      | v1.1 | 0/0 | Not started | - |
+| 6. Strip Desktop from Build System      | v1.1 | 0/2 | Not started | - |
 | 7. Docs Cleanup & Final Verification Gate | v1.1 | 0/0 | Not started | - |
