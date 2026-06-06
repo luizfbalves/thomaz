@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Switch-Only Simplification
-status: verifying
-stopped_at: Phase 7 context gathered
-last_updated: "2026-06-06T01:58:31.120Z"
-last_activity: 2026-06-05 -- Phase 06 Plan 02 complete (clean native Switch build, thomaz.nro 7.7MB, launched on hardware via nxlink). BUILD-03 green; Docker-unavailable blocker resolved via native devkitPro build.
+status: milestone_complete
+stopped_at: Phase 7 complete — milestone v1.1 all phases done; ready for /gsd-complete-milestone
+last_updated: "2026-06-05T23:14:00.000Z"
+last_activity: 2026-06-05 -- Phase 07 complete (README Switch-only docs DOC-01; final combined gate VERIF-01: host doctest 209/209 + clean Switch build thomaz.nro). Milestone v1.1 complete.
 progress:
   total_phases: 3
-  completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
-  percent: 67
+  completed_phases: 3
+  total_plans: 8
+  completed_plans: 8
+  percent: 100
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-05)
 
 **Core value:** Remove the desktop (PC/SDL2/GLFW) build target with zero change to the shipped Switch `.nro` — proven by a green host doctest suite (`tests/Makefile`) and a clean Switch build (`scripts/build-switch.sh`)
-**Current focus:** Phase 07 — docs-cleanup-final-verification-gate (next)
+**Current focus:** Milestone v1.1 complete — ready to archive via /gsd-complete-milestone
 
 ## Current Position
 
-Phase: 06 (strip-desktop-build-system) — COMPLETE (2/2 plans)
-Plan: 2 of 2 — done
-Status: Phase 06 complete; next is Phase 07 (docs cleanup + final verification gate)
-Last activity: 2026-06-05 -- Phase 06 Plan 02 complete (clean native Switch build, thomaz.nro 7.7MB, launched on hardware via nxlink). BUILD-03 green; Docker-unavailable blocker resolved via native devkitPro build.
+Phase: 07 (docs-cleanup-final-verification-gate) — COMPLETE (2/2 plans)
+Milestone: v1.1 Switch-Only Simplification — ALL 3 PHASES COMPLETE (5, 6, 7)
+Status: Milestone v1.1 complete; next is /gsd-complete-milestone (archive + prep next)
+Last activity: 2026-06-05 -- Phase 07 complete (DOC-01 README Switch-only + VERIF-01 two-gate flow green: host doctest 209/209 + clean Switch build). v1.1 done.
 
 Roadmap: collapse source seams first (Phase 5), then strip the build system (Phase 6), then docs cleanup + final combined gate (Phase 7). Sequenced so the source layer is single-target before CMake stops offering the desktop branch — the tree is never left unbuildable mid-phase.
 
