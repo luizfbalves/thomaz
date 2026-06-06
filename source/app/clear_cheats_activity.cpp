@@ -108,6 +108,10 @@ void ClearCheatsActivity::populate(const std::vector<InstalledTitle>& titles)
     });
     clearBtn->addGestureRecognizer(new brls::TapGestureRecognizer(clearBtn));
     listBox->addView(clearBtn);
+
+    // Give focus to the first focusable item in the list (selectAll BooleanCell),
+    // using the idempotent guard in ThomazActivity::claimInitialFocus.
+    this->claimInitialFocus(listBox);
 }
 
 void ClearCheatsActivity::confirmAndClear()

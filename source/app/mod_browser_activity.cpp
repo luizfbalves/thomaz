@@ -357,6 +357,10 @@ void ModBrowserActivity::populate(const core::BrowseResult& result)
         moreRow->addGestureRecognizer(new brls::TapGestureRecognizer(moreRow));
         resultsBox->addView(moreRow);
     }
+
+    // Give focus to the first item in the results (first call only; guard keeps
+    // subsequent populate() calls from search/load-more from stealing focus).
+    this->claimInitialFocus(resultsBox);
 }
 
 } // namespace thomaz

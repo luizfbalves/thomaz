@@ -160,6 +160,10 @@ void ModDetailActivity::populate(const core::ResolveResult& result)
         row->addGestureRecognizer(new brls::TapGestureRecognizer(row));
         filesBox->addView(row);
     }
+
+    // Give focus to the first file row (guard in base class ensures this only
+    // fires once; no rebuild path exists here, but the guard keeps it safe).
+    this->claimInitialFocus(filesBox);
 }
 
 void ModDetailActivity::confirmAndDownload(const core::ModFile& file)
