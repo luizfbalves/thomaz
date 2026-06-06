@@ -99,7 +99,11 @@ Plans:
   2. The host doctest suite passes — `make -C tests test` is green and still compiles the retained `saves/fake_cloud_save_client.*` test double.
   3. The Switch build is clean — `scripts/build-switch.sh` produces `build_switch/thomaz.nro` after all removals, with the two single-target gates (host doctest + Switch build) standing as the milestone's verification flow.
 
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+
+- [ ] 07-01-PLAN.md — Clean README living docs to Switch-only (drop Desktop (PC) section, point at build-switch.sh, document the two-gate verification flow); grep gate green (DOC-01)
+- [ ] 07-02-PLAN.md — Run both single-target gates together — host doctest (make -C tests test) + Switch build (scripts/build-switch.sh → build_switch/thomaz.nro) — confirm green (VERIF-01)
 
 ## Progress
 
@@ -115,4 +119,4 @@ Plans:
 | 4. Forwarder (Optional)            | v0.5.0 | 0/1 | Carried forward | - |
 | 5. Collapse Source Seams to Switch-Only | v1.1 | 0/4 | Not started | - |
 | 6. Strip Desktop from Build System      | v1.1 | 2/2 | Complete   | 2026-06-06 |
-| 7. Docs Cleanup & Final Verification Gate | v1.1 | 0/0 | Not started | - |
+| 7. Docs Cleanup & Final Verification Gate | v1.1 | 0/2 | Not started | - |
