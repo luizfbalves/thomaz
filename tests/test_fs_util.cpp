@@ -2,6 +2,7 @@
 #include "platform/fs_util.hpp"
 
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <sys/stat.h>
 
@@ -43,6 +44,37 @@ TEST_CASE("ensure_parent_dirs creates parent directories but not the final segme
 
     // Final segment must NOT be created as a directory
     CHECK_FALSE(dir_exists(path));
+
+    fs::remove_all(tmp);
+}
+
+// Regression: NsSaveService::backup() copies a mounted save into
+// /switch/thomaz/saves/<title>/<timestamp>/<uid> — a destination whose PARENT
+// directories do not exist yet. copy_tree must create the full destination
+// chain, not just a single non-recursive mkdir of the leaf, or copy_file fails
+// to open the destination and backup dies with "cannot copy ...".
+TEST_CASE("copy_tree creates destination chain when parent dirs are missing") {
+    fs::path tmp = fs::temp_directory_path() / "test_fs_util_copytree";
+    fs::remove_all(tmp);
+    fs::create_directories(tmp);
+
+    // Source with a nested file (mirrors a mounted save).
+    std::string src = tmp.string() + "/src";
+    fs::create_directories(src + "/sub");
+    { std::ofstream f(src + "/game.sav"); f << "savedata"; }
+    { std::ofstream f(src + "/sub/inner.bin"); f << "inner"; }
+
+    // Destination whose parents (a/b/c) do NOT exist.
+    std::string dst = tmp.string() + "/a/b/c/uid";
+    std::string err;
+    bool ok = copy_tree(src, dst, &err);
+
+    CHECK_MESSAGE(ok, "copy_tree must create missing parent dirs; err=" << err);
+    CHECK(dir_exists(dst));
+
+    struct stat st;
+    CHECK(::stat((dst + "/game.sav").c_str(), &st) == 0);
+    CHECK(::stat((dst + "/sub/inner.bin").c_str(), &st) == 0);
 
     fs::remove_all(tmp);
 }
