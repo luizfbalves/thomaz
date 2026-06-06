@@ -1,10 +1,11 @@
 ---
 phase: 8
 slug: catalog-content-sources-server-linking
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-06-06
+reviewed_at: 2026-06-06
 platform: nintendo-switch-borealis
 ---
 
