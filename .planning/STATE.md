@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-06)
 Phase: Milestone v1.1 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-06-06 — Milestone v1.1 completed and archived
+Last activity: 2026-06-06 — Completed quick task 260606-og5: improve README to reflect the project
 
 ## Performance Metrics
 
@@ -102,6 +102,7 @@ None yet.
 | 260605-rcu | Hybrid title-visibility system: heuristic auto-hides forwarders (save=0 & acct=0) + per-title overrides + global toggle | 2026-06-05 | c816ffc | [260605-rcu-da-pra-ocultar-apps-que-nao-sao-jogos-da](./quick/260605-rcu-da-pra-ocultar-apps-que-nao-sao-jogos-da/) |
 | 260605-tbt | Fix gamepad focus highlight stuck on previous screen: claimInitialFocus helper in ThomazActivity + applied in 5 async-list screens | 2026-06-06 | 604b564 | [260605-tbt-nos-menus-das-telas-quando-navegando-por](./quick/260605-tbt-nos-menus-das-telas-quando-navegando-por/) |
 | 260605-sbk | Fix save backup failing on Switch: copy_tree now creates its full destination dir chain (ensure_parent_dirs) instead of a single non-recursive mkdir; verified on hardware | 2026-06-05 | 9e3d4ad | [260605-sbk-corrigir-save-backup-no-switch](./quick/260605-sbk-corrigir-save-backup-no-switch/) |
+| 260606-og5 | Rewrite README to reflect the real multi-feature Switch hub (cheats + mods + temas + cloud saves), with all technical claims verified against the codebase | 2026-06-06 | 30f0330 | [260606-og5-vamos-melhorar-o-readme-pra-refletir-mel](./quick/260606-og5-vamos-melhorar-o-readme-pra-refletir-mel/) |
 
 ## Deferred Items
 
