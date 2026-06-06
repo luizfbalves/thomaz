@@ -82,8 +82,8 @@
             <!-- ===== COLUMN B: System / Cheats ===== -->
             <brls:Box axis="column" grow="1.0">
 
-                <!-- Sistema (active) -->
-                <AnimatedBox id="systemCard" entranceDelay="200"
+                <!-- Sistema (hidden from menu — wiring kept in HomeActivity) -->
+                <AnimatedBox id="systemCard" entranceDelay="200" visibility="gone"
                           axis="row" alignItems="center" grow="1.0" marginBottom="14"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
                           backgroundColor="@theme/thomaz/tile_settings"

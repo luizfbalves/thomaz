@@ -53,16 +53,16 @@ void install_system_status(brls::Activity* activity)
         // Top label: "SD" or "Console"
         auto* lbl = new brls::Label();
         lbl->setText(labelStr);
-        lbl->setFontSize(10.0f);
+        lbl->setFontSize(20.0f);
         lbl->setTextColor(nvgRGBA(0xFF, 0xFF, 0xFF, 0x99));  // dim white
 
         // Progress bar track
-        static constexpr float kTrackW = 80.0f;
-        static constexpr float kTrackH = 5.0f;
+        static constexpr float kTrackW = 160.0f;
+        static constexpr float kTrackH = 10.0f;
         auto* track = new brls::Box();
         track->setWidth(kTrackW);
         track->setHeight(kTrackH);
-        track->setCornerRadius(2.5f);
+        track->setCornerRadius(5.0f);
         track->setBackgroundColor(nvgRGBA(0xFF, 0xFF, 0xFF, 0x33));  // dim surface
 
         // Fill bar
@@ -72,7 +72,7 @@ void install_system_status(brls::Activity* activity)
         auto* fill = new brls::Box();
         fill->setWidth(fillW);
         fill->setHeight(kTrackH);
-        fill->setCornerRadius(2.5f);
+        fill->setCornerRadius(5.0f);
         fill->setBackgroundColor(nvgRGB(0x92, 0x77, 0xFF));  // accent_bright (matches username color)
 
         track->addView(fill);
@@ -84,30 +84,8 @@ void install_system_status(brls::Activity* activity)
     row->addView(makeStorageIndicator("SD", status.sd));
     row->addView(makeStorageIndicator("Console", status.nand));
 
-    // WiFi indicator: 3 vertical bars of increasing height, first N lit.
-    auto* wifiCol = new brls::Box();
-    wifiCol->setAxis(brls::Axis::ROW);
-    wifiCol->setAlignItems(brls::AlignItems::FLEX_END);  // bars grow upward
-    wifiCol->setMarginRight(10.0f);
+    // WiFi indicator removed — already shown in the AppletFrame footer.
 
-    static constexpr float kBarW = 4.0f;
-    static constexpr float kBarSpacing = 2.0f;
-    static constexpr float kBarHeights[3] = {5.0f, 8.0f, 11.0f};
-
-    for (int i = 0; i < 3; ++i) {
-        auto* bar = new brls::Box();
-        bar->setWidth(kBarW);
-        bar->setHeight(kBarHeights[i]);
-        bar->setCornerRadius(1.0f);
-        if (i > 0) bar->setMarginLeft(kBarSpacing);
-        bool lit = status.wifi_connected && (i < status.wifi_strength);
-        bar->setBackgroundColor(lit
-            ? nvgRGB(0x92, 0x77, 0xFF)           // accent_bright (lit)
-            : nvgRGBA(0xFF, 0xFF, 0xFF, 0x33));   // dim (unlit or disconnected)
-        wifiCol->addView(bar);
-    }
-
-    row->addView(wifiCol);
     hintBox->addView(row);
 }
 
