@@ -41,6 +41,46 @@
 
 ---
 
+## Milestone: v1.1 — Switch-Only Simplification
+
+**Shipped:** 2026-06-06
+**Phases:** 3 | **Plans:** 8 | **Tasks:** 7
+
+### What Was Built
+- Deleted the 5 desktop platform stub pairs and collapsed every `*_fake`-vs-`*_switch` implementation-selection seam in `main.cpp`/`home_activity.cpp` so the `*_switch` impls are sole (SIMPL-01..03)
+- Stripped both `PLATFORM_DESKTOP` branches (link + packaging) and dual-target comments from `CMakeLists.txt`; deleted `build-desktop.sh`/`run-desktop.sh` (BUILD-01/02)
+- Clean Switch build from the stripped tree produces `build_switch/thomaz.nro` (7.7 MB), launched on real hardware via nxlink (BUILD-03)
+- README rewritten Switch-only; documented the two single-target verification gates (DOC-01); both gates confirmed green together — host doctest 209/209 + Switch build (VERIF-01)
+
+### What Worked
+- **Dependency-ordered removal (source → build → docs)** kept the tree buildable at every phase boundary — no phase left it broken
+- **Scope correction mid-flight (Option D)** — recognizing that `#else` portability seams (path strings, `_WIN32`) are NOT desktop stub-selection prevented over-deletion that would have broken the host doctest suite
+- **Host doctest as a target-independent gate** survived the desktop removal untouched and caught that the retained `fake_cloud_save_client` double still compiles
+- **Native devkitPro fallback** when Docker was unavailable — built `.nro` via the MSYS2 login shell, recorded both build paths in project memory for reuse
+
+### What Was Inefficient
+- **REQUIREMENTS.md checkboxes never ticked** for BUILD-*/DOC-01/VERIF-01 despite the work being done — the SUMMARYs were authoritative but the traceability display lagged (same drift pattern flagged in v1.0)
+- **Environment friction on Windows** — msys2 cmake not inheriting env vars, login shell starting in `$HOME`, missing host g++ and Switch portlibs each cost a debugging cycle before the build path was stable
+- **Quick tasks accumulated without SUMMARY/status markers** — 5 orthogonal UI quick-tasks surfaced as "open" at milestone close, needing acknowledgment rather than being cleanly closed inline
+
+### Patterns Established
+- **Collapse selection seams before removing the build branch** — make the kept implementation sole at the source layer first, so the build can drop the alternative without an unbuildable window
+- **Distinguish stub-selection seams from portability seams** — only the former are removed in a single-target simplification; the latter keep host tests compilable
+- **Record machine-specific build recipes in project memory** (native devkitPro build, host doctest flags) so environment setup isn't re-derived each session
+
+### Key Lessons
+1. A "remove a target" milestone is really a "make the kept path sole" milestone — sequence so the tree never goes unbuildable
+2. Not every `#else` is the thing you're deleting — classify seams (stub-selection vs portability) before bulk-collapsing
+3. Tick requirement checkboxes at plan completion, not at milestone close — the drift repeated from v1.0
+4. Close or mark quick tasks (SUMMARY/status) as they finish, so milestone-close audits stay clean
+
+### Cost Observations
+- Model mix: profile `balanced` (mode: yolo) — not separately instrumented
+- Sessions: spanned a context compaction; build/debug iteration dominated wall-clock over planning
+- Notable: verification-only phase (07-02) changed 0 source files — pure gate confirmation, cheap
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -48,13 +88,16 @@
 | Milestone | Sessions | Phases | Key Change |
 |-----------|----------|--------|------------|
 | v1.0 | — | 4 | First milestone — established GSD phase/plan/verify cadence and host-testable-seam discipline |
+| v1.1 | — | 3 | Single-target simplification — dependency-ordered removal kept the tree buildable; native devkitPro build path established |
 
 ### Cumulative Quality
 
 | Milestone | Tests | Coverage | Zero-Dep Additions |
 |-----------|-------|----------|-------------------|
 | v1.0 | 175+ doctest (C++) + 14 Vitest (API) | not measured | No new heavy deps (Postgres denylist over Redis) |
+| v1.1 | 209 doctest (C++) | not measured | None — removal-only milestone |
 
 ### Top Lessons (Verified Across Milestones)
 
-1. _(pending second milestone to cross-validate)_
+1. **Roadmap/requirements display drift is recurring** — both v1.0 and v1.1 left checkboxes/progress rows stale after plans completed; the plan/summary count is authoritative but the human-readable display must be kept in sync at plan completion
+2. **Host-testable seams pay off repeatedly** — pulling decision logic out of Borealis/curl (v1.0) made the host doctest suite a target-independent gate that survived the v1.1 desktop removal untouched

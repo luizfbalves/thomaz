@@ -1,5 +1,22 @@
 # Milestones
 
+## v1.1 Switch-Only Simplification (Shipped: 2026-06-06)
+
+**Phases completed:** 3 phases, 8 plans, 7 tasks
+
+**Requirements:** 8/8 v1.1 requirements complete (SIMPL-01..03, BUILD-01..03, DOC-01, VERIF-01)
+
+**Known deferred items at close:** 5 (orthogonal UI quick-tasks, 4 already committed; see STATE.md Deferred Items)
+
+**Key accomplishments:**
+
+- CMakeLists.txt is now Switch-only — both PLATFORM_DESKTOP branches (link + packaging) and the dual-target comments are gone, and the two desktop helper scripts are deleted, with the Switch link/.nro/hactool paths preserved exactly.
+- The desktop-stripped tree builds clean for Switch and runs on real hardware — `build_switch/thomaz.nro` (7.7 MB) was produced from a from-scratch build and launched on a physical Switch via nxlink.
+- README now describes a Switch-only tree built via `scripts/build-switch.sh` and verified by the two single-target gates — every stale desktop-build instruction is gone.
+- Both single-target gates pass together: host doctest 209/209 (with the retained test double) and a clean from-scratch Switch build producing `build_switch/thomaz.nro` (7.7 MB).
+
+---
+
 ## v1.0 Hardening (Shipped: 2026-06-05)
 
 **Phases completed:** 4 phases, 16 plans, 32 tasks

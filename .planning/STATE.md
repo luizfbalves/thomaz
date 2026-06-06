@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Switch-Only Simplification
-status: milestone_complete
-stopped_at: Phase 7 complete — milestone v1.1 all phases done; ready for /gsd-complete-milestone
-last_updated: "2026-06-05T23:14:00.000Z"
-last_activity: 2026-06-05 -- Phase 07 complete (README Switch-only docs DOC-01; final combined gate VERIF-01: host doctest 209/209 + clean Switch build thomaz.nro). Milestone v1.1 complete.
+status: Awaiting next milestone
+stopped_at: Phase 7 context gathered
+last_updated: "2026-06-06T13:44:27.474Z"
+last_activity: 2026-06-06 — Milestone v1.1 completed and archived
 progress:
   total_phases: 3
   completed_phases: 3
@@ -18,19 +18,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-05)
+See: .planning/PROJECT.md (updated 2026-06-06)
 
 **Core value:** Remove the desktop (PC/SDL2/GLFW) build target with zero change to the shipped Switch `.nro` — proven by a green host doctest suite (`tests/Makefile`) and a clean Switch build (`scripts/build-switch.sh`)
-**Current focus:** Milestone v1.1 complete — ready to archive via /gsd-complete-milestone
+**Current focus:** v1.1 shipped & archived — planning next milestone (`/gsd-new-milestone`)
 
 ## Current Position
 
-Phase: 07 (docs-cleanup-final-verification-gate) — COMPLETE (2/2 plans)
-Milestone: v1.1 Switch-Only Simplification — ALL 3 PHASES COMPLETE (5, 6, 7)
-Status: Milestone v1.1 complete; next is /gsd-complete-milestone (archive + prep next)
-Last activity: 2026-06-05 -- Phase 07 complete (DOC-01 README Switch-only + VERIF-01 two-gate flow green: host doctest 209/209 + clean Switch build). v1.1 done.
-
-Roadmap: collapse source seams first (Phase 5), then strip the build system (Phase 6), then docs cleanup + final combined gate (Phase 7). Sequenced so the source layer is single-target before CMake stops offering the desktop branch — the tree is never left unbuildable mid-phase.
+Phase: Milestone v1.1 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-06 — Milestone v1.1 completed and archived
 
 ## Performance Metrics
 
@@ -117,6 +115,16 @@ Items acknowledged and deferred at milestone close on 2026-06-05:
 | Hardware UAT | Phase 03: save_service_switch.cpp compiles clean under devkitPro Switch toolchain (IN-03 uid_from_hex) | human_needed | v1.0 close |
 | Hardware UAT | Phase 04: 5 activity-pop / dialog-button UAF crash-path scenarios (settings, clear_cheats, mod_manager, theme_detail) | testing | v1.0 close |
 
+Items acknowledged and deferred at v1.1 milestone close on 2026-06-06 (orthogonal UI quick-tasks, not v1.1 milestone work):
+
+| Category | Item | Status | Deferred At |
+|----------|------|--------|-------------|
+| Quick Task | 260605-ot7 (theme-apply UX busy-guard) | committed 4f9205b — missing SUMMARY/status marker | v1.1 close |
+| Quick Task | 260605-qgb (bootscreen) | committed d668063 — missing SUMMARY/status marker | v1.1 close |
+| Quick Task | 260605-rcu (hide non-game apps) | committed c816ffc — missing SUMMARY/status marker | v1.1 close |
+| Quick Task | 260605-tbt (gamepad focus highlight fix) | committed 604b564 — missing SUMMARY/status marker | v1.1 close |
+| Quick Task | 260605-s2h (navbar SD-card space) | concurrent session in-progress; resolve separately | v1.1 close |
+
 All deferred UAT/verification items are on-hardware checks the host test suite cannot exercise; all automated gates (Vitest + doctest + clean `-DUSE_SDL2=ON` build) passed. Resume with `/gsd-verify-work 03` / `/gsd-verify-work 04` when a Switch is available.
 
 ## Session Continuity
@@ -127,7 +135,4 @@ Resume file: .planning/phases/07-docs-cleanup-final-verification-gate/07-CONTEXT
 
 ## Operator Next Steps
 
-- Phase 05 complete ✓ — plan the next phase with /gsd-plan-phase 6 (strip the build system)
-- Cleanup (optional): `git stash drop stash@{0}` and remove `.planning/phases/05-collapse-source-seams-switch-only/.05-03-executor-edits.patch` once you're satisfied with the Option-D outcome (both hold the reverted wrong-scope 05-03 edits)
-
-</content>
+- Start the next milestone with /gsd-new-milestone
