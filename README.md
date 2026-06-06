@@ -4,7 +4,7 @@
 
 Os cheats vêm da base open-source [**switch-cheats-db**](https://github.com/HamletDuFromage/switch-cheats-db). O foco do thomaz é uma **UX bonita, bilíngue (PT-BR / EN) e fácil de usar** — toque, mouse e controle.
 
-> ⚠️ **Status:** em desenvolvimento. O app compila e roda (Switch e desktop), com lógica testada, mas o fluxo completo **ainda não foi validado em hardware real**. Use por sua conta e risco.
+> ⚠️ **Status:** em desenvolvimento. O app compila e roda na Switch, com lógica testada, mas o fluxo completo **ainda não foi validado em hardware real**. Use por sua conta e risco.
 
 ---
 
@@ -76,28 +76,29 @@ Esse é o caminho padrão que o Atmosphère lê. Se um jogo não tem cheats para
 O projeto usa **CMake** + o fork mantido do **[Borealis](https://github.com/xfangfang/borealis)** (UI) sobre **libnx/devkitPro**.
 
 ### Nintendo Switch (.nro)
-A forma recomendada é via **GitHub Actions** (o workflow `build` usa a imagem `devkitpro/devkita64`, que já traz tudo — nenhum `dkp-pacman` necessário). Baixe o artefato `thomaz-nro` da execução. Localmente, com devkitPro instalado:
+A forma recomendada é o script **`scripts/build-switch.sh`**. Por padrão ele compila dentro da imagem oficial **`devkitpro/devkita64`** (o mesmo caminho do CI via **GitHub Actions** — só precisa de Docker, nenhum `dkp-pacman`). Se você já tem o **devkitPro instalado localmente**, defina `DEVKITPRO` e ele compila nativo, sem Docker.
 
 ```bash
 git clone --recursive https://github.com/luizfbalves/thomaz.git
 cd thomaz
-cp -rn lib/borealis/resources/* resources/
-cmake -B build_switch -DPLATFORM_SWITCH=ON -DUSE_DEKO3D=ON
-make -C build_switch thomaz.nro -j$(nproc)
+./scripts/build-switch.sh                          # via Docker (devkitpro/devkita64)
+# ou, com devkitPro local:
+DEVKITPRO=/opt/devkitpro ./scripts/build-switch.sh # build nativo
 ```
 
-### Desktop (PC) — para iterar na UI sem hardware
-```bash
-sudo apt install -y cmake build-essential libgl1-mesa-dev xorg-dev libcurl4-openssl-dev
-./scripts/build-desktop.sh
-./build_desktop/thomaz
-```
-No desktop os jogos são exemplos fictícios (FakeTitleService), úteis para validar layout e navegação.
+Saída: **`build_switch/thomaz.nro`**. (Pela CI, baixe o artefato `thomaz-nro` da execução.)
 
-### Testes (lógica pura, no host)
+**Instalar a partir do build:** copie `build_switch/thomaz.nro` para o cartão SD em `/switch/thomaz.nro`, ou envie direto para o hbmenu de um Switch em CFW com `nxlink build_switch/thomaz.nro`.
+
+### Verificação (dois gates de target único)
+O milestone Switch-only se verifica por dois gates, ambos de um único alvo:
+
 ```bash
-make -C tests test
+make -C tests test          # 1. doctest no host — lógica pura (compila o test double saves/fake_cloud_save_client.*)
+./scripts/build-switch.sh   # 2. build da Switch — produz build_switch/thomaz.nro
 ```
+
+Os dois verdes juntos são o fluxo de verificação do projeto (não há mais smoke run de desktop).
 
 ### Backend local (feed / auth)
 
