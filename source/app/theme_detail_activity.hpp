@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -30,7 +31,9 @@ class ThemeDetailActivity : public ThomazActivity {
     void startDownload();
     void refreshActionButton();   // sets label + which action the button performs
     void setButtonBusy(bool busy); // sets this->busy + dims/unfocuses downloadButton
-    void doApply();                       // entry: routes to choice dialog or full apply
+    void doApply();                       // entry: confirmation dialog before applying
+    void showBootRecoveryDialog();        // post-confirm: how to recover from a boot failure
+    void proceedApply();                  // routes to choice dialog or full apply
     void doApplyMode(bool background_only);
     void doRemove();
     void doExtract();             // on-device firmware base-layout extraction (spike entry point)
@@ -39,6 +42,8 @@ class ThemeDetailActivity : public ThomazActivity {
     void showApplyChoiceDialog(); // full vs background-only when risk != Safe
     void showBaseMissingDialog();
     void showRebootDialog();
+    void showInstallProgress(bool background_only); // open the progress-bar modal
+    void closeInstallProgress();                    // close it if still open
 
     thomaz::core::ThemeEntry  entry;
     thomaz::core::ThemeDetail detail;
@@ -53,6 +58,11 @@ class ThemeDetailActivity : public ThomazActivity {
     ThemeCompat compat;           // filled by analyzeCompat() once downloaded
     bool        compatChecked = false;
     FwVersion   consoleFw;        // console firmware captured during analysis
+
+    // Install progress modal (loading bar + cancel) state.
+    brls::Dialog* installDialog  = nullptr; // owned by Application once open()'d
+    brls::Box*    installBarFill = nullptr; // the filled portion of the progress bar
+    std::shared_ptr<std::atomic<bool>> installCancel; // per-install cancel flag
 };
 
 } // namespace thomaz

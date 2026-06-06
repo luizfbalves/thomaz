@@ -1,6 +1,7 @@
 #include "app/boot_activity.hpp"
 #include "app/home_activity.hpp"
 #include "app/auth_activity.hpp"
+#include "app/version.hpp"
 #include <borealis.hpp>
 
 namespace thomaz {
@@ -53,6 +54,10 @@ void BootActivity::onContentAvailable()
         return true;
     });
     guestBtn->addGestureRecognizer(new brls::TapGestureRecognizer(guestBtn));
+
+    // Versão atual do app, abaixo do texto de features.
+    if (auto* ver = (brls::Label*)this->getView("bootVersion"))
+        ver->setText(std::string("v") + THOMAZ_VERSION);
 
     // Foco inicial no botão de login.
     brls::Application::giveFocus(loginBtn);

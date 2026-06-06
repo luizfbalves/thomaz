@@ -15,6 +15,7 @@
 
 #include "core/cheat_txt.hpp"
 #include "platform/cheat_store.hpp"
+#include "platform/atmosphere_config.hpp"
 
 using namespace brls::literals;
 
@@ -131,12 +132,12 @@ void CheatDetailActivity::populate(const core::FetchResult& result)
     {
         frame->registerAction(
             "thomaz/cheats/save"_i18n, brls::BUTTON_X,
-            [this](brls::View*) { this->save(); return true; },
+            [this](brls::View*) { this->save(/*showApplyInfo=*/true); return true; },
             false);
     }
 }
 
-void CheatDetailActivity::save()
+void CheatDetailActivity::save(bool showApplyInfo)
 {
     if (!this->loaded)
         return;
@@ -148,10 +149,37 @@ void CheatDetailActivity::save()
 
     std::string body = core::serialize_txt(this->cheatSet.cheats, enabled);
 
-    if (write_text_file(this->cheatSet.sd_path, body))
-        brls::Application::notify("thomaz/cheats/saved"_i18n);
-    else
+    bool ok = write_text_file(this->cheatSet.sd_path, body);
+
+    if (!ok)
+    {
         brls::Application::notify("thomaz/cheats/save_failed"_i18n);
+        return;
+    }
+
+    // On the explicit "save and apply" action, with at least one cheat enabled,
+    // a fleeting toast isn't enough — guide the user on what actually makes the
+    // cheat take effect. Auto-saves (toggle flips) and "nothing enabled" stay a
+    // quiet toast.
+    if (showApplyInfo && !enabled.empty())
+    {
+        // Regular '[cheat]' entries load OFF unless Atmosphère is told to enable
+        // cheats by default. Ensure that setting so the user doesn't have to flip
+        // each cheat on in an overlay. If we had to change it, the console must
+        // reboot once before it applies; otherwise a game relaunch is enough.
+        CheatsDefaultResult cfg = ensure_cheats_enabled_by_default();
+        const char* bodyKey = (cfg == CheatsDefaultResult::Enabled)
+                                  ? "thomaz/cheats/apply_body_reboot"
+                                  : "thomaz/cheats/apply_body";
+
+        auto* dialog = new brls::Dialog(brls::getStr(bodyKey));
+        dialog->addButton("thomaz/cheats/apply_ok"_i18n, []() {});
+        dialog->open();
+    }
+    else
+    {
+        brls::Application::notify("thomaz/cheats/saved"_i18n);
+    }
 }
 
 } // namespace thomaz

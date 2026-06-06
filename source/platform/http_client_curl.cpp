@@ -26,6 +26,16 @@ int curlCancelXferInfo(void* p, curl_off_t, curl_off_t, curl_off_t, curl_off_t) 
     return 0;
 }
 
+// CURLSH lock/unlock callbacks. userptr is the client's mutex array; `data`
+// indexes which shared resource (connection cache, TLS sessions, DNS) is locked.
+using ShareLocks = std::array<std::mutex, 8>;
+void shareLockCb(CURL*, curl_lock_data data, curl_lock_access, void* userptr) {
+    (*static_cast<ShareLocks*>(userptr))[data].lock();
+}
+void shareUnlockCb(CURL*, curl_lock_data data, void* userptr) {
+    (*static_cast<ShareLocks*>(userptr))[data].unlock();
+}
+
 } // namespace
 
 CurlHttpClient::CurlHttpClient() {
@@ -41,9 +51,24 @@ CurlHttpClient::CurlHttpClient() {
     networkReady = true;
 #endif
     curl_global_init(CURL_GLOBAL_DEFAULT);
+
+    // Share the connection cache, TLS sessions and DNS cache across every easy
+    // handle so repeated image fetches reuse the live connection (keep-alive)
+    // instead of doing a fresh TCP+TLS handshake each time — the big win for
+    // grids of thumbnails fetched in series on Borealis' single async thread.
+    share = curl_share_init();
+    if (share) {
+        curl_share_setopt(share, CURLSHOPT_LOCKFUNC, shareLockCb);
+        curl_share_setopt(share, CURLSHOPT_UNLOCKFUNC, shareUnlockCb);
+        curl_share_setopt(share, CURLSHOPT_USERDATA, &shareLocks);
+        curl_share_setopt(share, CURLSHOPT_SHARE, CURL_LOCK_DATA_CONNECT);
+        curl_share_setopt(share, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
+        curl_share_setopt(share, CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS);
+    }
 }
 
 CurlHttpClient::~CurlHttpClient() {
+    if (share) curl_share_cleanup(share);
     curl_global_cleanup();
     // Socket teardown is owned by Borealis (userAppExit), not us — see ctor.
 }
@@ -62,6 +87,9 @@ HttpResponse CurlHttpClient::request(const HttpRequest& req) {
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "thomaz/0.1 (+switch homebrew)");
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+    // Reuse pooled connections / TLS sessions / DNS across requests (see ctor).
+    if (share) curl_easy_setopt(curl, CURLOPT_SHARE, share);
+    curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToString);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response.body);
 

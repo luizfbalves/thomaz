@@ -14,7 +14,9 @@
 #include "platform/themes/theme_download.hpp"
 #include "platform/themes/theme_paths.hpp"
 #include "platform/themes/active_theme_store.hpp"
+#include "platform/image_transcode.hpp"
 #include "platform/themes/theme_install.hpp"
+#include "platform/themes/theme_compat_cache.hpp"
 #include "platform/themes/firmware_extract.hpp"
 #include "platform/system/reboot.hpp"
 
@@ -25,6 +27,8 @@ using namespace brls::literals;
 namespace thomaz {
 
 namespace {
+constexpr float kInstallBarWidth = 420.0f; // px width of the install progress bar track
+
 // POST GraphQL via the app's http client; returns the response body or nullopt.
 // `cancelled` (optional): cooperative abort flag forwarded into the HttpRequest
 // so the curl transport can abort in-flight transfers when the activity is torn
@@ -58,7 +62,7 @@ void ThemeDetailActivity::onContentAvailable() {
     if (auto* note = (brls::Label*)this->getView("downloadNote"))
         note->setText("themes/download_ok"_i18n);
 
-    if (auto* spinner = this->getView("spinner")) spinner->setVisibility(brls::Visibility::VISIBLE);
+    if (auto* status = this->getView("detailStatus")) status->setVisibility(brls::Visibility::VISIBLE);
 
     core::ThemeEntry e  = this->entry;
     IHttpClient* client = this->http;
@@ -101,11 +105,24 @@ void ThemeDetailActivity::loadThumb(const std::string& url, brls::Image* into) {
     std::string u = url;
     brls::async([client, alive, u, into]() {
         HttpResponse r = client->get(u);
-        if (!r.ok()) return;
-        std::string body = r.body;
-        brls::sync([alive, body, into]() {
+        if (!r.ok()) {
+            // THEME-IMG diagnostic (theme-preview-blank): a silent !ok here is the
+            // most likely cause of a blank thumb/hero. Log status + url so the next
+            // hardware run shows whether this is a transport failure (status 0 =
+            // TLS/connect) or an HTTP error (4xx/5xx from the image host).
+            brls::Logger::error("[THEME-IMG] thumb fetch FAILED status={} url={}", r.status, u);
+            return;
+        }
+        if (r.body.empty())
+            brls::Logger::warning("[THEME-IMG] thumb fetch ok but EMPTY body url={}", u);
+        // CDN serves WebP; transcode to PNG so stb_image can decode it (worker thread).
+        std::string body = thomaz::platform::to_decodable_image(r.body);
+        brls::sync([alive, body, into, u]() {
             if (!alive->load()) return;
             into->setImageFromMem((const unsigned char*)body.data(), (int)body.size());
+            if (into->getTexture() == 0)
+                brls::Logger::error("[THEME-IMG] thumb DECODE failed ({} bytes) url={}",
+                                    body.size(), u);
         });
     });
 }
@@ -125,13 +142,29 @@ void ThemeDetailActivity::showGalleryImage(const core::GalleryImage& img) {
     std::string url = img.url;
     brls::async([this, client, alive, url]() {
         HttpResponse r = client->get(url);
-        if (!r.ok()) return;
-        std::string body = r.body;
+        if (!r.ok()) {
+            // THEME-IMG diagnostic (theme-preview-blank): the hero preview is the
+            // reported blank surface. status=0 => transport (TLS/connect) failure
+            // on the image host; 4xx/5xx => the image URL itself is bad/expired.
+            brls::Logger::error("[THEME-IMG] hero fetch FAILED status={} url={}", r.status, url);
+            return;
+        }
+        if (r.body.empty())
+            brls::Logger::warning("[THEME-IMG] hero fetch ok but EMPTY body url={}", url);
+        // CDN serves WebP; transcode to PNG so stb_image can decode it (worker thread).
+        // Done before caching so heroCache holds decodable bytes and revisits work.
+        std::string body = thomaz::platform::to_decodable_image(r.body);
         brls::sync([this, alive, url, body]() {
             if (!alive->load()) return;
             this->heroCache[url] = body;
-            if (auto* hero = (brls::Image*)this->getView("detailPreview"))
+            if (auto* hero = (brls::Image*)this->getView("detailPreview")) {
                 hero->setImageFromMem((const unsigned char*)body.data(), (int)body.size());
+                if (hero->getTexture() == 0)
+                    brls::Logger::error("[THEME-IMG] hero DECODE failed ({} bytes) url={}",
+                                        body.size(), url);
+            } else {
+                brls::Logger::error("[THEME-IMG] hero view 'detailPreview' NOT FOUND");
+            }
         });
     });
 }
@@ -144,11 +177,18 @@ void ThemeDetailActivity::buildGallery() {
     const auto& g = this->detail.gallery;
 
     if (g.empty()) {
+        // THEME-IMG diagnostic: empty gallery => hero falls back to the browse
+        // preview_url. If preview_url is ALSO empty the hero stays blank with no
+        // fetch attempted at all — distinct from a fetch/decode failure.
+        brls::Logger::warning("[THEME-IMG] gallery EMPTY; fallback preview_url='{}'",
+                              this->entry.preview_url);
         if (strip) strip->setVisibility(brls::Visibility::GONE);
         if (!this->entry.preview_url.empty())
             this->loadThumb(this->entry.preview_url, (brls::Image*)this->getView("detailPreview"));
         return;
     }
+    brls::Logger::info("[THEME-IMG] gallery has {} item(s); hero hd url='{}'",
+                       g.size(), g.front().url);
 
     if (strip) strip->setVisibility(brls::Visibility::VISIBLE);
 
@@ -187,8 +227,9 @@ void ThemeDetailActivity::buildGallery() {
 }
 
 void ThemeDetailActivity::onResolved(const core::ThemeDetail& d, bool ok) {
-    if (auto* spinner = this->getView("spinner")) spinner->setVisibility(brls::Visibility::GONE);
     if (!ok) {
+        // Keep the centered status box visible, swap spinner -> error message.
+        if (auto* spinner = this->getView("spinner")) spinner->setVisibility(brls::Visibility::GONE);
         if (auto* err = (brls::Label*)this->getView("detailError")) {
             err->setText("themes/error_network"_i18n);
             err->setVisibility(brls::Visibility::VISIBLE);
@@ -196,6 +237,7 @@ void ThemeDetailActivity::onResolved(const core::ThemeDetail& d, bool ok) {
         brls::Application::notify("themes/error_network"_i18n);
         return;
     }
+    if (auto* status = this->getView("detailStatus")) status->setVisibility(brls::Visibility::GONE);
     this->detail   = d;
     this->resolved = true;
 
@@ -282,9 +324,41 @@ void ThemeDetailActivity::setButtonBusy(bool busy) {
     btn->setAlpha(busy ? 0.5f : 1.0f);
 }
 
-// Entry point for the Apply button. Routes risky (layout-incompatible) themes
-// through a choice dialog (full vs background-only); safe themes apply directly.
+// Entry point for the Apply button: confirm first, then surface the boot-recovery
+// note, and only then run the real apply flow (proceedApply).
 void ThemeDetailActivity::doApply() {
+    if (!this->resolved || this->busy) return;
+    // Don't let the user apply until the compatibility check has finished —
+    // otherwise an unverified theme would be treated as Safe.
+    if (!this->compatChecked) {
+        brls::Application::notify("themes/compat_wait"_i18n);
+        return;
+    }
+    auto* dialog = new brls::Dialog("themes/apply_confirm_body"_i18n);
+    dialog->addButton("themes/apply_confirm_button"_i18n, [this, alive = this->alive]() {
+        if (!alive->load()) return;
+        this->showBootRecoveryDialog();
+    });
+    dialog->addButton("themes/apply_cancel"_i18n, []() {});
+    dialog->open();
+}
+
+// Shown after the user confirms Apply: tells them how to get back to a working
+// system if the console fails to boot with the new theme (delete the theme
+// folders on the SD card). Acknowledging proceeds with the apply.
+void ThemeDetailActivity::showBootRecoveryDialog() {
+    auto* dialog = new brls::Dialog("themes/boot_recovery_body"_i18n);
+    dialog->addButton("themes/boot_recovery_continue"_i18n, [this, alive = this->alive]() {
+        if (!alive->load()) return;
+        this->proceedApply();
+    });
+    dialog->addButton("themes/apply_cancel"_i18n, []() {});
+    dialog->open();
+}
+
+// Routes risky (layout-incompatible) themes through a choice dialog (full vs
+// background-only); safe themes apply directly.
+void ThemeDetailActivity::proceedApply() {
     if (!this->resolved || this->busy) return;
     if (!base_layouts_available(this->detail)) { this->showBaseMissingDialog(); return; }
 
@@ -300,17 +374,37 @@ void ThemeDetailActivity::doApplyMode(bool background_only) {
     if (!base_layouts_available(this->detail)) { this->showBaseMissingDialog(); return; }
 
     this->setButtonBusy(true);
-    brls::Application::notify(background_only ? "themes/applying_bg_only"_i18n
-                                             : "themes/applying"_i18n);
+
+    // Per-install cancel flag + the progress modal (loading bar + Cancel button).
+    this->installCancel = std::make_shared<std::atomic<bool>>(false);
+    this->showInstallProgress(background_only);
+    auto cancel = this->installCancel;
+    auto alive  = this->alive;
+
+    // Progress callback (worker thread) -> marshal to the UI to grow the bar.
+    InstallProgress onProgress = [this, alive](int done, int total) {
+        brls::sync([this, alive, done, total]() {
+            if (!alive->load()) return;
+            if (this->installBarFill) {
+                float pct = total > 0 ? (float)done / (float)total : 0.0f;
+                this->installBarFill->setWidth(pct * kInstallBarWidth);
+            }
+        });
+    };
 
     core::ThemeDetail d = this->detail;
     auto result = std::make_shared<InstallResult>();
     this->runAsync(
-        [d, background_only, result]() {
-            *result = install_theme(d, background_only);
+        [d, background_only, result, onProgress, cancel]() {
+            *result = install_theme(d, background_only, onProgress, cancel);
         },
         [this, background_only, result]() {
             this->setButtonBusy(false);
+            this->closeInstallProgress();
+            if (result->cancelled) {
+                brls::Application::notify("themes/apply_cancelled"_i18n);
+                return;
+            }
             if (!result->ok) {
                 brls::Application::notify("themes/apply_fail"_i18n + std::string(": ") + result->error);
                 return;
@@ -322,6 +416,56 @@ void ThemeDetailActivity::doApplyMode(bool background_only) {
             this->refreshActionButton();
             this->showRebootDialog();
         });
+}
+
+// Build and open the install progress modal: a label + a hand-made loading bar
+// (a track Box with a fill Box whose width grows with progress) + a Cancel
+// button. setCancelable(false) so only the explicit Cancel aborts.
+void ThemeDetailActivity::showInstallProgress(bool background_only) {
+    auto* content = new brls::Box(brls::Axis::COLUMN);
+    content->setAlignItems(brls::AlignItems::CENTER);
+    content->setPadding(28.0f, 36.0f, 28.0f, 36.0f);
+
+    auto* label = new brls::Label();
+    label->setText(background_only ? "themes/applying_bg_only"_i18n : "themes/applying"_i18n);
+    label->setFontSize(18.0f);
+    label->setMarginBottom(18.0f);
+    content->addView(label);
+
+    auto* track = new brls::Box(brls::Axis::ROW);
+    track->setWidth(kInstallBarWidth);
+    track->setHeight(10.0f);
+    track->setCornerRadius(5.0f);
+    track->setBackgroundColor(nvgRGB(0x22, 0x24, 0x2D));
+    auto* fill = new brls::Box(brls::Axis::ROW);
+    fill->setWidth(0.0f);
+    fill->setHeight(10.0f);
+    fill->setCornerRadius(5.0f);
+    fill->setBackgroundColor(nvgRGB(0x92, 0x77, 0xFF)); // accent_bright
+    track->addView(fill);
+    content->addView(track);
+    this->installBarFill = fill;
+
+    auto* dialog = new brls::Dialog(content);
+    dialog->setCancelable(false);
+    dialog->addButton("themes/apply_cancel"_i18n, [this, alive = this->alive]() {
+        if (!alive->load()) return;
+        if (this->installCancel) this->installCancel->store(true);
+        this->installDialog  = nullptr; // the button click auto-dismisses the dialog
+        this->installBarFill = nullptr;
+    });
+    this->installDialog = dialog;
+    dialog->open();
+}
+
+// Close the modal if it's still open (i.e. the install finished without the user
+// hitting Cancel, which already dismissed it).
+void ThemeDetailActivity::closeInstallProgress() {
+    this->installBarFill = nullptr;
+    if (this->installDialog) {
+        this->installDialog->close();
+        this->installDialog = nullptr;
+    }
 }
 
 // Classify theme/firmware compatibility from the downloaded .nxtheme files.
@@ -337,10 +481,19 @@ void ThemeDetailActivity::analyzeCompat() {
 
     core::ThemeDetail d = this->detail;
     bool allow_dry = base_layouts_available(d);
+    std::string hex = this->entry.hex_id;
     auto alive = this->alive;
-    brls::async([this, d, allow_dry, alive]() {
+    brls::async([this, d, hex, allow_dry, alive]() {
         FwVersion fw = get_console_firmware();
-        ThemeCompat tc = analyze_theme_compat(d, fw, allow_dry);
+        // Reuse a cached result for this theme on this firmware (the dry-run is
+        // the slow step). Only complete (dry-run) results are cached.
+        ThemeCompat tc;
+        if (auto cached = compat_cache_get(hex, fw)) {
+            tc = *cached;
+        } else {
+            tc = analyze_theme_compat(d, fw, allow_dry);
+            if (tc.dry_run_done) compat_cache_put(hex, fw, tc);
+        }
         brls::sync([this, alive, tc, fw]() {
             if (!alive->load()) return;
             this->compat        = tc;

@@ -44,11 +44,17 @@ bool base_layouts_available(const thomaz::core::ThemeDetail& detail) {
 }
 
 InstallResult install_theme(const thomaz::core::ThemeDetail& detail,
-                            bool background_only) {
+                            bool background_only,
+                            const InstallProgress& on_progress,
+                            std::shared_ptr<std::atomic<bool>> cancelled) {
     InstallResult res;
     auto targets = detail_targets(detail);
     if (targets.empty()) { res.error = "theme has no installable parts"; return res; }
     if (!base_present_for(targets)) { res.error = "base layouts missing"; return res; }
+
+    const int total = (int)targets.size();
+    auto is_cancelled = [&]() { return cancelled && cancelled->load(); };
+    if (on_progress) on_progress(0, total);
 
     // Give the theme engine the real console firmware so its layout-compat fixes
     // run (the engine defaults hos::Version to 0.0.0 = pre-5.0, which disables
@@ -82,6 +88,16 @@ InstallResult install_theme(const thomaz::core::ThemeDetail& detail,
     for (const auto& part : detail.parts) {
         const int i = index++;
         if (part.target.empty()) continue;
+
+        // Cancellation is cooperative and checked at each part boundary (the
+        // engine's apply_nxtheme can't be interrupted mid-call). Roll back
+        // everything written so far so we never leave a half-installed theme.
+        if (is_cancelled()) {
+            rollback();
+            res.cancelled = true;
+            res.error     = "cancelled";
+            return res;
+        }
 
         std::string nx_path  = folder + "/" + nxtheme_filename(part, i);
         std::string base     = base_szs_path(part.target);
@@ -131,6 +147,8 @@ InstallResult install_theme(const thomaz::core::ThemeDetail& detail,
             std::ofstream(flag).put('\0');
             flags_written.push_back(flag);
         }
+
+        if (on_progress) on_progress((int)applied_targets.size(), total);
     }
 
     // Background-only mode can skip every part (e.g. a pack of layout-only

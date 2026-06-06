@@ -19,20 +19,36 @@ void NsTitleService::exit() {
 
 namespace {
 
-// Read the installed application version for one title (the base-app meta entry).
+// Read the *effective* installed version for one title — the version of the
+// program NSO that Atmosphère actually launches, which is what switch-cheats-db
+// keys its build_ids on.
+//
+// A game with an update has TWO meta entries: an Application meta (the base,
+// usually version 0) and a Patch meta (the update, version 0x10000, 0x20000, …).
+// Atmosphère runs the *patched* program, whose main-NSO build_id maps to the
+// PATCH version in versions.json — not the base. Reading the base version (as we
+// used to) resolves the wrong build_id, so the cheat .txt is written under a
+// filename that doesn't match the running binary and Atmosphère silently ignores
+// it. Take the highest version across Application+Patch entries.
 std::uint32_t readVersion(std::uint64_t application_id) {
     NsApplicationContentMetaStatus status[16];
     s32 count = 0;
     Result rc = nsListApplicationContentMetaStatus(application_id, 0, status,
                                                    (s32)(sizeof(status) / sizeof(status[0])), &count);
-    if (R_FAILED(rc))
+    if (R_FAILED(rc) || count <= 0)
         return 0;
-    // Prefer the base application meta entry; fall back to the first entry.
+    std::uint32_t best = 0;
+    bool found = false;
     for (s32 i = 0; i < count; i++) {
-        if (status[i].meta_type == NcmContentMetaType_Application)
-            return status[i].version;
+        if (status[i].meta_type == NcmContentMetaType_Application ||
+            status[i].meta_type == NcmContentMetaType_Patch) {
+            if (!found || status[i].version > best) {
+                best  = status[i].version;
+                found = true;
+            }
+        }
     }
-    return count > 0 ? status[0].version : 0;
+    return found ? best : status[0].version;
 }
 
 } // namespace

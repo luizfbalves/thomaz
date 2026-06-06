@@ -12,10 +12,14 @@
 <brls:AppletFrame id="themeDetailFrame" title="@i18n/themes/title" iconInterpolation="linear">
     <brls:Box axis="column" grow="1.0">
 
-        <brls:ProgressSpinner id="spinner" width="48" height="48"
-                              alignSelf="center" marginTop="180" visibility="gone"/>
-        <brls:Label id="detailError" alignSelf="center" marginTop="180" fontSize="18"
-                    textColor="@theme/thomaz/text_dim" visibility="gone"/>
+        <!-- Loading / error state: a grow=1 box centers its content in the area
+             below the AppletFrame header (no fragile fixed marginTop). -->
+        <brls:Box id="detailStatus" axis="column" grow="1.0" justifyContent="center"
+                  alignItems="center" visibility="gone">
+            <brls:ProgressSpinner id="spinner" width="48" height="48"/>
+            <brls:Label id="detailError" marginTop="16" fontSize="18"
+                        textColor="@theme/thomaz/text_dim" visibility="gone"/>
+        </brls:Box>
 
         <brls:Box id="detailContent" axis="row" grow="1.0" visibility="gone"
                   paddingTop="28" paddingBottom="24" paddingLeft="40" paddingRight="40">
@@ -30,15 +34,15 @@
                 <brls:Label id="detailAuthor" fontSize="15" textColor="@theme/thomaz/text_dim" marginBottom="14"/>
                 <brls:Label id="compatBadge" fontSize="14" lineHeight="1.3"
                             visibility="gone" marginBottom="12"/>
-                <brls:Label id="partsLabel" fontSize="15" textColor="@theme/thomaz/text_dim"
-                            visibility="gone" marginBottom="6"/>
-                <brls:Box id="partsBox" axis="column"/>
             </brls:Box>
 
-            <!-- ===== RIGHT: description + download ===== -->
+            <!-- ===== RIGHT: description + parts + download ===== -->
             <brls:Box axis="column" grow="1.0">
                 <brls:Label id="detailDesc" width="690" fontSize="15" lineHeight="1.45"
                             verticalAlign="top" textColor="@theme/thomaz/text_dim"/>
+                <brls:Label id="partsLabel" width="690" fontSize="15" textColor="@theme/thomaz/text_dim"
+                            visibility="gone" marginTop="18" marginBottom="6"/>
+                <brls:Box id="partsBox" axis="column"/>
                 <brls:Box grow="1.0"/>
                 <brls:Box id="downloadButton" axis="row" height="56" cornerRadius="10"
                           justifyContent="center" alignItems="center" focusable="true"

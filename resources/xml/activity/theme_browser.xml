@@ -18,13 +18,11 @@
                           backgroundColor="#22242D">
                     <brls:Label text="@i18n/themes/search" fontSize="15" textColor="#FFFFFF"/>
                 </brls:Box>
-                <brls:Box id="partButton" axis="row" height="40" paddingLeft="16" paddingRight="16" cornerRadius="8"
-                          alignItems="center" focusable="true" hideHighlightBackground="true" visibility="gone"
-                          backgroundColor="#22242D">
-                    <brls:Label id="partButtonLabel" text="@i18n/themes/filter_part" fontSize="15" textColor="#FFFFFF"/>
-                </brls:Box>
             </brls:Box>
-            <brls:ProgressSpinner id="spinner" width="44" height="44" marginTop="24" alignSelf="center" visibility="gone"/>
+            <brls:Box id="loadingBox" axis="column" height="440" justifyContent="center"
+                      alignItems="center" visibility="gone">
+                <brls:ProgressSpinner id="spinner" width="56" height="56"/>
+            </brls:Box>
             <brls:Label id="emptyLabel" visibility="gone" text="@i18n/themes/no_results" fontSize="18" horizontalAlign="center"/>
             <AnimatedBox id="resultsBox" width="auto" height="auto" entranceDelay="60" axis="column"/>
         </brls:Box>

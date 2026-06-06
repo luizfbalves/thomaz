@@ -23,13 +23,17 @@
     "submit_login": "Log in",
     "submit_register": "Create account",
     "logout": "Log out",
+    "logout_confirm": "Log out of your account?",
+    "cancel": "Cancel",
     "err_empty": "Fill in username and password.",
     "err_failed": "Couldn't sign you in.",
     "err_username": "Username: 3–32 characters, letters and numbers only."
   },
   "boot": {
     "login": "Log in",
-    "guest": "Continue without login"
+    "guest": "Continue without login",
+    "tagline": "Your Switch homebrew hub",
+    "features": "Manage per-game cheats, explore and apply community themes, back up and restore your saves to the cloud (FOR FREE!!!), install mods and keep an eye on system status — all in one app."
   },
   "settings": {
     "title": "Settings",
@@ -139,7 +143,11 @@
     "fallback": "No cheats for this version; using the previous version's.",
     "save": "Save and apply",
     "saved": "Cheats saved — applied on the game's next boot.",
-    "save_failed": "Couldn't write to the SD card."
+    "save_failed": "Couldn't write to the SD card.",
+    "apply_title": "Cheats saved",
+    "apply_body": "Cheats are only loaded when the game STARTS.\n\nClose the game completely (returning to the Home menu isn't enough) and open it again for them to take effect.\n\nIf they still don't work, enable the cheat via an overlay (e.g. EdiZon).",
+    "apply_body_reboot": "I enabled automatic cheat activation in Atmosphère.\n\nReboot the console ONCE for the setting to take effect. After that, just open the game — the cheats you enable here will already be active.\n\n(If you'd rather not reboot now, enable the cheat manually via an overlay like EdiZon.)",
+    "apply_ok": "Got it"
   },
   "icon": {
     "cheats": "",

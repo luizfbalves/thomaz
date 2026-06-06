@@ -92,9 +92,13 @@ if (PLATFORM_SWITCH)
 
     # The isolated archive replaces `hactool thomaz_mbedtls_cmac` on the link
     # line. curl still uses the portlib mbedtls/mbedx509/mbedcrypto.
+    # switch-libwebp (dkp-pacman: switch-libwebp) decodes the WebP theme images
+    # that themezer's CDN now serves — stb_image can't read WebP, so they're
+    # transcoded to PNG in source/platform/image_transcode.cpp before display.
     list(APPEND APP_PLATFORM_LIB ${HACTOOL_ISOLATED}
                                  curl mbedtls mbedx509 mbedcrypto
-                                 archive bz2 lzma zstd lz4 z)
+                                 archive bz2 lzma zstd lz4 z
+                                 webp)
 endif ()
 
 # Our sources: app entry + pure-logic core. core/*.hpp resolved via -Isource,
@@ -102,6 +106,7 @@ endif ()
 list(APPEND APP_PLATFORM_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/source
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/json
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/stb
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/switchthemes
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/switchthemes/third_party)
 file(GLOB_RECURSE MAIN_SRC ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
@@ -114,6 +119,19 @@ list(APPEND MAIN_SRC ${ENGINE_SRC})
 
 if (PLATFORM_SWITCH)
     list(APPEND MAIN_SRC ${BOREALIS_LIBRARY}/lib/platforms/switch/switch_wrapper.c)
+endif ()
+
+# Opt-in nxlink stdio for on-hardware debugging. Borealis only calls
+# nxlinkStdio() (redirecting stdout/stderr back to the host that netloaded the
+# nro) under `#ifdef DEBUG` in switch_wrapper.c. CMake's Debug build type does
+# NOT define the DEBUG macro, so we define it for that single TU on demand —
+# leaving every other translation unit (miniz, yoga, ...) untouched.
+# Configure with -DTHOMAZ_NXLINK=ON, then run `nxlink -s thomaz.nro` to see logs.
+option(THOMAZ_NXLINK "Define DEBUG for switch_wrapper.c to enable nxlink stdio" OFF)
+if (PLATFORM_SWITCH AND THOMAZ_NXLINK)
+    set_source_files_properties(
+        ${BOREALIS_LIBRARY}/lib/platforms/switch/switch_wrapper.c
+        PROPERTIES COMPILE_DEFINITIONS "DEBUG")
 endif ()
 
 # Build target

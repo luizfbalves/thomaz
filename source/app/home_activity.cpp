@@ -100,9 +100,9 @@ void HomeActivity::onContentAvailable()
 
 void HomeActivity::refreshHeaderUsername()
 {
-    // install_header_username is a no-op when no session exists, so when this
-    // runs after a boot-screen login it adds exactly the one "@username" label
-    // that was missing (Home was built while still logged out).
+    // install_header_username is idempotent: it refreshes the existing header
+    // auth button in place, so calling it after a boot-screen login flips it
+    // from "Entrar" to "@username" without adding a duplicate.
     install_header_username(this);
 }
 

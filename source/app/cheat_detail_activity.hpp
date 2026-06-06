@@ -31,7 +31,10 @@ class CheatDetailActivity : public ThomazActivity
   private:
     // Populate the screen from a fetch result (runs on the UI thread).
     void populate(const core::FetchResult& result);
-    void save();
+    // Write the enabled set to the SD card. When showApplyInfo is true (the
+    // explicit "save and apply" action), surface a dialog explaining the game
+    // must be relaunched; toggle auto-saves pass false and only flash a toast.
+    void save(bool showApplyInfo = false);
 
     InstalledTitle title;
     IHttpClient* http;

@@ -7,7 +7,20 @@
                   backgroundColor="#000000">
             <brls:Image id="bootIcon"
                         image="@res/img/boot_logo.png"
-                        width="400" height="400"/>
+                        width="320" height="320"/>
+            <brls:Label id="bootTagline"
+                        text="@i18n/thomaz/boot/tagline"
+                        width="460" marginTop="20"
+                        fontSize="20" lineHeight="1.25"
+                        horizontalAlign="center" textColor="#FFFFFF"/>
+            <brls:Label id="bootFeatures"
+                        text="@i18n/thomaz/boot/features"
+                        width="460" marginTop="12"
+                        fontSize="14" lineHeight="1.5"
+                        horizontalAlign="center" textColor="@theme/thomaz/text_dim"/>
+            <brls:Label id="bootVersion"
+                        marginTop="16" fontSize="13"
+                        horizontalAlign="center" textColor="@theme/thomaz/text_faint"/>
         </brls:Box>
 
         <!-- Right: login and guest buttons -->

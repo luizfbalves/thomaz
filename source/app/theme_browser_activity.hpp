@@ -1,4 +1,6 @@
 #pragma once
+#include <atomic>
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -25,7 +27,7 @@ class ThemeBrowserActivity : public ThomazActivity {
     void populate(const thomaz::core::BrowsePage& page);
     void loadThumb(const std::string& url, brls::Image* into);
     void openSearch();
-    void cyclePart();              // advance the section filter (Themes mode)
+    void updateTabSelection();     // repaint the Packs/Themes badges to match packsMode
 
     IHttpClient* http;
     bool         packsMode = true; // start on Packs
@@ -33,6 +35,13 @@ class ThemeBrowserActivity : public ThomazActivity {
     std::string  target;           // "" = all (Themes mode only)
     int          page = 1;
     bool         isComplete = true;
+
+    // Bumped every time populate() rebuilds the grid (which destroys the old
+    // cards). In-flight loadThumb continuations capture the generation at
+    // dispatch and skip touching their (now-freed) Image if it changed —
+    // prevents the use-after-free crash when sections are switched rapidly.
+    std::shared_ptr<std::atomic<std::uint64_t>> listGen =
+        std::make_shared<std::atomic<std::uint64_t>>(0);
 };
 
 } // namespace thomaz

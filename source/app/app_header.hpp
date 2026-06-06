@@ -6,9 +6,16 @@ namespace brls { class Activity; }
 
 namespace thomaz {
 
-// Mostra "@usuario" (sessão atual) no canto direito do header do AppletFrame.
-// Chamado em onContentAvailable de cada activity, para o nome aparecer
-// globalmente em todas as telas. No-op se não houver sessão ou header.
+class IAuthClient;
+
+// Injeta o cliente de autenticação usado pelo chip de login do header (para
+// abrir a tela de login). Deve ser chamado uma vez no startup (main).
+void set_header_auth_client(IAuthClient* client);
+
+// Mostra o status de login no canto direito do header do AppletFrame, como um
+// chip clicável: logado => "@usuario" (toque para sair); deslogado => "Entrar"
+// (toque para abrir a tela de login). Chamado em onContentAvailable de cada
+// activity, para aparecer globalmente em todas as telas.
 void install_header_username(brls::Activity* activity);
 
 // Injeta indicadores de sistema (barra SD, barra NAND, WiFi) no hint_box do

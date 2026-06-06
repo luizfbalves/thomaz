@@ -14,15 +14,13 @@
 #include "core/themes/themezer_browse.hpp"
 #include "platform/themes/active_theme_store.hpp"
 #include "platform/themes/theme_paths.hpp"
+#include "platform/image_transcode.hpp"
 
 using namespace brls::literals;
 
 namespace thomaz {
 
 namespace {
-const char* kTargets[] = { "", "ResidentMenu", "Entrance", "Flaunch",
-                           "Set", "Psl", "MyPage", "Notification" };
-
 core::themezer::GraphQlFetcher makeFetcher(IHttpClient* http,
                                            std::shared_ptr<std::atomic<bool>> cancelled = nullptr) {
     return [http, cancelled](const std::string& body) -> std::optional<std::string> {
@@ -36,11 +34,6 @@ core::themezer::GraphQlFetcher makeFetcher(IHttpClient* http,
         return r.ok() ? std::optional<std::string>(r.body) : std::nullopt;
     };
 }
-
-std::string partLabel(const std::string& target) {
-    if (target.empty()) return "themes/part_all"_i18n;
-    return brls::getStr("themes/part_" + target);
-}
 } // namespace
 
 ThemeBrowserActivity::ThemeBrowserActivity(IHttpClient* http) : http(http) {}
@@ -52,8 +45,8 @@ void ThemeBrowserActivity::onContentAvailable() {
 
     if (auto* tp = this->getView("tabPacks")) {
         tp->registerClickAction([this, alive = this->alive](brls::View*) {
-            this->packsMode = true; this->target = "";
-            if (auto* pb = this->getView("partButton")) pb->setVisibility(brls::Visibility::GONE);
+            this->packsMode = true;
+            this->updateTabSelection();
             brls::sync([this, alive]() { if (!alive->load()) return; this->reload(); });
             return true;
         });
@@ -62,7 +55,7 @@ void ThemeBrowserActivity::onContentAvailable() {
     if (auto* tt = this->getView("tabThemes")) {
         tt->registerClickAction([this, alive = this->alive](brls::View*) {
             this->packsMode = false;
-            if (auto* pb = this->getView("partButton")) pb->setVisibility(brls::Visibility::VISIBLE);
+            this->updateTabSelection();
             brls::sync([this, alive]() { if (!alive->load()) return; this->reload(); });
             return true;
         });
@@ -72,12 +65,21 @@ void ThemeBrowserActivity::onContentAvailable() {
         sb->registerClickAction([this](brls::View*) { this->openSearch(); return true; });
         sb->addGestureRecognizer(new brls::TapGestureRecognizer(sb));
     }
-    if (auto* pb = this->getView("partButton")) {
-        pb->registerClickAction([this](brls::View*) { this->cyclePart(); return true; });
-        pb->addGestureRecognizer(new brls::TapGestureRecognizer(pb));
-    }
 
+    this->updateTabSelection();
     this->reload();
+}
+
+// Repaint the Packs/Themes badges so the active mode reads as selected (accent)
+// and the other as a plain chip. Without this the XML's initial colors never
+// change and Packs looks permanently selected.
+void ThemeBrowserActivity::updateTabSelection() {
+    const NVGcolor sel   = nvgRGB(0x92, 0x77, 0xFF); // thomaz/accent_bright
+    const NVGcolor unsel = nvgRGB(0x22, 0x24, 0x2D); // thomaz/surface_2
+    if (auto* tp = (brls::Box*)this->getView("tabPacks"))
+        tp->setBackgroundColor(this->packsMode ? sel : unsel);
+    if (auto* tt = (brls::Box*)this->getView("tabThemes"))
+        tt->setBackgroundColor(this->packsMode ? unsel : sel);
 }
 
 void ThemeBrowserActivity::reload() {
@@ -85,7 +87,11 @@ void ThemeBrowserActivity::reload() {
 }
 
 void ThemeBrowserActivity::runQuery(int page) {
-    if (auto* spinner = this->getView("spinner")) spinner->setVisibility(brls::Visibility::VISIBLE);
+    // Show the centered loader and hide the list/empty state so stale themes
+    // aren't shown over the spinner while a query is in flight.
+    if (auto* lb = this->getView("loadingBox")) lb->setVisibility(brls::Visibility::VISIBLE);
+    if (auto* rb = this->getView("resultsBox"))  rb->setVisibility(brls::Visibility::GONE);
+    if (auto* el = this->getView("emptyLabel"))  el->setVisibility(brls::Visibility::GONE);
 
     IHttpClient* client = this->http;
     bool packs = this->packsMode;
@@ -104,8 +110,13 @@ void ThemeBrowserActivity::runQuery(int page) {
             results->second = res.page;
         },
         [this, results]() {
-            if (auto* spinner = this->getView("spinner")) spinner->setVisibility(brls::Visibility::GONE);
-            if (!results->first) { brls::Application::notify("themes/error_network"_i18n); return; }
+            if (auto* lb = this->getView("loadingBox")) lb->setVisibility(brls::Visibility::GONE);
+            if (!results->first) {
+                // Restore the previous list so a network error doesn't leave a blank screen.
+                if (auto* rb = this->getView("resultsBox")) rb->setVisibility(brls::Visibility::VISIBLE);
+                brls::Application::notify("themes/error_network"_i18n);
+                return;
+            }
             this->populate(results->second);
         });
 }
@@ -117,17 +128,38 @@ void ThemeBrowserActivity::loadThumb(const std::string& url, brls::Image* into) 
     auto body      = std::make_shared<std::string>();
     auto ok        = std::make_shared<bool>(false);
     auto cancelled = this->cancelledFlag();
+    auto status = std::make_shared<long>(0);
+    // Snapshot the current grid generation; if populate() rebuilds the grid
+    // before this fetch returns, `into` points at a freed Image and must not be
+    // touched (use-after-free on rapid section switches).
+    auto gen     = this->listGen;
+    auto genAtDispatch = gen->load();
     this->runAsync(
-        [client, u, body, ok, cancelled]() {
+        [client, u, body, ok, status, cancelled]() {
             HttpRequest req;
             req.url       = u;
             req.cancelled = cancelled;
             HttpResponse r = client->request(req);
-            if (r.ok()) { *body = r.body; *ok = true; }
+            *status = r.status;
+            // CDN serves WebP; transcode to PNG so stb_image can decode it (worker thread).
+            if (r.ok()) { *body = thomaz::platform::to_decodable_image(r.body); *ok = true; }
         },
-        [into, body, ok]() {
-            if (*ok)
-                into->setImageFromMem((const unsigned char*)body->data(), (int)body->size());
+        [into, body, ok, status, u, gen, genAtDispatch]() {
+            // The grid was rebuilt while this thumb was loading — its card (and
+            // `into`) has been destroyed. Drop the result instead of writing to
+            // freed memory.
+            if (gen->load() != genAtDispatch) return;
+            // THEME-IMG diagnostic (theme-preview-blank): logging the list-card
+            // thumbnail path tells us whether the blank images are limited to the
+            // detail hero or affect the whole module (shared fetch/TLS layer).
+            if (!*ok) {
+                brls::Logger::error("[THEME-IMG] list thumb FAILED status={} url={}", *status, u);
+                return;
+            }
+            into->setImageFromMem((const unsigned char*)body->data(), (int)body->size());
+            if (into->getTexture() == 0)
+                brls::Logger::error("[THEME-IMG] list thumb DECODE failed ({} bytes) url={}",
+                                    body->size(), u);
         });
 }
 
@@ -139,6 +171,11 @@ void ThemeBrowserActivity::populate(const core::BrowsePage& pg) {
     this->page       = pg.page;
     this->isComplete = pg.is_complete;
 
+    // Invalidate any thumbnail fetches still in flight for the previous grid —
+    // clearViews() is about to free their Image targets.
+    this->listGen->fetch_add(1);
+
+    box->setVisibility(brls::Visibility::VISIBLE); // runQuery hid it during the fetch
     box->clearViews();
 
     if (pg.entries.empty()) {
@@ -248,16 +285,6 @@ void ThemeBrowserActivity::openSearch() {
             brls::sync([this, alive]() { if (!alive->load()) return; this->reload(); });
         },
         "themes/search"_i18n, "themes/search_hint"_i18n, 64);
-}
-
-void ThemeBrowserActivity::cyclePart() {
-    const int n = (int)(sizeof(kTargets) / sizeof(kTargets[0]));
-    int cur = 0;
-    for (int i = 0; i < n; i++) if (this->target == kTargets[i]) { cur = i; break; }
-    this->target = kTargets[(cur + 1) % n];
-    if (auto* lbl = (brls::Label*)this->getView("partButtonLabel"))
-        lbl->setText("themes/filter_part"_i18n + std::string(": ") + partLabel(this->target));
-    this->reload();
 }
 
 } // namespace thomaz

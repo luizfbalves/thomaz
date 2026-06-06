@@ -14,6 +14,7 @@
 #include "app/animated_box.hpp"
 #include "app/home_activity.hpp"
 #include "app/boot_activity.hpp"
+#include "app/app_header.hpp"
 #include "platform/app_settings.hpp"
 #include "platform/http_client_curl.hpp"
 #include "platform/self_update.hpp"
@@ -86,6 +87,10 @@ int main(int argc, char* argv[])
         apiBaseUrl,
         restoredSession,
         [](const thomaz::feed::Session& s) { thomaz::save_session(s); });
+
+    // The header login/logout chip (shown on every screen) uses this client to
+    // open the login screen.
+    thomaz::set_header_auth_client(feedClient.get());
 
     // Cloud saves: real HTTP client against the same thomaz-api base URL. The
     // access token is read from auth_store per call by the Save Detail screen.
