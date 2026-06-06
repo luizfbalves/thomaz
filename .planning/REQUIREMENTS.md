@@ -74,35 +74,35 @@ Explicitly excluded for v1.2. Documented to prevent scope creep.
 
 ## Traceability
 
-Which phases cover which requirements. Populated during roadmap creation.
+Which phases cover which requirements. Phase numbering continues from v1.1 (phases 5-7); v1.2 starts at Phase 8.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SRC-01 | TBD | Pending |
-| SRC-02 | TBD | Pending |
-| SRC-03 | TBD | Pending |
-| SRC-04 | TBD | Pending |
-| CAT-01 | TBD | Pending |
-| CAT-02 | TBD | Pending |
-| INST-01 | TBD | Pending |
-| INST-02 | TBD | Pending |
-| INST-03 | TBD | Pending |
-| INST-04 | TBD | Pending |
-| INST-05 | TBD | Pending |
-| MGMT-01 | TBD | Pending |
-| MGMT-02 | TBD | Pending |
-| MGMT-03 | TBD | Pending |
-| QUEUE-01 | TBD | Pending |
-| QUEUE-02 | TBD | Pending |
-| UPD-01 | TBD | Pending |
-| SYNC-01 | TBD | Pending |
-| SYNC-02 | TBD | Pending |
+| SRC-01 | Phase 8 | Pending |
+| SRC-02 | Phase 8 | Pending |
+| SRC-03 | Phase 8 | Pending |
+| SRC-04 | Phase 8 | Pending |
+| CAT-01 | Phase 8 | Pending |
+| CAT-02 | Phase 8 | Pending |
+| INST-01 | Phase 10 | Pending |
+| INST-02 | Phase 10 | Pending |
+| INST-03 | Phase 10 | Pending |
+| INST-04 | Phase 10 | Pending |
+| INST-05 | Phase 10 | Pending |
+| MGMT-01 | Phase 11 | Pending |
+| MGMT-02 | Phase 11 | Pending |
+| MGMT-03 | Phase 11 | Pending |
+| QUEUE-01 | Phase 9 | Pending |
+| QUEUE-02 | Phase 9 | Pending |
+| UPD-01 | Phase 11 | Pending |
+| SYNC-01 | Phase 8 | Pending |
+| SYNC-02 | Phase 8 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 19 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 19 ⚠️ (filled by roadmapper)
+- Mapped to phases: 19 ✓ (Phase 8: 8 · Phase 9: 2 · Phase 10: 5 · Phase 11: 4)
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-06*
-*Last updated: 2026-06-06 after initial definition*
+*Last updated: 2026-06-06 — roadmap revised (NSZ merged into Phase 10; old Phase 12 → Phase 11; phases 8-11 mapped)*

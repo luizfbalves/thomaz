@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Game Management
-status: planning
+status: roadmapped
 last_updated: "2026-06-06T21:12:16.918Z"
 last_activity: 2026-06-06
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -19,15 +19,28 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-06-06)
 
-**Core value:** Remove the desktop (PC/SDL2/GLFW) build target with zero change to the shipped Switch `.nro` — proven by a green host doctest suite (`tests/Makefile`) and a clean Switch build (`scripts/build-switch.sh`)
-**Current focus:** v1.1 shipped & archived — planning next milestone (`/gsd-new-milestone`)
+**Core value:** The user links their own content source and installs/manages games and DLC from inside the hub with a smoother, cover-art-rich, resumable flow than stock installers — thomaz being purely the client, never a content host.
+**Current focus:** v1.2 roadmap created (Phases 8-11) — ready to plan Phase 8 (`/gsd-plan-phase 8`)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 8 — Catalog, Content Sources & Server Linking (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-06-06 — Milestone v1.2 started
+Status: Roadmapped — awaiting Phase 8 planning
+Last activity: 2026-06-06 — Milestone v1.2 roadmap revised (NSZ merged into Phase 10; 4 phases, 19/19 requirements mapped)
+
+## Milestone v1.2 Roadmap
+
+Phases 8-11 (numbering continues from v1.1's 5-7). Coverage 19/19, granularity coarse.
+
+| Phase | Goal (one line) | Requirements | Hardware |
+|-------|-----------------|--------------|----------|
+| 8. Catalog, Content Sources & Server Linking | Link a server/local SD, browse cover-art catalog, one-tap cloud-sync server config | SRC-01..04, CAT-01/02, SYNC-01/02 | No |
+| 9. Install-Decision Core & Resumable Queue | Host-tested PFS0 parse + install planner + queue state machine + journaled app-scoped runner | QUEUE-01/02 | No |
+| 10. NSP & NSZ Install Engine | Streamed NSP + NSZ base/update/DLC install: dest choice, free-space pre-flight, rollback, reconciliation, gated tickets, serialized DB; NSZ = streamed NCZ decompress + on-device AES-CTR re-encrypt, applet-mode bounded (own spike + sub-gate) | INST-01..05 | Yes (HIGH risk; NSZ research-gated sub-gate) |
+| 11. Installed Mgmt, Uninstall & Update/DLC Detection | Installed list (version/DLC/size) + NAND/SD free space, uninstall, update/DLC badges, live queue UI | MGMT-01..03, UPD-01 | Yes |
+
+**Spine:** 8 → 9 → 10 → 11. Host-tested logic (8, 9) precedes hardware (10, 11) so failures on hardware are install-mechanism bugs, not logic bugs.
 
 ## Performance Metrics
 
@@ -72,14 +85,18 @@ Last activity: 2026-06-06 — Milestone v1.2 started
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- v1.2 Roadmap (2026-06-06, revised): 4 coarse phases (8-11). Folded the research's 10-phase decomposition — host-testable core leaves and low-risk UI/sync leaves merged into their natural neighbors (catalog+sources+browse+server-sync → Phase 8; queue+PFS0+planner → Phase 9; installed mgmt+uninstall+update/DLC+queue UI → Phase 11). NSZ was merged into the NSP install engine (Phase 10) at user request, keeping its own spike + on-hardware validation sub-gate inside that phase.
+- v1.2 Phase 10 (NSP & NSZ install engine) is the ONE genuinely HIGH-risk, hardware-gated phase. Per research, rollback + startup reconciliation + serialized DB mutation + free-space pre-flight + gated ticket import MUST ship in this phase — NOT split into a later hardening phase.
+- v1.2 NSZ (INST-05) merged into Phase 10 (was a standalone Phase 11). The launch-only-corruption risk remains: NSZ keeps a dedicated spike and a distinct on-hardware validation sub-gate WITHIN Phase 10 — NCZ re-encryption corruption only surfaces at game launch, so its validation must NOT collapse into the NSP happy path.
+- v1.2 sequencing: streaming content-source/Range seam established in Phase 8 BEFORE the install engine consumes it (the existing curl client buffers whole responses in a std::string and OOMs on multi-GB titles). The resumable queue (Phase 9) is an app-scoped runner with an on-SD journal, NOT tied to a ThomazActivity/runAsync lifetime.
+- v1.2 legal boundary: no default server/index/keys bundled (SRC-04); cloud API stores server CONFIG ONLY, never content (SYNC-01) — enforced in the Prisma model + route schema.
+
+#### Prior milestone decisions (v1.1, retained for context)
+
 - v1.1 Roadmap: 3 coarse phases — source-seam collapse first (Phase 5), build-system strip second (Phase 6), docs + final gate third (Phase 7); order enforces a buildable tree at every phase boundary
 - v1.1 verification: host doctest suite (`tests/Makefile`) is the in-phase gate for the source layer (independent of the desktop build, survives); the Switch build (`build-switch.sh`, devkitPro Docker) is the post-removal compile gate — no non-devkitPro full-tree compile check remains
 - v1.1 keep: `saves/fake_cloud_save_client.*` is a doctest test double, NOT a desktop GUI stub — explicitly retained and still compiled by the suite
-- v1.1 removal surface (enumerated): 5 desktop stub pairs (`save_service_fake`, `title_service_fake`, `fake_auth_client`, `themes/firmware_extract_fake`, `sysmod/sysmod_store_fake`); ~32 files carry `__SWITCH__` seams — collapse the `#else`/`#ifndef __SWITCH__` desktop branch in each; `CMakeLists.txt` `PLATFORM_DESKTOP` link (~98-102) + packaging (~130-135) branches; delete `scripts/build-desktop.sh` + `scripts/run-desktop.sh`
-- [Phase ?]: Phase 05 Plan 01: collapsed the three consumer service/store factory seams in main.cpp + home_activity.cpp to Switch-only; stub-file deletion + interface-comment cleanup deferred to Plan 02 per RESEARCH Steps 3/5
-- [Phase ?]: Phase 05 Plan 02: deleted the 9 desktop stub files (SIMPL-01 complete); retained doctest double saves/fake_cloud_save_client.* preserved; 2 stale comment references deferred to SIMPL-03 sweep
-- [Phase 05]: **Option D (scope decision, 2026-06-05):** the ~12 path-helper `#ifdef __SWITCH__/#else` blocks are platform-PORTABILITY seams (Switch absolute path vs host-writable path), NOT `*_fake`-vs-`*_switch` stub-selection. They keep the host doctest suite green (the host build compiles them and tests write to their outputs) and are RETAINED — same treatment as `_WIN32` seams. SIMPL-02's "no #else" was the real `*_fake`-vs-`*_switch` selection, all collapsed in Plan 01. RESEARCH's "host suite passes unchanged" claim was false.
-- [Phase 05]: Plan 03/04 complete: SIMPL-03 = cleaned 3 stale fake-naming comments (firmware_extract.hpp, sysmod_store.hpp); host suite 208/208 green; ROADMAP crit #1 glob fixed (*_fake* → *fake*). Executed on shared main tree alongside an active concurrent session (260605-s2h) — staged explicit paths only, no concurrent work touched.
+- [Phase 05]: **Option D (scope decision, 2026-06-05):** path-helper `#ifdef __SWITCH__/#else` blocks are platform-PORTABILITY seams (Switch absolute path vs host-writable path), NOT `*_fake`-vs-`*_switch` stub-selection — RETAINED to keep the host doctest suite green.
 
 ### Pending Todos
 
@@ -87,10 +104,16 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 5: Seams branch two ways — `#ifdef __SWITCH__` (keep the inner Switch code) and `#ifndef __SWITCH__` (drop the inner desktop code). Collapse each correctly; do NOT remove always-Switch code just because it sat behind an `#ifdef __SWITCH__` guard.
-- Phase 5: Do NOT delete `saves/fake_cloud_save_client.*` — it is the retained doctest double; `tests/Makefile` compiles it.
-- Phase 6: Switch build runs via Docker (`devkitpro/devkita64`); a devkitPro image/Docker must be available to satisfy BUILD-03. If unavailable, the nro-build criterion becomes a manual/deferred gate.
-- Phase 7: DOC-01 must sweep `CMakeLists.txt` header comment, README/build docs, and any `AGENTS.md`/`CLAUDE.md` build notes — confirm which docs actually mention the desktop build before editing.
+Carried into v1.2 from research (PITFALLS.md / ARCHITECTURE.md):
+
+- Phase 8: Tinfoil index schema is community-reverse-engineered — point the parser at a real server early; encrypted-index variant out of scope for MVP. Keep fail-closed TLS; strip `Authorization` on cross-host redirects; cap JSON parse size. Content bytes must NEVER go through `IHttpClient::request`/`HttpResponse.body` (OOM) — establish the streaming/Range seam here.
+- Phase 9: Persistence schema (per-content_id offset + placeholder_id + target storage) must be designed here so Phase 10 resume builds on it without redesign. The runner must own its own app-scoped `cancelled` flag — NOT borrow an activity's `alive`/`cancelled`.
+- Phase 10: HIGHEST RISK. NCM content-meta struct layout is firmware-version-sensitive — validate on target firmware, don't hardcode sizes libnx provides. Register all NCAs before meta `Set`/`Commit` (commit = the single linearization point); rollback (DeletePlaceHolder/Delete) on any failure; `CleanupAllPlaceHolder` + reconcile on startup. Gate ticket import on NCA rights_id (no spurious tickets; refuse cleanly on missing required ticket). Serialize via an `installBusy` atomic (mirror `cloudBusy`), install mutually exclusive with uninstall. Switch build = devkitPro Docker; hardware UAT required. **NSZ sub-gate (merged into this phase):** NCZ format boundary (first 0x4000 uncompressed, zstd stream after header), per-section AES-CTR keys from the NCZ header. Stream-decompress with a bounded zstd context + fixed output buffer; free the context deterministically (historical leak). Validate re-encryption against nsz reference fixtures — corruption only fails at launch. Keep the dedicated spike + a distinct on-hardware validation sub-gate; do NOT fold NSZ verification into the NSP happy path.
+- Phase 11: Granular update/DLC uninstall (application-record merge/trim) is trickier than full-title `nsDeleteApplicationCompletely` — flag for phase-level research. Leaving the queue UI must NOT tear down an in-progress install.
+
+#### Prior-milestone hardware UAT still open (non-gating, see Deferred Items)
+
+- v1.0 Phase 03/04 hardware UAT (TLS banner render, save_service_switch compile, 5 activity-pop UAF scenarios) and v0.5.0 on-hardware extraction verification remain outstanding.
 
 ### Quick Tasks Completed
 
@@ -129,10 +152,10 @@ All deferred UAT/verification items are on-hardware checks the host test suite c
 
 ## Session Continuity
 
-Last session: 2026-06-06T01:58:31.113Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-docs-cleanup-final-verification-gate/07-CONTEXT.md
+Last session: 2026-06-06 — v1.2 roadmap revised (NSZ merged into Phase 10)
+Stopped at: ROADMAP.md + REQUIREMENTS.md traceability written for v1.2 (phases 8-11)
+Resume file: .planning/ROADMAP.md
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Plan the first v1.2 phase with `/gsd-plan-phase 8`
