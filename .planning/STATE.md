@@ -103,6 +103,7 @@ None yet.
 | 260605-qgb | BootActivity boot screen: login/guest entry before HomeActivity when no session | 2026-06-05 | d668063 | [260605-qgb-vamos-adicionar-uma-bootscreen-no-app-us](./quick/260605-qgb-vamos-adicionar-uma-bootscreen-no-app-us/) |
 | 260605-rcu | Hybrid title-visibility system: heuristic auto-hides forwarders (save=0 & acct=0) + per-title overrides + global toggle | 2026-06-05 | c816ffc | [260605-rcu-da-pra-ocultar-apps-que-nao-sao-jogos-da](./quick/260605-rcu-da-pra-ocultar-apps-que-nao-sao-jogos-da/) |
 | 260605-tbt | Fix gamepad focus highlight stuck on previous screen: claimInitialFocus helper in ThomazActivity + applied in 5 async-list screens | 2026-06-06 | 604b564 | [260605-tbt-nos-menus-das-telas-quando-navegando-por](./quick/260605-tbt-nos-menus-das-telas-quando-navegando-por/) |
+| 260605-sbk | Fix save backup failing on Switch: copy_tree now creates its full destination dir chain (ensure_parent_dirs) instead of a single non-recursive mkdir; verified on hardware | 2026-06-05 | 9e3d4ad | [260605-sbk-corrigir-save-backup-no-switch](./quick/260605-sbk-corrigir-save-backup-no-switch/) |
 
 ## Deferred Items
 
