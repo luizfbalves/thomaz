@@ -7,7 +7,7 @@
                   backgroundColor="#000000">
             <brls:Image id="bootIcon"
                         image="@res/img/boot_logo.png"
-                        width="240" height="240"/>
+                        width="400" height="400"/>
         </brls:Box>
 
         <!-- Right: login and guest buttons -->
