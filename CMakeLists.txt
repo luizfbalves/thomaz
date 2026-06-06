@@ -1,6 +1,6 @@
 # thomaz — Nintendo Switch homebrew cheat-manager hub.
 # Built on the maintained Borealis fork (xfangfang/borealis), CMake-based,
-# targeting Nintendo Switch (devkitPro) and desktop PC (GLFW) from one tree.
+# targeting Nintendo Switch (devkitPro) only.
 # Modeled on the upstream demo's CMakeLists.
 
 cmake_minimum_required(VERSION 3.10)
@@ -22,7 +22,7 @@ include(${BOREALIS_LIBRARY}/cmake/toolchain.cmake)
 project(thomaz)
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "5")
-set(VERSION_ALTER "1")
+set(VERSION_ALTER "0")
 set(VERSION_BUILD "0")
 set(PACKAGE_NAME "tech.orul.thomaz")
 set(PROJECT_AUTHOR "luizfbalves")
@@ -54,7 +54,7 @@ if (PLATFORM_SWITCH)
 
     # Vendored hactool fork (exelix11, NCA/RomFS in-memory extraction) and
     # CMAC-enabled Mbed TLS 2.28.10 (built from source — D-06). Both are
-    # Switch-only; desktop must not see these targets (D-08).
+    # Switch-only targets.
     add_subdirectory(lib/hactool)
     add_subdirectory(lib/mbedtls)
     list(APPEND APP_PLATFORM_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/lib/hactool/include)
@@ -95,10 +95,6 @@ if (PLATFORM_SWITCH)
     list(APPEND APP_PLATFORM_LIB ${HACTOOL_ISOLATED}
                                  curl mbedtls mbedx509 mbedcrypto
                                  archive bz2 lzma zstd lz4 z)
-elseif (PLATFORM_DESKTOP)
-    find_package(CURL REQUIRED)
-    find_package(LibArchive REQUIRED)
-    list(APPEND APP_PLATFORM_LIB CURL::libcurl LibArchive::LibArchive)
 endif ()
 
 # Our sources: app entry + pure-logic core. core/*.hpp resolved via -Isource,
@@ -127,13 +123,7 @@ program_target(${PROJECT_NAME} "${MAIN_SRC}")
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 
 # Package per platform
-if (PLATFORM_DESKTOP)
-    add_custom_target(${PROJECT_NAME}.data
-        COMMAND "${CMAKE_COMMAND}" -E copy_directory ${PROJECT_RESOURCES} ${CMAKE_CURRENT_BINARY_DIR}/resources)
-    if (NOT USE_LIBROMFS)
-        add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}.data)
-    endif ()
-elseif (PLATFORM_SWITCH)
+if (PLATFORM_SWITCH)
     if (USE_DEKO3D)
         gen_dksh("${PROJECT_RESOURCES}/shaders")
     endif ()
