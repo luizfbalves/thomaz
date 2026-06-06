@@ -268,6 +268,10 @@ void GameListActivity::rebuildList()
         listBox->setVisibility(brls::Visibility::VISIBLE);
     }
 
+    // Give focus to the first item in the list (first call only; guard keeps
+    // subsequent rebuilds from X/Y toggles from stealing the current position).
+    this->claimInitialFocus(listBox);
+
     // Reveal "has cheats" badges once the db index is available.
     this->loadCheatIndexAsync();
 }

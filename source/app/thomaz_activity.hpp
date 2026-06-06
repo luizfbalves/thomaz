@@ -73,6 +73,23 @@ class ThomazActivity : public brls::Activity
             });
         });
     }
+
+    // Gives focus to the first focusable descendant of `container`, but only
+    // once per activity instance. Subsequent calls (e.g. from rebuildList()
+    // triggered by toggle X/Y) are no-ops so the user's current position is
+    // preserved. Fixes the highlight-stuck-on-previous-card bug for screens
+    // whose focusable content is built asynchronously (D-01).
+    void claimInitialFocus(brls::View* container)
+    {
+        if (initialFocusClaimed_ || !container) return;
+        brls::View* f = container->getDefaultFocus();
+        if (!f) return;
+        brls::Application::giveFocus(f);
+        initialFocusClaimed_ = true;
+    }
+
+  private:
+    bool initialFocusClaimed_ = false;
 };
 
 } // namespace thomaz

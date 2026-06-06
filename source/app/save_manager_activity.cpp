@@ -126,6 +126,10 @@ void SaveManagerActivity::populate(const std::vector<InstalledTitle>& titles)
         row->addGestureRecognizer(new brls::TapGestureRecognizer(row));
         listBox->addView(row);
     }
+
+    // Give focus to the first item in the list (no-op on empty list via guard
+    // in base class; also idempotent — only fires once per activity instance).
+    this->claimInitialFocus(listBox);
 }
 
 } // namespace thomaz
