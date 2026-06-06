@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Switch-Only Simplification
 status: executing
-stopped_at: v1.1 roadmap created (Phases 5-7); traceability + STATE updated
+stopped_at: Phase 05 COMPLETE (4/4 plans, VERIFICATION passed, Option D scope); next is Phase 06
 last_updated: "2026-06-05T23:34:21.166Z"
 last_activity: 2026-06-05
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 2
-  percent: 50
+  completed_plans: 4
+  percent: 33
 ---
 
 # Project State
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-06-05)
 
 ## Current Position
 
-Phase: 05 (collapse-source-seams-switch-only) — EXECUTING
-Plan: 3 of 4
-Status: Ready to execute
+Phase: 05 (collapse-source-seams-switch-only) — COMPLETE ✓ (VERIFICATION passed)
+Plan: 4 of 4 done
+Status: Phase 5 done; next is Phase 06 (strip the build system)
 Last activity: 2026-06-05
 
 Roadmap: collapse source seams first (Phase 5), then strip the build system (Phase 6), then docs cleanup + final combined gate (Phase 7). Sequenced so the source layer is single-target before CMake stops offering the desktop branch — the tree is never left unbuildable mid-phase.
@@ -81,6 +81,8 @@ Recent decisions affecting current work:
 - v1.1 removal surface (enumerated): 5 desktop stub pairs (`save_service_fake`, `title_service_fake`, `fake_auth_client`, `themes/firmware_extract_fake`, `sysmod/sysmod_store_fake`); ~32 files carry `__SWITCH__` seams — collapse the `#else`/`#ifndef __SWITCH__` desktop branch in each; `CMakeLists.txt` `PLATFORM_DESKTOP` link (~98-102) + packaging (~130-135) branches; delete `scripts/build-desktop.sh` + `scripts/run-desktop.sh`
 - [Phase ?]: Phase 05 Plan 01: collapsed the three consumer service/store factory seams in main.cpp + home_activity.cpp to Switch-only; stub-file deletion + interface-comment cleanup deferred to Plan 02 per RESEARCH Steps 3/5
 - [Phase ?]: Phase 05 Plan 02: deleted the 9 desktop stub files (SIMPL-01 complete); retained doctest double saves/fake_cloud_save_client.* preserved; 2 stale comment references deferred to SIMPL-03 sweep
+- [Phase 05]: **Option D (scope decision, 2026-06-05):** the ~12 path-helper `#ifdef __SWITCH__/#else` blocks are platform-PORTABILITY seams (Switch absolute path vs host-writable path), NOT `*_fake`-vs-`*_switch` stub-selection. They keep the host doctest suite green (the host build compiles them and tests write to their outputs) and are RETAINED — same treatment as `_WIN32` seams. SIMPL-02's "no #else" was the real `*_fake`-vs-`*_switch` selection, all collapsed in Plan 01. RESEARCH's "host suite passes unchanged" claim was false.
+- [Phase 05]: Plan 03/04 complete: SIMPL-03 = cleaned 3 stale fake-naming comments (firmware_extract.hpp, sysmod_store.hpp); host suite 208/208 green; ROADMAP crit #1 glob fixed (*_fake* → *fake*). Executed on shared main tree alongside an active concurrent session (260605-s2h) — staged explicit paths only, no concurrent work touched.
 
 ### Pending Todos
 
@@ -123,6 +125,7 @@ Resume file: None
 
 ## Operator Next Steps
 
-- Plan the first v1.1 phase with /gsd-plan-phase 5
+- Phase 05 complete ✓ — plan the next phase with /gsd-plan-phase 6 (strip the build system)
+- Cleanup (optional): `git stash drop stash@{0}` and remove `.planning/phases/05-collapse-source-seams-switch-only/.05-03-executor-edits.patch` once you're satisfied with the Option-D outcome (both hold the reverted wrong-scope 05-03 edits)
 
 </content>
