@@ -47,7 +47,7 @@ Remove the desktop (PC/SDL2/GLFW) build target entirely so the source tree targe
 
 - [ ] **Phase 5: Collapse Source Seams to Switch-Only** — Delete the 5 desktop stub pairs and collapse every `__SWITCH__` selection seam so the `*_switch` impls are the sole implementations
 - [x] **Phase 6: Strip Desktop from Build System** — Remove the `PLATFORM_DESKTOP` path from CMake, delete the desktop helper scripts, and prove the Switch build still produces `thomaz.nro` (completed 2026-06-06)
-- [ ] **Phase 7: Docs Cleanup & Final Verification Gate** — Update comments/docs to describe a Switch-only tree and re-confirm both verification gates (host doctest + Switch build) are green
+- [x] **Phase 7: Docs Cleanup & Final Verification Gate** — Update comments/docs to describe a Switch-only tree and re-confirm both verification gates (host doctest + Switch build) are green (completed 2026-06-06)
 
 ## Phase Details
 
@@ -102,8 +102,8 @@ Plans:
 **Plans**: 2 plans
 Plans:
 
-- [ ] 07-01-PLAN.md — Clean README living docs to Switch-only (drop Desktop (PC) section, point at build-switch.sh, document the two-gate verification flow); grep gate green (DOC-01)
-- [ ] 07-02-PLAN.md — Run both single-target gates together — host doctest (make -C tests test) + Switch build (scripts/build-switch.sh → build_switch/thomaz.nro) — confirm green (VERIF-01)
+- [x] 07-01-PLAN.md — Clean README living docs to Switch-only (drop Desktop (PC) section, point at build-switch.sh, document the two-gate verification flow); grep gate green (DOC-01)
+- [x] 07-02-PLAN.md — Run both single-target gates together — host doctest (make -C tests test) + Switch build (scripts/build-switch.sh → build_switch/thomaz.nro) — confirm green (VERIF-01)
 
 ## Progress
 
@@ -119,4 +119,4 @@ Plans:
 | 4. Forwarder (Optional)            | v0.5.0 | 0/1 | Carried forward | - |
 | 5. Collapse Source Seams to Switch-Only | v1.1 | 0/4 | Not started | - |
 | 6. Strip Desktop from Build System      | v1.1 | 2/2 | Complete   | 2026-06-06 |
-| 7. Docs Cleanup & Final Verification Gate | v1.1 | 0/2 | Not started | - |
+| 7. Docs Cleanup & Final Verification Gate | v1.1 | 2/2 | Complete   | 2026-06-06 |
