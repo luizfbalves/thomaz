@@ -10,6 +10,7 @@ const TEST_DB =
   "postgresql://thomaz:thomaz@localhost:5433/thomaz?schema=public";
 
 const JWT_SECRET = "test-jwt-secret-min-16-chars";
+const SOURCE_ENC_KEY = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
 
 let uploadDir = "";
 let app: Awaited<ReturnType<typeof buildApp>>["app"];
@@ -17,6 +18,7 @@ let app: Awaited<ReturnType<typeof buildApp>>["app"];
 beforeAll(async () => {
   process.env.DATABASE_URL = TEST_DB;
   process.env.JWT_SECRET = JWT_SECRET;
+  process.env.SOURCE_ENC_KEY = SOURCE_ENC_KEY;
   process.env.PUBLIC_BASE_URL = "http://localhost:3000";
   process.env.NODE_ENV = "test";
   // Keep the auth rate limit effectively off for the shared app so the many

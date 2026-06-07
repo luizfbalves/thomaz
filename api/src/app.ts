@@ -8,6 +8,7 @@ import { registerAuth } from "./plugins/auth.js";
 import { ensureUploadDir } from "./lib/storage.js";
 import { authRoutes } from "./routes/auth.js";
 import { savesRoutes } from "./routes/saves.js";
+import { sourcesRoutes } from "./routes/sources.js";
 
 export async function buildApp(
   overrides?: Partial<Env>,
@@ -58,6 +59,7 @@ export async function buildApp(
 
   await authRoutes(app, env);
   await savesRoutes(app, env);
+  await sourcesRoutes(app, env);
 
   await app.ready();
   return { app, env };
