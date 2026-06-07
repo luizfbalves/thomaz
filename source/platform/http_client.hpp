@@ -12,6 +12,7 @@ namespace thomaz {
 struct HttpResponse {
     long status = 0;       // HTTP status code (0 = transport/connection failure)
     std::string body;      // response body (the JSON document)
+    std::vector<std::pair<std::string, std::string>> headers;
 
     bool ok() const { return status >= 200 && status < 300; }
 };
@@ -42,6 +43,13 @@ struct HttpRequest {
     // the flag is set.  null (default) means the transfer never self-aborts
     // (happy-path / existing callers unchanged).
     std::shared_ptr<std::atomic<bool>> cancelled;
+
+    // When false, libcurl does not auto-follow redirects (index_fetcher uses
+    // this for custom-header auth so credentials are not forwarded cross-host).
+    bool followRedirects = true;
+
+    // When non-zero, abort the transfer if the body would exceed this size.
+    std::size_t maxBodyBytes = 0;
 };
 
 // Non-buffering download seam (Phase 10 install engine). Chunks are forwarded to

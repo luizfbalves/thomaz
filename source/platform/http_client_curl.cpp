@@ -15,6 +15,47 @@ size_t writeToString(char* ptr, size_t size, size_t nmemb, void* userdata) {
     return size * nmemb;
 }
 
+struct CappedBodyCtx {
+    std::string* body;
+    std::size_t  maxBytes;
+};
+
+size_t writeToStringCapped(char* ptr, size_t size, size_t nmemb, void* userdata) {
+    auto* ctx = static_cast<CappedBodyCtx*>(userdata);
+    const auto len = size * nmemb;
+    if (ctx->maxBytes > 0 && ctx->body->size() + len > ctx->maxBytes)
+        return 0;
+    ctx->body->append(ptr, len);
+    return len;
+}
+
+struct ResponseHeaderCtx {
+    HttpResponse* response;
+};
+
+size_t responseHeaderCb(char* ptr, size_t size, size_t nmemb, void* userdata) {
+    auto* ctx = static_cast<ResponseHeaderCtx*>(userdata);
+    if (!ctx || !ctx->response)
+        return size * nmemb;
+    const std::size_t len = size * nmemb;
+    if (len < 2)
+        return len;
+    std::string line(ptr, len);
+    while (!line.empty() && (line.back() == '\r' || line.back() == '\n'))
+        line.pop_back();
+    const auto colon = line.find(':');
+    if (colon == std::string::npos || colon == 0)
+        return len;
+    std::string name  = line.substr(0, colon);
+    std::string value = line.substr(colon + 1);
+    while (!value.empty() && (value.front() == ' ' || value.front() == '\t'))
+        value.erase(value.begin());
+    for (char& c : name)
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    ctx->response->headers.emplace_back(std::move(name), std::move(value));
+    return len;
+}
+
 struct StreamCtx {
     StreamRequest* req;
     StreamResult*  result;
@@ -134,15 +175,24 @@ HttpResponse CurlHttpClient::request(const HttpRequest& req) {
         return response;
 
     curl_easy_setopt(curl, CURLOPT_URL, req.url.c_str());
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, req.followRedirects ? 1L : 0L);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "thomaz/0.1 (+switch homebrew)");
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
     // Reuse pooled connections / TLS sessions / DNS across requests (see ctor).
     if (share) curl_easy_setopt(curl, CURLOPT_SHARE, share);
     curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToString);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response.body);
+    CappedBodyCtx capCtx{&response.body, req.maxBodyBytes};
+    if (req.maxBodyBytes > 0) {
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToStringCapped);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &capCtx);
+    } else {
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToString);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response.body);
+    }
+    ResponseHeaderCtx headerCtx{&response};
+    curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, responseHeaderCb);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headerCtx);
 
     // Cooperative abort: ONLY install the progress hook when the caller actually
     // supplied a cancelled flag (WR-02). The vast majority of requests pass no
@@ -203,6 +253,8 @@ HttpResponse CurlHttpClient::request(const HttpRequest& req) {
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.status);
     else if (rc == CURLE_ABORTED_BY_CALLBACK)
         response.body.clear(); // cooperative teardown abort — discard any partial body, status stays 0
+    else if (rc == CURLE_WRITE_ERROR)
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.status);
     else
         response.status = 0; // transport failure
 
