@@ -17,14 +17,17 @@ on:
       - '**'
       - '!main'
     # Don't rebuild the Switch NRO for changes that don't touch the app: the API
-    # (api/**, deployed by api.yml) and planning docs (docs/**) never affect it.
+    # (api/**, deployed by api.yml), planning docs (docs/**), and landing page
+    # (website/**, deployed by pages.yml) never affect it.
     paths-ignore:
       - 'api/**'
       - 'docs/**'
+      - 'website/**'
   pull_request:
     paths-ignore:
       - 'api/**'
       - 'docs/**'
+      - 'website/**'
   workflow_dispatch:
 
 jobs:

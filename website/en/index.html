@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>thomaz — Everything for your Switch in one app</title>
+  <meta name="description" content="Saves, cheats, themes, and games in one place — friendly UI on Nintendo Switch, with free cloud save backup.">
+  <link rel="icon" href="../assets/icon.jpg" type="image/jpeg">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="logo" href="../">
+        <img src="../assets/icon.jpg" alt="" width="32" height="32">
+        thomaz
+      </a>
+      <nav class="header-nav">
+        <div class="nav-links">
+          <a href="#features">Features</a>
+          <a href="#install">Install</a>
+          <a href="#usage">How to use</a>
+        </div>
+        <div class="lang-switch" aria-label="Language">
+          <a href="../" lang="pt-BR">PT</a>
+          <a href="../en/" class="active" lang="en">EN</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <img class="hero-logo" src="../assets/boot_logo.png" alt="thomaz">
+    <h1>thomaz</h1>
+    <p class="tagline">Saves, cheats, themes, and games — all in one app</p>
+    <p class="tagline-sub">A friendly UI on your Switch, with free cloud save backup.</p>
+    <div class="cta-group">
+      <a class="btn btn-primary" href="https://github.com/luizfbalves/thomaz/releases/latest">Download thomaz.nro</a>
+      <a class="btn btn-secondary" href="https://github.com/luizfbalves/thomaz">View on GitHub</a>
+    </div>
+  </section>
+
+  <main>
+    <section id="features">
+      <h2>Features</h2>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <div class="icon" aria-hidden="true">🎮</div>
+          <h3>Games</h3>
+          <p>Lists installed games with icon, version, and active cheat badges.</p>
+        </article>
+        <article class="feature-card">
+          <div class="icon" aria-hidden="true">🧩</div>
+          <h3>Cheats</h3>
+          <p>Downloads cheats from switch-cheats-db, toggles them on/off, saves to SD.</p>
+        </article>
+        <article class="feature-card">
+          <div class="icon" aria-hidden="true">💾</div>
+          <h3>Saves</h3>
+          <p>Free cloud backup — save and restore your game saves with a thomaz account.</p>
+        </article>
+        <article class="feature-card">
+          <div class="icon" aria-hidden="true">🎨</div>
+          <h3>Themes</h3>
+          <p>Browse and install community themes on your Switch.</p>
+        </article>
+      </div>
+      <div class="feature-tags">
+        <span class="tag">All in one app</span>
+        <span class="tag">Free cloud backup</span>
+        <span class="tag">Bilingual PT-BR / EN</span>
+        <span class="tag">Touch + controller</span>
+      </div>
+    </section>
+
+    <section id="requirements">
+      <h2>Requirements</h2>
+      <ul class="requirements">
+        <li>Nintendo Switch with <strong>Atmosphère</strong> (CFW) and a homebrew menu (hbmenu)</li>
+        <li>Internet connection on the console</li>
+        <li>SD card space</li>
+      </ul>
+    </section>
+
+    <section id="install">
+      <h2>Install</h2>
+      <ol class="steps">
+        <li>Download <strong>thomaz.nro</strong> from <a href="https://github.com/luizfbalves/thomaz/releases/latest">Releases</a>.</li>
+        <li>Copy the file to the <code>/switch/</code> folder on your SD card:<br><pre><code>sd:/switch/thomaz.nro</code></pre></li>
+        <li>On the Switch, open the <strong>Album</strong> (hold R to enter hbmenu) and launch thomaz.</li>
+      </ol>
+      <p class="note">Future updates can be done from the app via <strong>Settings → Check for updates</strong>.</p>
+    </section>
+
+    <section id="usage">
+      <h2>How to use</h2>
+      <ol class="steps">
+        <li>Open thomaz with your games <strong>closed</strong>.</li>
+        <li>Tap the <strong>Cheats</strong> card → pick a game from the list.</li>
+        <li>Enable the toggles you want — changes save automatically to SD.</li>
+        <li><strong>Close thomaz and launch the game.</strong> Atmosphère applies cheats on boot.</li>
+      </ol>
+      <p>To remove cheats: home → Cheats → <strong>Clear cheats</strong> → select games → <strong>Clear selected</strong>.</p>
+      <p>Cheats are written to:</p>
+      <pre><code>sd:/atmosphere/contents/&lt;TITLE_ID&gt;/cheats/&lt;BUILD_ID&gt;.txt</code></pre>
+    </section>
+
+    <section id="credits">
+      <h2>Credits</h2>
+      <ul class="credits-list">
+        <li><a href="https://github.com/HamletDuFromage/switch-cheats-db">switch-cheats-db</a> — cheat database</li>
+        <li><a href="https://github.com/xfangfang/borealis">Borealis (xfangfang)</a> — UI library</li>
+        <li><a href="https://devkitpro.org/">devkitPro</a> / <a href="https://github.com/switchbrew/libnx">libnx</a> — toolchain</li>
+        <li><a href="https://github.com/Atmosphere-NX/Atmosphere">Atmosphère</a> — CFW that applies cheats</li>
+      </ul>
+    </section>
+
+    <section id="disclaimer">
+      <h2>Disclaimer</h2>
+      <div class="disclaimer">
+        <p>thomaz is a tool for personal use on games you own. Cheats may cause unexpected behavior; <strong>never use cheats in online games</strong> — you risk being banned. Use at your own risk.</p>
+        <p>Released under the <strong>GNU GPL v2</strong>. Cheats come from the open-source <a href="https://github.com/HamletDuFromage/switch-cheats-db">switch-cheats-db</a> database.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="https://github.com/luizfbalves/thomaz">GitHub</a>
+      <a href="https://github.com/luizfbalves/thomaz/releases/latest">Releases</a>
+      <a href="../">Português</a>
+    </div>
+    <p>thomaz · Nintendo Switch homebrew</p>
+  </footer>
+</body>
+</html>
