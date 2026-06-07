@@ -81,7 +81,7 @@ Each task was committed atomically:
 2. **Task 2: index_fetcher** - `304905a` (feat)
 3. **Task 3: source_store + catalog_cache** - `8346419` (feat)
 
-**Plan metadata:** `f20316e` (docs: complete plan)
+**Plan metadata:** `b5abc9a` (docs: complete plan)
 
 ## Files Created/Modified
 
