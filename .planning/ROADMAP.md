@@ -107,7 +107,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 08-05-PLAN.md — Catalog grid/list + detail Activities (cache-first paint, search/sort/filter, kind chips, no install)
+- [x] 08-05-PLAN.md — Catalog grid/list + detail Activities (cache-first paint, search/sort/filter, kind chips, no install)
 
 **Wave 5** *(blocked on Wave 4 completion)*
 

@@ -16,7 +16,7 @@ Requirements for the Game Management milestone. Each maps to exactly one roadmap
 
 ### Catalog Browse (CAT)
 
-- [ ] **CAT-01**: User can browse a linked server's catalog as a grid/list showing cover art, title name, and file size, reusing the existing titledb/icon UI
+- [x] **CAT-01**: User can browse a linked server's catalog as a grid/list showing cover art, title name, and file size, reusing the existing titledb/icon UI
 - [x] **CAT-02**: Each catalog entry shows its kind (base / update / DLC) derived from the 64-bit title ID, and the user can filter/search the catalog
 
 ### Install (INST)
@@ -82,7 +82,7 @@ Which phases cover which requirements. Phase numbering continues from v1.1 (phas
 | SRC-02 | Phase 8 | Pending |
 | SRC-03 | Phase 8 | Pending |
 | SRC-04 | Phase 8 | Pending |
-| CAT-01 | Phase 8 | Pending |
+| CAT-01 | Phase 8 | Complete |
 | CAT-02 | Phase 8 | Complete |
 | INST-01 | Phase 10 | Pending |
 | INST-02 | Phase 10 | Pending |
@@ -96,7 +96,7 @@ Which phases cover which requirements. Phase numbering continues from v1.1 (phas
 | QUEUE-02 | Phase 9 | Pending |
 | UPD-01 | Phase 11 | Pending |
 | SYNC-01 | Phase 8 | Complete |
-| SYNC-02 | Phase 8 | Pending |
+| SYNC-02 | Phase 8 | Complete |
 
 **Coverage:**
 
