@@ -24,10 +24,13 @@ on:
       - 'docs/**'
       - 'website/**'
   pull_request:
-    paths-ignore:
-      - 'api/**'
-      - 'docs/**'
-      - 'website/**'
+    # NO path filter here on purpose. This check is a REQUIRED status check for
+    # merging into main (repo ruleset "pr"). A required check gated by a top-level
+    # `paths` filter never gets created on a PR that misses the filter, leaving the
+    # PR stuck "Expected — waiting for status" forever (you can't even bypass it
+    # cleanly). So the job ALWAYS runs on every PR and reports a real green check;
+    # the path detection moved INSIDE (see the `changed` step), which skips the
+    # expensive build steps when only api/**, docs/**, or website/** changed.
   workflow_dispatch:
 
 jobs:
@@ -41,19 +44,47 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          fetch-depth: 0 # full history so the PR base..head diff below resolves
+
+      - name: Detect app changes
+        id: changed
+        shell: bash
+        run: |
+          # Non-PR events (branch push / manual dispatch) already passed the
+          # trigger's path filter, so always build for them.
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "app=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # On a PR, build only when something OUTSIDE api/, docs/ and website/
+          # changed (those are deployed by api.yml / pages.yml and never affect the NRO).
+          files=$(git diff --name-only \
+            "${{ github.event.pull_request.base.sha }}" \
+            "${{ github.event.pull_request.head.sha }}" \
+            -- '.' ':(exclude)api/**' ':(exclude)docs/**' ':(exclude)website/**')
+          if [ -n "$files" ]; then
+            echo "app=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "app=false (only api/, docs/ or website/ touched — skipping NRO build)"
+            echo "app=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Merge Borealis runtime resources into romfs
         # Fills in Borealis's fonts/material/i18n/shaders without clobbering our
         # own xml/i18n (cp -n = no-clobber). No network access required.
+        if: steps.changed.outputs.app == 'true'
         run: cp -rn lib/borealis/resources/* resources/
 
       - name: Configure (Switch, deko3d)
+        if: steps.changed.outputs.app == 'true'
         run: cmake -B build_switch -DCMAKE_BUILD_TYPE=Release -DPLATFORM_SWITCH=ON -DUSE_DEKO3D=ON
 
       - name: Build thomaz.nro
+        if: steps.changed.outputs.app == 'true'
         run: make -C build_switch thomaz.nro -j$(nproc)
 
       - name: Upload NRO artifact
+        if: steps.changed.outputs.app == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: thomaz-nro

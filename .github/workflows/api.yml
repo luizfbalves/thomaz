@@ -6,9 +6,13 @@ on:
       - "api/**"
       - ".github/workflows/api.yml"
   pull_request:
-    paths:
-      - "api/**"
-      - ".github/workflows/api.yml"
+    # NO path filter here on purpose. This check is a REQUIRED status check for
+    # merging into main (repo ruleset "pr"). A required check gated by a top-level
+    # `paths` filter never gets created on a PR that misses the filter, leaving the
+    # PR stuck "Expected — waiting for status" forever. So the job ALWAYS runs on
+    # every PR and reports a real green check; the path detection moved INSIDE (see
+    # the `changed` step), which skips the install/migrate/test steps when nothing
+    # under api/ changed.
   workflow_dispatch:
 
 jobs:
@@ -43,26 +47,57 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so the PR base..head diff below resolves
+
+      - name: Detect api changes
+        id: changed
+        working-directory: ${{ github.workspace }} # diff at repo root, not api/
+        shell: bash
+        run: |
+          # Non-PR events (push to api paths / manual dispatch) already passed the
+          # trigger's path filter, so always run for them.
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "api=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # On a PR, run only when something under api/ changed.
+          files=$(git diff --name-only \
+            "${{ github.event.pull_request.base.sha }}" \
+            "${{ github.event.pull_request.head.sha }}" \
+            -- 'api/**' '.github/workflows/api.yml')
+          if [ -n "$files" ]; then
+            echo "api=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "api=false (no api/ changes — skipping install/test)"
+            echo "api=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: actions/setup-node@v4
+        if: steps.changed.outputs.api == 'true'
         with:
           node-version: "20"
           cache: npm
           cache-dependency-path: api/package-lock.json
 
       - name: Install dependencies
+        if: steps.changed.outputs.api == 'true'
         run: npm ci
 
       - name: Generate Prisma client
+        if: steps.changed.outputs.api == 'true'
         run: npx prisma generate
 
       - name: Apply migrations
+        if: steps.changed.outputs.api == 'true'
         run: npx prisma migrate deploy
 
       - name: Type-check
+        if: steps.changed.outputs.api == 'true'
         run: npm run typecheck
 
       - name: Run tests
+        if: steps.changed.outputs.api == 'true'
         run: npm test
 
   deploy:
