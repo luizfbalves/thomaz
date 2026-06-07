@@ -70,7 +70,7 @@ A Tinfoil-style on-device game-management client: link a user-owned content serv
 
 All decidable logic (index parse, title-ID/kind derivation, PFS0 parse, install planner, queue state machine, update/DLC diff, server-link codec) lives in pure `core/games/` under the doctest gate; `platform/games/` stays thin Switch orchestration; the cloud API gains exactly one model + one route — **config only, never content**.
 
-- [ ] **Phase 8: Catalog, Content Sources & Server Linking** — Link a user-owned server (or local SD), parse its Tinfoil index, browse a cover-art catalog, and one-tap sync the server config to the cloud account — zero install risk
+- [x] **Phase 8: Catalog, Content Sources & Server Linking** — Link a user-owned server (or local SD), parse its Tinfoil index, browse a cover-art catalog, and one-tap sync the server config to the cloud account — zero install risk
 - [ ] **Phase 9: Install-Decision Core & Resumable Queue** — Host-tested PFS0 parse + install planner + queue state machine, plus an app-scoped runner with an on-SD journal that resumes downloads across restarts — before any NCM write
 - [ ] **Phase 10: NSP & NSZ Install Engine (HARDWARE)** — Stream base/update/DLC NSP and NSZ installs into NCM with destination choice, free-space pre-flight, transactional rollback, startup reconciliation, gated ticket import, and serialized DB mutation; NSZ adds streaming NCZ decompression + on-device AES-CTR re-encryption within the applet-mode budget
 - [ ] **Phase 11: Installed Management, Uninstall & Update/DLC Detection (HARDWARE)** — View installed titles with version/DLC/size + NAND/SD free space, uninstall base/update/DLC, auto-detect available updates/DLC, and watch the live queue with cancel/resume
@@ -111,7 +111,7 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 08-06-PLAN.md — Source-list Activity: empty default, add auth-gated remote + local SD peer, one-tap sync, redacted credentials
+- [x] 08-06-PLAN.md — Source-list Activity: empty default, add auth-gated remote + local SD peer, one-tap sync, redacted credentials
 
 **UI hint**: yes
 **Research flag**: Tinfoil index schema is community-reverse-engineered, not formally specified — point the parser at a real user server early; treat the encrypted-index variant as out of scope for MVP. Validate `Accept-Ranges: bytes` and the streaming/Range fallback on the target server (the streaming seam established here is consumed by Phase 10). Keep fail-closed TLS; strip `Authorization` on cross-host redirects.
@@ -206,7 +206,7 @@ Plans:
 | 5. Collapse Source Seams to Switch-Only | v1.1 | 4/4 | Complete   | 2026-06-06 |
 | 6. Strip Desktop from Build System      | v1.1 | 2/2 | Complete   | 2026-06-06 |
 | 7. Docs Cleanup & Final Verification Gate | v1.1 | 2/2 | Complete   | 2026-06-06 |
-| 8. Catalog, Content Sources & Server Linking | v1.2 | 3/6 | In Progress|  |
+| 8. Catalog, Content Sources & Server Linking | v1.2 | 6/6 | Complete   | 2026-06-07 |
 | 9. Install-Decision Core & Resumable Queue | v1.2 | 0/? | Not started | - |
 | 10. NSP & NSZ Install Engine (HARDWARE) | v1.2 | 0/? | Not started | - |
 | 11. Installed Mgmt, Uninstall & Update/DLC Detection (HARDWARE) | v1.2 | 0/? | Not started | - |

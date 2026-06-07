@@ -10,9 +10,9 @@ Requirements for the Game Management milestone. Each maps to exactly one roadmap
 ### Content Source & Linking (SRC)
 
 - [x] **SRC-01**: User can link a content server by entering a URL that returns a Tinfoil-style JSON index (`files[{url,size}]`, `directories`)
-- [ ] **SRC-02**: User can link a server that requires authentication (basic-auth-in-URL, custom header, or referrer gate)
-- [ ] **SRC-03**: User can browse and install from local NSP/NSZ files on the SD card
-- [ ] **SRC-04**: No content server is bundled or enabled by default — the source list is empty until the user adds one (responsibility/policy boundary)
+- [x] **SRC-02**: User can link a server that requires authentication (basic-auth-in-URL, custom header, or referrer gate)
+- [x] **SRC-03**: User can browse and install from local NSP/NSZ files on the SD card
+- [x] **SRC-04**: No content server is bundled or enabled by default — the source list is empty until the user adds one (responsibility/policy boundary)
 
 ### Catalog Browse (CAT)
 
@@ -79,9 +79,9 @@ Which phases cover which requirements. Phase numbering continues from v1.1 (phas
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | SRC-01 | Phase 8 | Complete |
-| SRC-02 | Phase 8 | Pending |
-| SRC-03 | Phase 8 | Pending |
-| SRC-04 | Phase 8 | Pending |
+| SRC-02 | Phase 8 | Complete |
+| SRC-03 | Phase 8 | Complete |
+| SRC-04 | Phase 8 | Complete |
 | CAT-01 | Phase 8 | Complete |
 | CAT-02 | Phase 8 | Complete |
 | INST-01 | Phase 10 | Pending |

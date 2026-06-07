@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Game Management
-status: executing
-stopped_at: Completed 08-05-PLAN.md
-last_updated: "2026-06-07T18:30:00.000Z"
-last_activity: 2026-06-07 -- Completed 08-05-PLAN.md
+status: phase_complete
+stopped_at: Completed 08-06-PLAN.md
+last_updated: "2026-06-07T19:30:00.000Z"
+last_activity: 2026-06-07 -- Completed 08-06-PLAN.md (Phase 8 complete)
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 6
-  completed_plans: 5
-  percent: 83
+  completed_plans: 6
+  percent: 100
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-06-06)
 
 ## Current Position
 
-Phase: 8 (catalog-content-sources-server-linking) — EXECUTING
-Plan: 5 of 6 complete
-Status: Ready for 08-06-PLAN.md
-Last activity: 2026-06-07 -- Completed 08-05-PLAN.md
+Phase: 8 (catalog-content-sources-server-linking) — COMPLETE
+Plan: 6 of 6 complete
+Status: Phase gate UAT pending (nxlink)
+Last activity: 2026-06-07 -- Completed 08-06-PLAN.md
 
 ## Milestone v1.2 Roadmap
 
@@ -96,6 +96,7 @@ Recent decisions affecting current work:
 - [Phase 08-03]: SourceLink + /sources route store config only (no blob field, no multipart); credentials AES-256-GCM at rest via SOURCE_ENC_KEY; HttpSourceSyncClient::push takes cloud id separately from SourceConfig.
 - [Phase 08-04]: catalog/sources i18n namespace (20 keys, both locales); tile_games Home card; cover_art 3-tier (titledb stream-cache → libnx icon → placeholder); SourceListActivity header only until Plan 06.
 - [Phase 08-05]: CatalogActivity cache-first grid/list + CatalogDetailActivity Base/Update/DLC rows; no install affordance; kind chips via text+color; core::apply_view for sort/filter/search.
+- [Phase 08-06]: SourceListActivity empty-by-default + local://sd peer + one-tap sync; local_source bounded SD scan; remoteId for idempotent cloud PUT; credential-redacted row labels.
 - v1.2 legal boundary: no default server/index/keys bundled (SRC-04); cloud API stores server CONFIG ONLY, never content (SYNC-01) — enforced in the Prisma model + route schema.
 
 #### Prior milestone decisions (v1.1, retained for context)
@@ -160,9 +161,10 @@ All deferred UAT/verification items are on-hardware checks the host test suite c
 ## Session Continuity
 
 Last session: 2026-06-07T18:30:00.000Z
-Stopped at: Completed 08-05-PLAN.md
+Stopped at: Completed 08-06-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
 
-- Plan the first v1.2 phase with `/gsd-plan-phase 8`
+- Run Phase 8 hardware UAT via nxlink (empty list → add auth server → browse → sync → remove)
+- Plan Phase 9 with `/gsd-plan-phase 9`
