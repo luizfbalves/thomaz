@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Game Management
 status: executing
-stopped_at: Completed 08-02-PLAN.md
-last_updated: "2026-06-07T14:00:00.000Z"
-last_activity: 2026-06-07 -- Completed 08-02-PLAN.md
+stopped_at: Completed 08-03-PLAN.md
+last_updated: "2026-06-07T15:05:00.000Z"
+last_activity: 2026-06-07 -- Completed 08-03-PLAN.md
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 6
-  completed_plans: 2
-  percent: 33
+  completed_plans: 3
+  percent: 50
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-06-06)
 ## Current Position
 
 Phase: 8 (catalog-content-sources-server-linking) — EXECUTING
-Plan: 2 of 6 complete
-Status: Ready for 08-03-PLAN.md
-Last activity: 2026-06-07 -- Completed 08-02-PLAN.md
+Plan: 3 of 6 complete
+Status: Ready for 08-04-PLAN.md
+Last activity: 2026-06-07 -- Completed 08-03-PLAN.md
 
 ## Milestone v1.2 Roadmap
 
@@ -93,6 +93,7 @@ Recent decisions affecting current work:
 - [Phase 08-02]: IHttpClient::stream() default stub (ok=false) keeps existing test doubles compiling; index fetch uses capped request(), content install will use stream() in Phase 10.
 - [Phase 08-02]: Header-auth index fetch disables auto-follow and re-attaches custom header only on same-host redirects; BasicInUrl relies on libcurl default cross-host Authorization strip.
 - [Phase 08-02]: source_store returns empty vector on missing sources.json (SRC-04); SD credentials plaintext accepted MVP limitation documented in source_store header.
+- [Phase 08-03]: SourceLink + /sources route store config only (no blob field, no multipart); credentials AES-256-GCM at rest via SOURCE_ENC_KEY; HttpSourceSyncClient::push takes cloud id separately from SourceConfig.
 - v1.2 legal boundary: no default server/index/keys bundled (SRC-04); cloud API stores server CONFIG ONLY, never content (SYNC-01) — enforced in the Prisma model + route schema.
 
 #### Prior milestone decisions (v1.1, retained for context)
@@ -156,9 +157,9 @@ All deferred UAT/verification items are on-hardware checks the host test suite c
 
 ## Session Continuity
 
-Last session: 2026-06-07T12:52:58.752Z
-Stopped at: Phase 8 UI-SPEC approved
-Resume file: .planning/phases/08-catalog-content-sources-server-linking/08-UI-SPEC.md
+Last session: 2026-06-07T15:05:00.000Z
+Stopped at: Completed 08-03-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 

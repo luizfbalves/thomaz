@@ -99,7 +99,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 08-02-PLAN.md — Streaming/Range HTTP seam + platform index fetch (redirect-safe), empty-by-default source store, per-source SD cache
-- [ ] 08-03-PLAN.md — Cloud config sync: owner-scoped SourceLink model + JWT config-only /sources route (encrypted at rest) + device sync client
+- [x] 08-03-PLAN.md — Cloud config sync: owner-scoped SourceLink model + JWT config-only /sources route (encrypted at rest) + device sync client
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -206,7 +206,7 @@ Plans:
 | 5. Collapse Source Seams to Switch-Only | v1.1 | 4/4 | Complete   | 2026-06-06 |
 | 6. Strip Desktop from Build System      | v1.1 | 2/2 | Complete   | 2026-06-06 |
 | 7. Docs Cleanup & Final Verification Gate | v1.1 | 2/2 | Complete   | 2026-06-06 |
-| 8. Catalog, Content Sources & Server Linking | v1.2 | 1/6 | In Progress|  |
+| 8. Catalog, Content Sources & Server Linking | v1.2 | 3/6 | In Progress|  |
 | 9. Install-Decision Core & Resumable Queue | v1.2 | 0/? | Not started | - |
 | 10. NSP & NSZ Install Engine (HARDWARE) | v1.2 | 0/? | Not started | - |
 | 11. Installed Mgmt, Uninstall & Update/DLC Detection (HARDWARE) | v1.2 | 0/? | Not started | - |
