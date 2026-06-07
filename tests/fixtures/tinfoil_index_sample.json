@@ -1,0 +1,12 @@
+{
+  "files": [
+    {"url": "https://example.com/games/[0100000000010000][v65536].nsp", "size": 14000000000},
+    "https://example.com/games/[0100000000010800][v65536].nsp",
+    {"url": "https://example.com/dlc/[0100000000011000][v0].nsp", "size": 52428800}
+  ],
+  "directories": ["https://example.com/more/"],
+  "success": "Welcome to the shop!",
+  "titledb": "https://example.com/titledb.json",
+  "headers": ["X-Custom: value"],
+  "version": 1
+}
