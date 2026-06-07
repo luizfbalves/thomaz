@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Game Management
 status: executing
-stopped_at: Phase 8 UI-SPEC approved
-last_updated: "2026-06-07T12:55:00.000Z"
-last_activity: 2026-06-07 -- Completed 08-01-PLAN.md (core/games foundation)
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-06-07T14:00:00.000Z"
+last_activity: 2026-06-07 -- Completed 08-02-PLAN.md
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 6
-  completed_plans: 1
-  percent: 17
+  completed_plans: 2
+  percent: 33
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-06-06)
 ## Current Position
 
 Phase: 8 (catalog-content-sources-server-linking) — EXECUTING
-Plan: 2 of 6
-Status: Ready to execute
-Last activity: 2026-06-07 -- Completed 08-01-PLAN.md (core/games foundation)
+Plan: 2 of 6 complete
+Status: Ready for 08-03-PLAN.md
+Last activity: 2026-06-07 -- Completed 08-02-PLAN.md
 
 ## Milestone v1.2 Roadmap
 
@@ -90,6 +90,9 @@ Recent decisions affecting current work:
 - v1.2 Phase 10 (NSP & NSZ install engine) is the ONE genuinely HIGH-risk, hardware-gated phase. Per research, rollback + startup reconciliation + serialized DB mutation + free-space pre-flight + gated ticket import MUST ship in this phase — NOT split into a later hardening phase.
 - v1.2 NSZ (INST-05) merged into Phase 10 (was a standalone Phase 11). The launch-only-corruption risk remains: NSZ keeps a dedicated spike and a distinct on-hardware validation sub-gate WITHIN Phase 10 — NCZ re-encryption corruption only surfaces at game launch, so its validation must NOT collapse into the NSP happy path.
 - v1.2 sequencing: streaming content-source/Range seam established in Phase 8 BEFORE the install engine consumes it (the existing curl client buffers whole responses in a std::string and OOMs on multi-GB titles). The resumable queue (Phase 9) is an app-scoped runner with an on-SD journal, NOT tied to a ThomazActivity/runAsync lifetime.
+- [Phase 08-02]: IHttpClient::stream() default stub (ok=false) keeps existing test doubles compiling; index fetch uses capped request(), content install will use stream() in Phase 10.
+- [Phase 08-02]: Header-auth index fetch disables auto-follow and re-attaches custom header only on same-host redirects; BasicInUrl relies on libcurl default cross-host Authorization strip.
+- [Phase 08-02]: source_store returns empty vector on missing sources.json (SRC-04); SD credentials plaintext accepted MVP limitation documented in source_store header.
 - v1.2 legal boundary: no default server/index/keys bundled (SRC-04); cloud API stores server CONFIG ONLY, never content (SYNC-01) — enforced in the Prisma model + route schema.
 
 #### Prior milestone decisions (v1.1, retained for context)

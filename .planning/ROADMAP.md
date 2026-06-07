@@ -98,7 +98,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 08-02-PLAN.md — Streaming/Range HTTP seam + platform index fetch (redirect-safe), empty-by-default source store, per-source SD cache
+- [x] 08-02-PLAN.md — Streaming/Range HTTP seam + platform index fetch (redirect-safe), empty-by-default source store, per-source SD cache
 - [ ] 08-03-PLAN.md — Cloud config sync: owner-scoped SourceLink model + JWT config-only /sources route (encrypted at rest) + device sync client
 
 **Wave 3** *(blocked on Wave 2 completion)*
