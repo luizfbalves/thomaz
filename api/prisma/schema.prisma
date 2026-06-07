@@ -13,6 +13,7 @@ model User {
   passwordHash  String
   createdAt     DateTime       @default(now())
   saveSlots     SaveSlot[]
+  sourceLinks   SourceLink[]
   refreshTokens RefreshToken[]
 }
 
@@ -48,5 +49,19 @@ model SaveSlot {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, titleId])
+  @@index([userId])
+}
+
+/// User-owned content-source link config. CONFIG ONLY — never catalog or content bytes.
+model SourceLink {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label         String   @default("")
+  url           String
+  authType      String   @default("none")
+  authSecretEnc String?
+  updatedAt     DateTime @updatedAt
+
   @@index([userId])
 }

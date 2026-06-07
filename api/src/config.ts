@@ -3,6 +3,8 @@ import { z } from "zod";
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   JWT_SECRET: z.string().min(16),
+  // At-rest AES-256-GCM key for source-link credentials (base64-encoded 32 bytes).
+  SOURCE_ENC_KEY: z.string().min(44),
   PORT: z.coerce.number().int().positive().default(3000),
   HOST: z.string().default("0.0.0.0"),
   PUBLIC_BASE_URL: z.string().url(),
