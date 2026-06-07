@@ -12,6 +12,7 @@ struct SourceConfig {
     std::string     url;
     SourceAuthType  authType   = SourceAuthType::None;
     std::string     authSecret;
+    std::string     remoteId; // device-only cloud sync id; not in API codec
 };
 
 std::string serialize_source_link(const SourceConfig& cfg);

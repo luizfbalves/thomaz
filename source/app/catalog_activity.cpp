@@ -18,6 +18,7 @@
 #include "platform/games/catalog_cache.hpp"
 #include "platform/games/cover_art.hpp"
 #include "platform/games/index_fetcher.hpp"
+#include "platform/games/local_source.hpp"
 
 using namespace brls::literals;
 
@@ -132,17 +133,21 @@ void CatalogActivity::onContentAvailable() {
     install_header_username(this);
     install_tls_warning_banner(this);
 
-    if (!this->source.label.empty()) {
-        if (auto* frame = this->getView("catalogFrame"))
+    if (auto* frame = this->getView("catalogFrame")) {
+        if (is_local_source(this->source))
+            frame->setTitle("thomaz/sources/local_sd"_i18n);
+        else if (!this->source.label.empty())
             frame->setTitle(this->source.label);
     }
 
     this->bindChips();
     this->updateChipSelection();
 
-    if (auto cached = read_cached_index(this->source)) {
-        this->hadCache    = true;
-        this->allGrouped  = this->loadFromBody(*cached);
+    if (is_local_source(this->source)) {
+        this->setLoading(true);
+    } else if (auto cached = read_cached_index(this->source)) {
+        this->hadCache   = true;
+        this->allGrouped = this->loadFromBody(*cached);
         this->applyAndPopulate();
     } else {
         this->setLoading(true);
@@ -241,6 +246,40 @@ void CatalogActivity::applyAndPopulate() {
 }
 
 void CatalogActivity::refreshFromNetwork() {
+    if (is_local_source(this->source)) {
+        this->setLoading(true);
+        auto result = std::make_shared<FetchedCatalog>();
+        this->runAsync(
+            [result]() {
+                bool truncated = false;
+                result->merged = scan_local_files(&truncated);
+                result->truncated = truncated;
+                result->ok        = result->merged.ok;
+            },
+            [this, result]() {
+                this->setLoading(false);
+                if (!result->ok) {
+                    if (auto* el = (brls::Label*)this->getView("emptyLabel")) {
+                        el->setText("thomaz/catalog/empty"_i18n);
+                        el->setVisibility(brls::Visibility::VISIBLE);
+                    }
+                    if (auto* rb = this->getView("resultsBox"))
+                        rb->setVisibility(brls::Visibility::GONE);
+                    return;
+                }
+                this->hadCache   = true;
+                this->truncated  = result->truncated;
+                this->allGrouped = thomaz::core::group_catalog(result->merged);
+                write_cached_index(this->source, serialize_parsed_index(result->merged));
+                if (this->truncated)
+                    this->showStatusNote("thomaz/catalog/truncated_note"_i18n);
+                else
+                    this->showStatusNote("");
+                this->applyAndPopulate();
+            });
+        return;
+    }
+
     if (!this->hadCache)
         this->setLoading(true);
     else

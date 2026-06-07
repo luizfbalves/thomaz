@@ -63,6 +63,7 @@ std::optional<thomaz::core::SourceConfig> parse_local_source(const json& j) {
         return std::nullopt;
     cfg.authType   = *authType;
     cfg.authSecret = j.value("authSecret", std::string{});
+    cfg.remoteId   = j.value("remoteId", std::string{});
     return cfg;
 }
 
@@ -72,6 +73,8 @@ json serialize_local_source(const thomaz::core::SourceConfig& cfg) {
     j["url"]        = cfg.url;
     j["authType"]   = auth_type_to_string(cfg.authType);
     j["authSecret"] = cfg.authSecret;
+    if (!cfg.remoteId.empty())
+        j["remoteId"] = cfg.remoteId;
     return j;
 }
 
