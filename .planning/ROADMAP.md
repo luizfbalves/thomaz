@@ -103,7 +103,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 08-04-PLAN.md — Shared UI scaffolding: catalog/sources i18n (both locales), tile_games token, Home Games card, 3-tier cover-art service
+- [x] 08-04-PLAN.md — Shared UI scaffolding: catalog/sources i18n (both locales), tile_games token, Home Games card, 3-tier cover-art service
 
 **Wave 4** *(blocked on Wave 3 completion)*
 

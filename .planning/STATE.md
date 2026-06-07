@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Game Management
 status: executing
-stopped_at: Completed 08-03-PLAN.md
-last_updated: "2026-06-07T15:05:00.000Z"
-last_activity: 2026-06-07 -- Completed 08-03-PLAN.md
+stopped_at: Completed 08-04-PLAN.md
+last_updated: "2026-06-07T16:00:00.000Z"
+last_activity: 2026-06-07 -- Completed 08-04-PLAN.md
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 6
-  completed_plans: 3
-  percent: 50
+  completed_plans: 4
+  percent: 67
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-06-06)
 ## Current Position
 
 Phase: 8 (catalog-content-sources-server-linking) — EXECUTING
-Plan: 3 of 6 complete
-Status: Ready for 08-04-PLAN.md
-Last activity: 2026-06-07 -- Completed 08-03-PLAN.md
+Plan: 4 of 6 complete
+Status: Ready for 08-05-PLAN.md
+Last activity: 2026-06-07 -- Completed 08-04-PLAN.md
 
 ## Milestone v1.2 Roadmap
 
@@ -94,6 +94,7 @@ Recent decisions affecting current work:
 - [Phase 08-02]: Header-auth index fetch disables auto-follow and re-attaches custom header only on same-host redirects; BasicInUrl relies on libcurl default cross-host Authorization strip.
 - [Phase 08-02]: source_store returns empty vector on missing sources.json (SRC-04); SD credentials plaintext accepted MVP limitation documented in source_store header.
 - [Phase 08-03]: SourceLink + /sources route store config only (no blob field, no multipart); credentials AES-256-GCM at rest via SOURCE_ENC_KEY; HttpSourceSyncClient::push takes cloud id separately from SourceConfig.
+- [Phase 08-04]: catalog/sources i18n namespace (20 keys, both locales); tile_games Home card; cover_art 3-tier (titledb stream-cache → libnx icon → placeholder); SourceListActivity header only until Plan 06.
 - v1.2 legal boundary: no default server/index/keys bundled (SRC-04); cloud API stores server CONFIG ONLY, never content (SYNC-01) — enforced in the Prisma model + route schema.
 
 #### Prior milestone decisions (v1.1, retained for context)
@@ -157,8 +158,8 @@ All deferred UAT/verification items are on-hardware checks the host test suite c
 
 ## Session Continuity
 
-Last session: 2026-06-07T15:05:00.000Z
-Stopped at: Completed 08-03-PLAN.md
+Last session: 2026-06-07T16:00:00.000Z
+Stopped at: Completed 08-04-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
