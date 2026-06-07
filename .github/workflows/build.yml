@@ -56,18 +56,27 @@ jobs:
             echo "app=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          # This job runs inside the devkitpro container (root), but the checkout
+          # is owned by the runner user, so git rejects the repo as "dubious
+          # ownership" and reports "not a git repository". Whitelist it first.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE" || true
           # On a PR, build only when something OUTSIDE api/, docs/ and website/
-          # changed (those are deployed by api.yml / pages.yml and never affect the NRO).
-          files=$(git diff --name-only \
+          # changed (those are deployed by api.yml / pages.yml and never affect the
+          # NRO). FAIL-SAFE: if the diff can't be computed for any reason, default
+          # to building — never skip a real build (and never deadlock the check).
+          app=true
+          if files=$(git diff --name-only \
             "${{ github.event.pull_request.base.sha }}" \
             "${{ github.event.pull_request.head.sha }}" \
-            -- '.' ':(exclude)api/**' ':(exclude)docs/**' ':(exclude)website/**')
-          if [ -n "$files" ]; then
-            echo "app=true" >> "$GITHUB_OUTPUT"
+            -- '.' ':(exclude)api/**' ':(exclude)docs/**' ':(exclude)website/**' 2>/dev/null); then
+            if [ -z "$files" ]; then
+              app=false
+              echo "Only api/, docs/ or website/ touched — skipping NRO build."
+            fi
           else
-            echo "app=false (only api/, docs/ or website/ touched — skipping NRO build)"
-            echo "app=false" >> "$GITHUB_OUTPUT"
+            echo "git diff failed — building anyway (fail-safe)."
           fi
+          echo "app=$app" >> "$GITHUB_OUTPUT"
 
       - name: Merge Borealis runtime resources into romfs
         # Fills in Borealis's fonts/material/i18n/shaders without clobbering our
