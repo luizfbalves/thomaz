@@ -1,6 +1,8 @@
 # thomaz
 
-**Hub de homebrew para Nintendo Switch** — um app com interface moderna que reúne, em um só lugar, **trapaças (cheats), mods, temas e backups de saves na nuvem** dos seus jogos. UI bonita e bilíngue (PT-BR / EN), pensada para **toque, mouse e controle**.
+🌐 **Site:** [luizfbalves.github.io/thomaz](https://luizfbalves.github.io/thomaz)
+
+**Hub de homebrew para Nintendo Switch** — um app com interface moderna que reúne, em um só lugar, **trapaças (cheats), mods, temas e backups de saves na nuvem** dos seus jogos. UI bonita e bilíngue (PT-BR / EN), pensada para **toque e controle**.
 
 Cada recurso usa a melhor fonte open-source disponível: cheats vêm da [**switch-cheats-db**](https://github.com/HamletDuFromage/switch-cheats-db) (aplicados pelo [Atmosphère](https://github.com/Atmosphere-NX/Atmosphere) no boot), mods vêm do **GameBanana** e temas vêm do **Themezer**. Os backups de saves sincronizam com a API na nuvem do próprio projeto.
 
@@ -33,7 +35,7 @@ Cada recurso usa a melhor fonte open-source disponível: cheats vêm da [**switc
 ### 🧰 Recursos transversais
 - **Conta / login** — tela de boot com entrada por login ou como convidado; o login é necessário para saves na nuvem.
 - **Filtro de visibilidade de títulos** — oculta automaticamente forwarders que não são jogos, com overrides por título e toggle global.
-- **UI bilíngue** PT-BR / EN, com traduções parciais em outros idiomas (fr, ru, zh) · 👆 toque + mouse + controle · 🎨 tema escuro com acento violeta.
+- **UI bilíngue** PT-BR / EN, com traduções parciais em outros idiomas (fr, ru, zh) · 👆 toque + controle · 🎨 tema escuro com acento violeta.
 
 ---
 
