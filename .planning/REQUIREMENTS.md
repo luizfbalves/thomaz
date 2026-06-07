@@ -45,7 +45,7 @@ Requirements for the Game Management milestone. Each maps to exactly one roadmap
 ### Cloud Sync (SYNC)
 
 - [x] **SYNC-01**: The user's server-link configuration syncs one-tap to their thomaz cloud account (config only — never content), reusing the existing JWT auth and the cloud-saves sync pattern
-- [ ] **SYNC-02**: Synced server credentials are protected at rest and scoped to the owning account
+- [x] **SYNC-02**: Synced server credentials are protected at rest and scoped to the owning account
 
 ## Future Requirements
 
