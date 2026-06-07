@@ -83,7 +83,7 @@ Each task was committed atomically:
 1. **Task 1: i18n + tile_games + Home card** - `011604a` (feat)
 2. **Task 2: cover_art 3-tier resolution** - `622fe1e` (feat)
 
-**Plan metadata:** pending (docs: complete plan)
+**Plan metadata:** `a410cf7` (docs: complete plan)
 
 ## Files Created/Modified
 
