@@ -94,7 +94,7 @@ All decidable logic (index parse, title-ID/kind derivation, PFS0 parse, install 
 Plans:
 **Wave 1**
 
-- [ ] 08-01-PLAN.md — Pure core/games logic: tolerant Tinfoil index parse, title-ID kind/grouping, catalog view transforms, recurse bounds, config-only sync codec (+ doctests)
+- [x] 08-01-PLAN.md — Pure core/games logic: tolerant Tinfoil index parse, title-ID kind/grouping, catalog view transforms, recurse bounds, config-only sync codec (+ doctests)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -206,7 +206,7 @@ Plans:
 | 5. Collapse Source Seams to Switch-Only | v1.1 | 4/4 | Complete   | 2026-06-06 |
 | 6. Strip Desktop from Build System      | v1.1 | 2/2 | Complete   | 2026-06-06 |
 | 7. Docs Cleanup & Final Verification Gate | v1.1 | 2/2 | Complete   | 2026-06-06 |
-| 8. Catalog, Content Sources & Server Linking | v1.2 | 0/6 | Planned | - |
+| 8. Catalog, Content Sources & Server Linking | v1.2 | 1/6 | In Progress|  |
 | 9. Install-Decision Core & Resumable Queue | v1.2 | 0/? | Not started | - |
 | 10. NSP & NSZ Install Engine (HARDWARE) | v1.2 | 0/? | Not started | - |
 | 11. Installed Mgmt, Uninstall & Update/DLC Detection (HARDWARE) | v1.2 | 0/? | Not started | - |

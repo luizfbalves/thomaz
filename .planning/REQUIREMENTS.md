@@ -9,7 +9,7 @@ Requirements for the Game Management milestone. Each maps to exactly one roadmap
 
 ### Content Source & Linking (SRC)
 
-- [ ] **SRC-01**: User can link a content server by entering a URL that returns a Tinfoil-style JSON index (`files[{url,size}]`, `directories`)
+- [x] **SRC-01**: User can link a content server by entering a URL that returns a Tinfoil-style JSON index (`files[{url,size}]`, `directories`)
 - [ ] **SRC-02**: User can link a server that requires authentication (basic-auth-in-URL, custom header, or referrer gate)
 - [ ] **SRC-03**: User can browse and install from local NSP/NSZ files on the SD card
 - [ ] **SRC-04**: No content server is bundled or enabled by default — the source list is empty until the user adds one (responsibility/policy boundary)
@@ -17,7 +17,7 @@ Requirements for the Game Management milestone. Each maps to exactly one roadmap
 ### Catalog Browse (CAT)
 
 - [ ] **CAT-01**: User can browse a linked server's catalog as a grid/list showing cover art, title name, and file size, reusing the existing titledb/icon UI
-- [ ] **CAT-02**: Each catalog entry shows its kind (base / update / DLC) derived from the 64-bit title ID, and the user can filter/search the catalog
+- [x] **CAT-02**: Each catalog entry shows its kind (base / update / DLC) derived from the 64-bit title ID, and the user can filter/search the catalog
 
 ### Install (INST)
 
@@ -44,7 +44,7 @@ Requirements for the Game Management milestone. Each maps to exactly one roadmap
 
 ### Cloud Sync (SYNC)
 
-- [ ] **SYNC-01**: The user's server-link configuration syncs one-tap to their thomaz cloud account (config only — never content), reusing the existing JWT auth and the cloud-saves sync pattern
+- [x] **SYNC-01**: The user's server-link configuration syncs one-tap to their thomaz cloud account (config only — never content), reusing the existing JWT auth and the cloud-saves sync pattern
 - [ ] **SYNC-02**: Synced server credentials are protected at rest and scoped to the owning account
 
 ## Future Requirements
@@ -78,12 +78,12 @@ Which phases cover which requirements. Phase numbering continues from v1.1 (phas
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SRC-01 | Phase 8 | Pending |
+| SRC-01 | Phase 8 | Complete |
 | SRC-02 | Phase 8 | Pending |
 | SRC-03 | Phase 8 | Pending |
 | SRC-04 | Phase 8 | Pending |
 | CAT-01 | Phase 8 | Pending |
-| CAT-02 | Phase 8 | Pending |
+| CAT-02 | Phase 8 | Complete |
 | INST-01 | Phase 10 | Pending |
 | INST-02 | Phase 10 | Pending |
 | INST-03 | Phase 10 | Pending |
@@ -95,10 +95,11 @@ Which phases cover which requirements. Phase numbering continues from v1.1 (phas
 | QUEUE-01 | Phase 9 | Pending |
 | QUEUE-02 | Phase 9 | Pending |
 | UPD-01 | Phase 11 | Pending |
-| SYNC-01 | Phase 8 | Pending |
+| SYNC-01 | Phase 8 | Complete |
 | SYNC-02 | Phase 8 | Pending |
 
 **Coverage:**
+
 - v1.2 requirements: 19 total
 - Mapped to phases: 19 ✓ (Phase 8: 8 · Phase 9: 2 · Phase 10: 5 · Phase 11: 4)
 - Unmapped: 0 ✓

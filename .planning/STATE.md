@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Game Management
-status: planning
+status: executing
 stopped_at: Phase 8 UI-SPEC approved
-last_updated: "2026-06-06T23:07:28.442Z"
-last_activity: 2026-06-06 — Milestone v1.2 roadmap revised (NSZ merged into Phase 10; 4 phases, 19/19 requirements mapped)
+last_updated: "2026-06-07T12:55:00.000Z"
+last_activity: 2026-06-07 -- Completed 08-01-PLAN.md (core/games foundation)
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 6
+  completed_plans: 1
+  percent: 17
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-06)
 
 **Core value:** The user links their own content source and installs/manages games and DLC from inside the hub with a smoother, cover-art-rich, resumable flow than stock installers — thomaz being purely the client, never a content host.
-**Current focus:** v1.2 roadmap created (Phases 8-11) — ready to plan Phase 8 (`/gsd-plan-phase 8`)
+**Current focus:** Phase 8 — catalog-content-sources-server-linking
 
 ## Current Position
 
-Phase: 8 — Catalog, Content Sources & Server Linking (not started)
-Plan: —
-Status: Roadmapped — awaiting Phase 8 planning
-Last activity: 2026-06-06 — Milestone v1.2 roadmap revised (NSZ merged into Phase 10; 4 phases, 19/19 requirements mapped)
+Phase: 8 (catalog-content-sources-server-linking) — EXECUTING
+Plan: 2 of 6
+Status: Ready to execute
+Last activity: 2026-06-07 -- Completed 08-01-PLAN.md (core/games foundation)
 
 ## Milestone v1.2 Roadmap
 
@@ -153,7 +153,7 @@ All deferred UAT/verification items are on-hardware checks the host test suite c
 
 ## Session Continuity
 
-Last session: 2026-06-06T22:41:38.159Z
+Last session: 2026-06-07T12:52:58.752Z
 Stopped at: Phase 8 UI-SPEC approved
 Resume file: .planning/phases/08-catalog-content-sources-server-linking/08-UI-SPEC.md
 
