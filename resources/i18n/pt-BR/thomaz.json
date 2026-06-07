@@ -189,5 +189,29 @@
     "sd": "SD",
     "console": "Console",
     "wifi": "WiFi"
+  },
+  "catalog": {
+    "home_card": "Jogos",
+    "empty": "Esta fonte não tem jogos para mostrar.",
+    "no_matches": "Nenhum resultado.",
+    "offline_note": "Mostrando catálogo em cache — offline.",
+    "truncated_note": "Catálogo truncado — limite da fonte atingido.",
+    "kind_base": "Base",
+    "kind_update": "Atualização v{n}",
+    "kind_dlc": "DLC"
+  },
+  "sources": {
+    "add": "Adicionar fonte",
+    "sync": "Sincronizar com a conta",
+    "refresh": "Atualizar",
+    "empty_heading": "Nenhuma fonte ainda",
+    "empty_body": "Adicione a URL de um servidor de conteúdo ou navegue pelos arquivos locais no cartão SD para começar. Nada vem ativado por padrão.",
+    "local_sd": "Arquivos do cartão SD",
+    "error_fetch": "Não foi possível carregar esta fonte. Verifique a URL e sua conexão e tente novamente.",
+    "error_auth": "O servidor recusou as credenciais. Verifique o usuário, a senha ou o cabeçalho e tente novamente.",
+    "error_too_large": "O índice desta fonte é grande demais para carregar com segurança.",
+    "sync_ok": "Configuração da fonte sincronizada.",
+    "sync_auth_expired": "Entre novamente para sincronizar suas fontes.",
+    "remove_confirm": "Remover esta fonte? A configuração salva e o catálogo em cache serão apagados deste console."
   }
 }

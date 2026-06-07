@@ -79,8 +79,19 @@
 
             </brls:Box>
 
-            <!-- ===== COLUMN B: System / Cheats ===== -->
+            <!-- ===== COLUMN B: Games / Cheats ===== -->
             <brls:Box axis="column" grow="1.0">
+
+                <!-- Games / content catalog (active) -->
+                <AnimatedBox id="gamesCard" entranceDelay="230"
+                          axis="row" alignItems="center" grow="1.0" marginBottom="14"
+                          paddingLeft="22" paddingRight="22" cornerRadius="16"
+                          backgroundColor="@theme/thomaz/tile_games"
+                          focusable="true" highlightCornerRadius="16"
+                          hideHighlightBackground="true">
+                    <brls:Label text="@i18n/thomaz/catalog/home_card"
+                                fontSize="17" textColor="#FFFFFF" grow="1.0"/>
+                </AnimatedBox>
 
                 <!-- Sistema (hidden from menu — wiring kept in HomeActivity) -->
                 <AnimatedBox id="systemCard" entranceDelay="200" visibility="gone"
@@ -94,7 +105,7 @@
                 </AnimatedBox>
 
                 <!-- Cheats (active) -->
-                <AnimatedBox id="cheatsCard" entranceDelay="260"
+                <AnimatedBox id="cheatsCard" entranceDelay="290"
                           axis="row" alignItems="center" grow="1.0"
                           paddingLeft="22" paddingRight="22" cornerRadius="16"
                           backgroundColor="@theme/thomaz/accent_bright"

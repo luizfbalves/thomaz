@@ -30,6 +30,18 @@ void HomeActivity::onContentAvailable()
     install_header_username(this);
     install_tls_warning_banner(this);
 
+    // Games card → content source list.
+    if (brls::View* games = this->getView("gamesCard"))
+    {
+        games->registerClickAction([this](brls::View*) {
+            brls::Application::pushActivity(
+                new SourceListActivity(this->titleService, this->http),
+                brls::TransitionAnimation::NONE);
+            return true;
+        });
+        games->addGestureRecognizer(new brls::TapGestureRecognizer(games));
+    }
+
     // Cheats hero → game list.
     if (brls::View* cheats = this->getView("cheatsCard"))
     {

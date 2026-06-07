@@ -50,6 +50,7 @@ void registerThomazTheme()
     dark.addColor("thomaz/tile_saves",    nvgRGB(0xB5, 0x76, 0x2E)); // amber
     dark.addColor("thomaz/tile_mods",     nvgRGB(0xB0, 0x46, 0x6E)); // rose
     dark.addColor("thomaz/tile_backup",   nvgRGB(0x2E, 0x9C, 0x5A)); // emerald (save manager)
+    dark.addColor("thomaz/tile_games",    nvgRGB(0x49, 0x5C, 0xD6)); // indigo (content catalog)
 
     // Borealis surfaces + focus ring → our palette.
     dark.addColor("brls/background",      nvgRGB(0x0E, 0x0F, 0x14));

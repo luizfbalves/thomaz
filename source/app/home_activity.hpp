@@ -13,6 +13,7 @@
 #include "platform/save_service.hpp"
 #include "platform/auth_client.hpp"
 #include "platform/saves/cloud_save_client.hpp"
+#include "app/source_list_activity.hpp"
 
 namespace thomaz {
 

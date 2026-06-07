@@ -189,5 +189,29 @@
     "sd": "SD",
     "console": "NAND",
     "wifi": "WiFi"
+  },
+  "catalog": {
+    "home_card": "Games",
+    "empty": "This source has no games to show.",
+    "no_matches": "No matches.",
+    "offline_note": "Showing cached catalog — offline.",
+    "truncated_note": "Catalog truncated — source limit reached.",
+    "kind_base": "Base",
+    "kind_update": "Update v{n}",
+    "kind_dlc": "DLC"
+  },
+  "sources": {
+    "add": "Add Source",
+    "sync": "Sync to Account",
+    "refresh": "Refresh",
+    "empty_heading": "No sources yet",
+    "empty_body": "Add a content server URL or browse local files on your SD card to get started. Nothing is enabled by default.",
+    "local_sd": "SD Card files",
+    "error_fetch": "Couldn't load this source. Check the URL and your connection, then try again.",
+    "error_auth": "The server refused the credentials. Check the username, password, or header and try again.",
+    "error_too_large": "This source's index is too large to load safely.",
+    "sync_ok": "Source config synced.",
+    "sync_auth_expired": "Sign in again to sync your sources.",
+    "remove_confirm": "Remove this source? Its saved config and cached catalog will be deleted from this console."
   }
 }
