@@ -67,6 +67,7 @@ tests/run
 !/resources/xml/activity/boot.xml
 !/resources/xml/activity/catalog.xml
 !/resources/xml/activity/catalog_detail.xml
+!/resources/xml/activity/source_list.xml
 # Vendored qlaunch theme IPS patches (exelix11/theme-patches)
 !/resources/theme-patches/
 !/resources/theme-patches/*.ips
