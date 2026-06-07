@@ -21,6 +21,7 @@ class CurlHttpClient : public IHttpClient {
     ~CurlHttpClient() override;
 
     HttpResponse request(const HttpRequest& req) override;
+    StreamResult stream(const StreamRequest& req) override;
 
   private:
     bool          networkReady = false; // Switch: socketInitializeDefault() succeeded

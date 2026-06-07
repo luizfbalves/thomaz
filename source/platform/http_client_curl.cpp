@@ -1,5 +1,7 @@
 #include "platform/http_client_curl.hpp"
 
+#include <cctype>
+#include <cstring>
 #include <curl/curl.h>
 #include "platform/curl_tls.hpp"
 
@@ -12,6 +14,55 @@ size_t writeToString(char* ptr, size_t size, size_t nmemb, void* userdata) {
     out->append(ptr, size * nmemb);
     return size * nmemb;
 }
+
+struct StreamCtx {
+    StreamRequest* req;
+    StreamResult*  result;
+};
+
+size_t writeToSink(char* ptr, size_t size, size_t nmemb, void* userdata) {
+    auto* ctx = static_cast<StreamCtx*>(userdata);
+    if (!ctx || !ctx->req || !ctx->req->sink)
+        return 0;
+    const auto  len = size * nmemb;
+    const auto* data = reinterpret_cast<const std::uint8_t*>(ptr);
+    if (!ctx->req->sink(data, len))
+        return 0; // abort transfer
+    return len;
+}
+
+bool headerLineHasAcceptRanges(const char* line, std::size_t len) {
+    constexpr const char* kNeedle = "Accept-Ranges:";
+    const std::size_t     kLen    = std::strlen(kNeedle);
+    if (len < kLen)
+        return false;
+    for (std::size_t i = 0; i < kLen; ++i) {
+        if (std::tolower(static_cast<unsigned char>(line[i])) !=
+            static_cast<unsigned char>(kNeedle[i]))
+            return false;
+    }
+    const char* p = line + kLen;
+    while (p < line + len && (*p == ' ' || *p == '\t'))
+        ++p;
+    return (p + 5 <= line + len) &&
+           std::tolower(static_cast<unsigned char>(p[0])) == 'b' &&
+           std::tolower(static_cast<unsigned char>(p[1])) == 'y' &&
+           std::tolower(static_cast<unsigned char>(p[2])) == 't' &&
+           std::tolower(static_cast<unsigned char>(p[3])) == 'e' &&
+           std::tolower(static_cast<unsigned char>(p[4])) == 's';
+}
+
+size_t streamHeaderCb(char* ptr, size_t size, size_t nmemb, void* userdata) {
+    auto* ctx = static_cast<StreamCtx*>(userdata);
+    if (!ctx || !ctx->result)
+        return size * nmemb;
+    const std::size_t len = size * nmemb;
+    if (headerLineHasAcceptRanges(ptr, len))
+        ctx->result->acceptsRanges = true;
+    return len;
+}
+
+} // namespace
 
 // Per-transfer context for the abort hook.
 struct CancelCtx {
@@ -159,6 +210,74 @@ HttpResponse CurlHttpClient::request(const HttpRequest& req) {
     if (headerList) curl_slist_free_all(headerList);
     curl_easy_cleanup(curl);
     return response;
+}
+
+StreamResult CurlHttpClient::stream(const StreamRequest& req) {
+    StreamResult result;
+    if (!networkReady || !req.sink)
+        return result;
+
+    CURL* curl = curl_easy_init();
+    if (!curl)
+        return result;
+
+    curl_easy_setopt(curl, CURLOPT_URL, req.url.c_str());
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "thomaz/0.1 (+switch homebrew)");
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+    if (share)
+        curl_easy_setopt(curl, CURLOPT_SHARE, share);
+    curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
+
+    StreamCtx streamCtx{const_cast<StreamRequest*>(&req), &result};
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToSink);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &streamCtx);
+    curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, streamHeaderCb);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, &streamCtx);
+
+    if (req.rangeStart != 0)
+        curl_easy_setopt(curl, CURLOPT_RESUME_FROM_LARGE,
+                         static_cast<curl_off_t>(req.rangeStart));
+
+    CancelCtx cancelCtx{req.cancelled};
+    if (req.cancelled) {
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, curlCancelXferInfo);
+        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &cancelCtx);
+    }
+
+    apply_curl_tls(curl);
+
+    struct curl_slist* headerList = nullptr;
+    for (const auto& h : req.headers) {
+        std::string line = h.first + ": " + h.second;
+        headerList       = curl_slist_append(headerList, line.c_str());
+    }
+    if (headerList)
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerList);
+
+    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+
+    CURLcode rc = curl_easy_perform(curl);
+    if (rc == CURLE_OK) {
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &result.status);
+        curl_off_t contentLen = 0;
+        if (curl_easy_getinfo(curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &contentLen) ==
+                CURLE_OK &&
+            contentLen > 0)
+            result.totalSize = static_cast<std::uint64_t>(contentLen);
+        result.ok = (result.status >= 200 && result.status < 300);
+    } else if (rc == CURLE_WRITE_ERROR) {
+        // sink returned false (cap/abort) — still report status if available
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &result.status);
+    } else if (rc != CURLE_ABORTED_BY_CALLBACK)
+        result.status = 0;
+
+    if (headerList)
+        curl_slist_free_all(headerList);
+    curl_easy_cleanup(curl);
+    return result;
 }
 
 } // namespace thomaz

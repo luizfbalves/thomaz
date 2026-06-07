@@ -1,6 +1,7 @@
 #pragma once
 #include <atomic>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
@@ -43,11 +44,31 @@ struct HttpRequest {
     std::shared_ptr<std::atomic<bool>> cancelled;
 };
 
+// Non-buffering download seam (Phase 10 install engine). Chunks are forwarded to
+// `sink`; the transport never accumulates the whole body in a std::string.
+struct StreamRequest {
+    std::string url;
+    std::vector<std::pair<std::string, std::string>> headers;
+    std::uint64_t rangeStart = 0;
+    std::shared_ptr<std::atomic<bool>> cancelled;
+    std::function<bool(const std::uint8_t*, std::size_t)> sink;
+};
+
+struct StreamResult {
+    long          status        = 0;
+    bool          acceptsRanges = false;
+    std::uint64_t totalSize     = 0;
+    bool          ok            = false;
+};
+
 // HTTP abstraction so the UI/orchestration don't depend on libcurl.
 class IHttpClient {
   public:
     virtual ~IHttpClient() = default;
     virtual HttpResponse request(const HttpRequest& req) = 0;
+
+    // Default stub keeps existing test doubles compiling without overrides.
+    virtual StreamResult stream(const StreamRequest&) { return StreamResult{}; }
 
     // Convenience GET kept for existing callers (db_paths/self_update).
     HttpResponse get(const std::string& url) {
